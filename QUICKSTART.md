@@ -174,6 +174,23 @@ normalized = normalize(audio, target_peak=0.9)
 amplitude = db_to_linear(-3.0)  # -3 dB = 0.707
 ```
 
+### Sample Rate Conversion
+
+```python
+from pydigi.modems.scamp import SCAMP
+from pydigi.utils import resample_to_48k, save_wav
+
+# SCAMP is locked at 8000 Hz
+scamp = SCAMP(mode='SCAMPFSK', frequency=1500)
+audio_8k = scamp.modulate("HELLO WORLD")
+
+# Resample to 48000 Hz for modern audio hardware
+audio_48k = resample_to_48k(audio_8k)
+
+# Save at 48kHz
+save_wav("scamp_48khz.wav", audio_48k, sample_rate=48000)
+```
+
 ## Using DSP Components Directly
 
 ### Generate Tones with NCO

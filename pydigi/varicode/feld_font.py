@@ -118,7 +118,7 @@ FELD_7X7_14 = {
 }
 
 
-def get_column_bits(char, column):
+def get_column_bits(char: str, column: int) -> int:
     """
     Get the bitmap bits for a specific column of a character.
 
@@ -160,7 +160,7 @@ def get_column_bits(char, column):
     return bits
 
 
-def get_char_width(char):
+def get_char_width(char: str) -> int:
     """
     Get the width (number of columns) of a character.
 

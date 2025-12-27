@@ -344,7 +344,7 @@ class DominoEX(Modem):
 
         return signal
 
-    def estimate_duration(self, text, mode_micro=False):
+    def estimate_duration(self, text: str, mode_micro: bool = False) -> float:
         """
         Estimate transmission duration in seconds.
 

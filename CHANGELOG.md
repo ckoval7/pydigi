@@ -37,6 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **SCAMP**: 6 variants (FSK and OOK modes)
 - Simple API: `modem.modulate(text, frequency, sample_rate)`
 - Audio utilities: `save_wav()` and `load_wav()`
+- Resampler utility: High-quality sample rate conversion for all modems
+  - Supports polyphase and FFT-based resampling methods
+  - Convenient presets for common conversions (8k→48k, 8k→44.1k, etc.)
+  - Modem-aware automatic resampling
+  - Quality analysis and method recommendations
 - Signal analyzer utility for debugging and analysis
 - Comprehensive examples for all modem families
 - Full documentation with MkDocs

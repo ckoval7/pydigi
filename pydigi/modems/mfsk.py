@@ -97,7 +97,7 @@ class MFSK(Modem):
     Reference: fldigi/src/mfsk/mfsk.cxx
     """
 
-    def __init__(self, symlen=512, symbits=4, depth=10, basetone=64,
+    def __init__(self, symlen: int = 512, symbits: int = 4, depth: int = 10, basetone: int = 64,
                  sample_rate: int = 8000, frequency: float = 1000,
                  tx_amplitude: float = 0.8, reverse: bool = False):
         """
@@ -443,7 +443,7 @@ class MFSK(Modem):
 
 # Convenience functions for common MFSK modes
 
-def MFSK4(sample_rate=8000):
+def MFSK4(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK4 modem (32 tones, 3.90625 baud).
 
@@ -464,7 +464,7 @@ def MFSK4(sample_rate=8000):
     return modem
 
 
-def MFSK8(sample_rate=8000):
+def MFSK8(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK8 modem (32 tones, 7.8125 baud).
 
@@ -485,7 +485,7 @@ def MFSK8(sample_rate=8000):
     return modem
 
 
-def MFSK11(sample_rate=11025):
+def MFSK11(sample_rate: int = 11025) -> 'MFSK':
     """
     Create MFSK11 modem (16 tones, 10.77 baud).
 
@@ -506,7 +506,7 @@ def MFSK11(sample_rate=11025):
     return modem
 
 
-def MFSK16(sample_rate=8000):
+def MFSK16(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK16 modem (16 tones, 15.625 baud).
 
@@ -527,7 +527,7 @@ def MFSK16(sample_rate=8000):
     return modem
 
 
-def MFSK32(sample_rate=8000):
+def MFSK32(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK32 modem (16 tones, 31.25 baud).
 
@@ -548,7 +548,7 @@ def MFSK32(sample_rate=8000):
     return modem
 
 
-def MFSK64(sample_rate=8000):
+def MFSK64(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK64 modem (16 tones, 62.5 baud).
 
@@ -569,7 +569,7 @@ def MFSK64(sample_rate=8000):
     return modem
 
 
-def MFSK22(sample_rate=11025):
+def MFSK22(sample_rate: int = 11025) -> 'MFSK':
     """
     Create MFSK22 modem (16 tones, 21.53 baud).
 
@@ -590,7 +590,7 @@ def MFSK22(sample_rate=11025):
     return modem
 
 
-def MFSK31(sample_rate=8000):
+def MFSK31(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK31 modem (8 tones, 31.25 baud).
 
@@ -611,7 +611,7 @@ def MFSK31(sample_rate=8000):
     return modem
 
 
-def MFSK128(sample_rate=8000):
+def MFSK128(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK128 modem (16 tones, 125 baud).
 
@@ -632,7 +632,7 @@ def MFSK128(sample_rate=8000):
     return modem
 
 
-def MFSK64L(sample_rate=8000):
+def MFSK64L(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK64L modem (16 tones, 62.5 baud, long interleave).
 
@@ -654,7 +654,7 @@ def MFSK64L(sample_rate=8000):
     return modem
 
 
-def MFSK128L(sample_rate=8000):
+def MFSK128L(sample_rate: int = 8000) -> 'MFSK':
     """
     Create MFSK128L modem (16 tones, 125 baud, long interleave).
 

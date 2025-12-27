@@ -74,8 +74,8 @@ class Throb(Modem):
     # Reference: throb.h line 34
     THROB_SAMPLE_RATE = 8000
 
-    def __init__(self, mode='throb1', symlen=None, tone_freqs=None, num_tones=9,
-                 num_chars=45, is_throbx=False, use_full_pulse=False,
+    def __init__(self, mode: str = 'throb1', symlen: int = None, tone_freqs: np.ndarray = None, num_tones: int = 9,
+                 num_chars: int = 45, is_throbx: bool = False, use_full_pulse: bool = False,
                  sample_rate: int = 8000, frequency: float = 1500, tx_amplitude: float = 0.8):
         """
         Initialize Throb modem.
@@ -358,7 +358,7 @@ class Throb(Modem):
 # Convenience functions for each Throb mode
 # Reference: fldigi/src/throb/throb.cxx constructor lines 141-219
 
-def Throb1():
+def Throb1() -> 'Throb':
     """Create Throb1 modem instance.
 
     Throb1 is the slowest Throb mode, optimized for weak signal conditions.
@@ -387,7 +387,7 @@ def Throb1():
                  use_full_pulse=False)
 
 
-def Throb2():
+def Throb2() -> 'Throb':
     """
     Throb2 mode: 2 baud, 9 tones, narrow spacing (8 Hz).
 
@@ -405,7 +405,7 @@ def Throb2():
                  use_full_pulse=False)
 
 
-def Throb4():
+def Throb4() -> 'Throb':
     """
     Throb4 mode: 4 baud, 9 tones, wide spacing (16 Hz).
 
@@ -423,7 +423,7 @@ def Throb4():
                  use_full_pulse=True)
 
 
-def ThrobX1():
+def ThrobX1() -> 'Throb':
     """
     ThrobX1 mode: 1 baud, 11 tones, narrow spacing (7.8125 Hz).
 
@@ -442,7 +442,7 @@ def ThrobX1():
                  use_full_pulse=False)
 
 
-def ThrobX2():
+def ThrobX2() -> 'Throb':
     """
     ThrobX2 mode: 2 baud, 11 tones, narrow spacing (7.8125 Hz).
 
@@ -461,7 +461,7 @@ def ThrobX2():
                  use_full_pulse=False)
 
 
-def ThrobX4():
+def ThrobX4() -> 'Throb':
     """
     ThrobX4 mode: 4 baud, 11 tones, wide spacing (15.625 Hz).
 

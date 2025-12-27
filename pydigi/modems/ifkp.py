@@ -67,13 +67,13 @@ class IFKP(Modem):
     IFKP is an MFSK mode with 33 tones and incremental frequency keying.
     It uses a varicode alphabet optimized for ham radio communications.
 
-    Parameters:
-        - Sample rate: 16000 Hz
-        - Symbol length: 4096 samples
-        - Tone spacing: 3 bins
-        - Number of tones: 33 (for 32 differences)
-        - Bandwidth: ~386 Hz
-        - Baud rate: ~3.9 baud (varies by baud_rate setting)
+    Specifications:
+        Sample rate: 16000 Hz
+        Symbol length: 4096 samples
+        Tone spacing: 3 bins
+        Number of tones: 33 (for 32 differences)
+        Bandwidth: ~386 Hz
+        Baud rate: ~3.9 baud (varies by baud_rate setting)
 
     Supports three baud rates:
         - IFKP-0.5: 2.0x symbol length (slower)
@@ -83,7 +83,7 @@ class IFKP(Modem):
     Reference: fldigi/src/ifkp/ifkp.cxx
     """
 
-    def __init__(self, frequency=1500, baud_rate=1.0):
+    def __init__(self, frequency: float = 1500, baud_rate: float = 1.0):
         """
         Initialize IFKP modem.
 
@@ -115,7 +115,7 @@ class IFKP(Modem):
         self.txphase = 0.0
         self.send_bot = True  # Send beginning-of-transmission preamble
 
-    def tx_init(self):
+    def tx_init(self) -> None:
         """
         Initialize the transmitter.
 
@@ -128,7 +128,7 @@ class IFKP(Modem):
         self.send_bot = True
         self._tx_initialized = True
 
-    def _send_tone(self, tone):
+    def _send_tone(self, tone: int) -> np.ndarray:
         """
         Generate audio samples for a single tone.
 
@@ -167,7 +167,7 @@ class IFKP(Modem):
         self.prevtone = tone
         return outbuf
 
-    def _send_symbol(self, sym):
+    def _send_symbol(self, sym: int) -> np.ndarray:
         """
         Send a symbol using incremental frequency keying.
 
@@ -184,7 +184,7 @@ class IFKP(Modem):
         self.tone = (self.prevtone + sym + IFKP_OFFSET) % 33
         return self._send_tone(self.tone)
 
-    def _send_idle(self):
+    def _send_idle(self) -> np.ndarray:
         """
         Send an idle symbol (symbol 0).
 
@@ -196,7 +196,7 @@ class IFKP(Modem):
         """
         return self._send_symbol(0)
 
-    def _send_char(self, ch):
+    def _send_char(self, ch: int) -> np.ndarray:
         """
         Send a character using varicode encoding.
 
@@ -227,7 +227,7 @@ class IFKP(Modem):
 
         return samples
 
-    def tx_process(self, text):
+    def tx_process(self, text: str) -> np.ndarray:
         """
         Process text and generate modulated audio samples.
 
@@ -268,7 +268,7 @@ class IFKP(Modem):
             return np.array([], dtype=np.float64)
 
 
-def create_ifkp_modem(frequency=1500, baud_rate=1.0):
+def create_ifkp_modem(frequency: float = 1500, baud_rate: float = 1.0) -> IFKP:
     """
     Create an IFKP modem instance.
 

@@ -77,14 +77,12 @@ PyDigi is designed to be:
 
 PyDigi implements modulation (TX) for all supported modes. Most modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
 
-See the [Project Status](dev/project_tracker.md) page for detailed implementation status.
-
 ## Getting Started
 
 1. [Install PyDigi](installation.md)
 2. Try the [Quick Start](quickstart.md) examples
-3. Browse the [API Reference](api/overview.md)
-4. Explore [Modem Families](modems/psk.md) for mode-specific details
+3. Browse the [API Reference](api/overview.md) to see all available modem modes
+4. Check out the [User Guide](examples/basic.md) for usage examples
 
 ## License
 

@@ -98,16 +98,7 @@ save_wav("output_psk31.wav", audio_psk, 8000)
 
 ## Project Status
 
-**Current Status: Three modems working and validated! (70% complete)**
-
-- **Phase 1**: Core DSP infrastructure ✅ **COMPLETE**
-- **Phase 2**: CW (Morse code) modem ✅ **COMPLETE** - Decodes in fldigi
-- **Phase 3**: RTTY modem ✅ **COMPLETE** - Decodes in fldigi
-- **Phase 4**: PSK modem ✅ **COMPLETE** - Decodes in fldigi
-- **Phase 5**: MFSK16 modem ⏳ *next*
-- **Phase 6**: RX (receive/decode) ⏳ *future*
-
-See [Project Tracker](project_tracker.md) for detailed progress and recent bug fixes.
+PyDigi implements modulation (TX) for 140+ modem variants across 19 mode families. All modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
 
 ## Architecture
 
@@ -162,7 +153,7 @@ PyDigi is licensed under the GNU General Public License v3.0 or later (GPL-3.0+)
 
 ## Contributing
 
-Contributions are welcome! Please see the [Project Tracker](project_tracker.md) for current development priorities.
+Contributions are welcome! Please see the [Contributing Guide](contributing.md) for guidelines.
 
 ## Acknowledgments
 

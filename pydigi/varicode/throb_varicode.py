@@ -177,7 +177,7 @@ class ThrobEncoder:
             '\n': (5, 0),   # shift, then symbol 0 (tone pair 5,5)
         }
 
-    def encode_throb(self, text):
+    def encode_throb(self, text: str) -> list:
         """
         Encode text for Throb transmission.
 
@@ -234,7 +234,7 @@ class ThrobXEncoder:
             if char != '\0':  # Don't map null characters (only idle at index 0)
                 self.throbx_lookup[char] = i
 
-    def encode_throbx(self, text):
+    def encode_throbx(self, text: str) -> list:
         """
         Encode text for ThrobX transmission.
 
@@ -267,7 +267,7 @@ class ThrobXEncoder:
         return symbols
 
 
-def encode_throb(text):
+def encode_throb(text: str) -> list:
     """
     Convenience function to encode text for Throb.
 
@@ -281,7 +281,7 @@ def encode_throb(text):
     return encoder.encode_throb(text)
 
 
-def encode_throbx(text):
+def encode_throbx(text: str) -> list:
     """
     Convenience function to encode text for ThrobX.
 
@@ -296,7 +296,7 @@ def encode_throbx(text):
 
 
 # Export the tone pair and frequency information
-def get_tone_pair(symbol, is_throbx=False):
+def get_tone_pair(symbol: int, is_throbx: bool = False) -> tuple:
     """
     Get the tone pair for a given symbol.
 

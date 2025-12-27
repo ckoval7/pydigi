@@ -26,7 +26,7 @@ class Interleave:
     Reference: fldigi/src/mfsk/interleave.cxx
     """
 
-    def __init__(self, size, depth, direction=INTERLEAVE_FWD):
+    def __init__(self, size: int, depth: int, direction: int = INTERLEAVE_FWD):
         """
         Initialize the interleaver.
 
@@ -64,7 +64,7 @@ class Interleave:
         """
         return (self.size * self.size * i) + (self.size * j) + k
 
-    def symbols(self, psyms):
+    def symbols(self, psyms: np.ndarray) -> None:
         """
         Interleave or deinterleave an array of symbols.
 
@@ -95,7 +95,7 @@ class Interleave:
                     idx = self._tab(k, i, i)
                 psyms[i] = self.table[idx]
 
-    def bits(self, pbits):
+    def bits(self, pbits: int) -> int:
         """
         Interleave or deinterleave a bit pattern.
 

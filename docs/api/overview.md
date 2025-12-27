@@ -1,14 +1,29 @@
 # API Overview
 
-PyDigi provides a clean, object-oriented API for generating digital mode signals. This page gives an overview of the main components.
+PyDigi provides a clean, object-oriented API for generating amateur radio digital mode signals. All modems follow the same simple pattern: create a modem instance, call `modulate()` with your text, and get back audio samples ready to use.
+
+## Quick Example
+
+```python
+from pydigi import PSK31, save_wav
+
+# Create a PSK31 modem
+modem = PSK31(frequency=1000)
+
+# Generate audio
+audio = modem.modulate("CQ CQ CQ DE W1ABC")
+
+# Save to file or use with GNU Radio
+save_wav("output.wav", audio, modem.sample_rate)
+```
 
 ## Architecture
 
 PyDigi is organized into three main layers:
 
-1. **Modem Classes** (`pydigi.modems`) - High-level modem implementations
-2. **Core DSP** (`pydigi.core`) - Low-level DSP building blocks (oscillators, filters, FFT, encoders)
-3. **Utilities** (`pydigi.utils`) - Audio I/O, constants, and helper functions
+1. **[Modem Classes](reference/base.md)** - High-level modem implementations with consistent API
+2. **[Core DSP](reference/dsp.md)** - Low-level DSP building blocks (oscillators, filters, FFT, encoders)
+3. **[Audio Utilities](reference/audio.md)** - WAV file I/O and audio processing helpers
 
 ## Basic Usage Pattern
 
@@ -102,64 +117,27 @@ Import everything (avoid in production code):
 from pydigi import *  # Imports all modem classes and utilities
 ```
 
-## Available Modules
+## Available Modem Modes
 
-### Main Package (`pydigi`)
+PyDigi supports 140+ modem variants across 19 mode families:
 
-Exports all modem classes and common utilities:
-- All modem classes (PSK31, RTTY, etc.)
-- Audio utilities (`save_wav`, `load_wav`)
+- **[CW](reference/cw.md)** - Morse code
+- **[RTTY](reference/rtty.md)** - Radioteletype with Baudot encoding
+- **[PSK](reference/psk.md)** - PSK31/63/125/250/500/1000 and multi-carrier variants
+- **[QPSK](reference/qpsk.md)** - Quadrature PSK variants
+- **[8PSK](reference/8psk.md)** - Eight-phase PSK with optional FEC
+- **[MFSK](reference/mfsk.md)** - Multi-frequency shift keying
+- **[Olivia](reference/olivia.md)** - Robust MFSK with FEC (36 configurations)
+- **[Contestia](reference/olivia.md)** - Similar to Olivia with different interleaving
+- **[DominoEX](reference/dominoex.md)** - Incremental frequency keying
+- **[Thor](reference/thor.md)** - IFK with FEC (15 modes)
+- **[Throb](reference/throb.md)** - Multi-tone sequential pattern
+- **[Hell](reference/hell.md)** - Hellschreiber facsimile modes
+- **[FSQ](reference/fsq.md)** - Fast Simple QSO
+- **[MT63](reference/mt63.md)** - 64-carrier OFDM mode
+- **[IFKP](reference/ifkp.md)** - Incremental frequency keying plus
 
-### Modems (`pydigi.modems`)
-
-Individual modem implementations:
-- `cw` - CW (Morse Code)
-- `rtty` - RTTY (Radioteletype)
-- `psk` - BPSK variants
-- `qpsk` - QPSK variants
-- `psk8` - 8PSK variants
-- `psk8_fec` - 8PSK with FEC
-- `mfsk` - MFSK
-- `olivia` - Olivia (MFSK with FEC)
-- `contestia` - Contestia (MFSK with FEC)
-- `dominoex` - DominoEX
-- `thor` - Thor
-- `throb` - Throb
-- `hell` - Hellschreiber
-- `fsq` - FSQ
-- `mt63` - MT63
-- `ifkp` - IFKP
-
-### Core DSP (`pydigi.core`)
-
-Low-level DSP components:
-- `oscillator` - NCO (Numerically Controlled Oscillator)
-- `filters` - FIR filters, moving averages, Goertzel
-- `fft` - FFT/IFFT functions
-- `fht` - Fast Hartley Transform
-- `encoder` - FEC encoders (Viterbi, etc.)
-- `interleave` - Interleaver/deinterleaver
-- `mfsk_encoder` - MFSK-specific encoding
-- `mfsk_modulator` - MFSK modulation
-- `dsp_utils` - General DSP utilities
-
-### Utilities (`pydigi.utils`)
-
-Helper functions and constants:
-- `audio` - WAV I/O, normalization, level measurement
-- `constants` - Common constants (sample rates, etc.)
-
-### Varicode (`pydigi.varicode`)
-
-Character encoding tables:
-- `baudot` - Baudot (RTTY) encoding
-- `psk_varicode` - PSK varicode
-- `mfsk_varicode` - MFSK varicode
-- `dominoex_varicode` - DominoEX varicode
-- `thor_varicode` - Thor varicode
-- `throb_varicode` - Throb varicode
-- `fsq_varicode` - FSQ encoding
-- `feld_font` - Hellschreiber font
+See the [Modem Reference](reference/base.md) section for detailed API documentation for each mode.
 
 ## Error Handling
 
@@ -186,7 +164,7 @@ Common issues:
 
 ## Next Steps
 
-- [Modem Classes Reference](modems.md) - Detailed modem class documentation
-- [Audio Utilities](audio.md) - WAV file I/O and audio processing
-- [DSP Core](dsp.md) - Low-level DSP components
+- [Modem Reference](reference/base.md) - Detailed modem class documentation
+- [Audio Utilities](reference/audio.md) - WAV file I/O and audio processing
+- [DSP Core](reference/dsp.md) - Low-level DSP components
 - [Examples](../examples/basic.md) - Code examples

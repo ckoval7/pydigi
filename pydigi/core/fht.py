@@ -11,7 +11,7 @@ Original implementation by Pawel Jalocha, December 2004
 import numpy as np
 
 
-def fht(data):
+def fht(data: np.ndarray) -> np.ndarray:
     """
     Forward Fast Hadamard Transform.
 
@@ -45,7 +45,7 @@ def fht(data):
     return result
 
 
-def ifht(data):
+def ifht(data: np.ndarray) -> np.ndarray:
     """
     Inverse Fast Hadamard Transform.
 

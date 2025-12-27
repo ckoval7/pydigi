@@ -23,7 +23,7 @@ from ..core.mt63_filters import (
 )
 
 
-def walsh_inverse_transform(data):
+def walsh_inverse_transform(data: np.ndarray) -> np.ndarray:
     """
     Fast Walsh-Hadamard inverse transform.
 
@@ -59,7 +59,7 @@ def walsh_inverse_transform(data):
     return data
 
 
-def walsh_transform(data):
+def walsh_transform(data: np.ndarray) -> np.ndarray:
     """
     Fast Walsh-Hadamard forward transform (for decoding).
 
@@ -103,7 +103,7 @@ class MT63Encoder:
     Reference: MT63_ANALYSIS.md lines 593-669
     """
 
-    def __init__(self, carriers=64, interleave=32, pattern=None):
+    def __init__(self, carriers: int = 64, interleave: int = 32, pattern: np.ndarray = None):
         """
         Initialize MT63 encoder.
 
@@ -144,7 +144,7 @@ class MT63Encoder:
         self.walsh_buff = np.zeros(carriers, dtype=np.float64)
         self.output = np.zeros(carriers, dtype=np.uint8)
 
-    def process(self, code):
+    def process(self, code: int) -> np.ndarray:
         """
         Encode one character.
 
@@ -215,7 +215,7 @@ class MT63Modulator:
     Reference: MT63_ANALYSIS.md Transmitter section
     """
 
-    def __init__(self, freq, bandwidth, interleave_len, sample_rate=8000):
+    def __init__(self, freq: float, bandwidth: int, interleave_len: int, sample_rate: int = 8000):
         """
         Initialize MT63 modulator.
 
@@ -349,7 +349,7 @@ class MT63Modulator:
 
         return table
 
-    def encode_char_no_tx(self, code):
+    def encode_char_no_tx(self, code: int) -> None:
         """
         Encode a character to fill the interleaver without outputting audio.
 
@@ -384,7 +384,7 @@ class MT63Modulator:
         _ = self._process_tx_vect()
         # Audio is generated but returned to caller, who discards it
 
-    def send_char(self, code):
+    def send_char(self, code: int) -> np.ndarray:
         """
         Modulate one character into audio samples.
 
@@ -515,7 +515,7 @@ class MT63Modulator:
         return self._process_tx_vect()
 
 
-def mt63_modulate(text, mode="MT63-1000L", freq=1000, sample_rate=8000, use_twotone_preamble=True):
+def mt63_modulate(text: str, mode: str = "MT63-1000L", freq: float = 1000, sample_rate: int = 8000, use_twotone_preamble: bool = True) -> np.ndarray:
     """
     Generate MT63 modulated audio.
 

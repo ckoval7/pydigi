@@ -109,7 +109,7 @@ _THOR_SECONDARY_VARICODE = {
 }
 
 
-def thor_varicode_encode(text, secondary=False):
+def thor_varicode_encode(text: str, secondary: bool = False) -> str:
     """
     Encode text using Thor varicode.
 
@@ -149,7 +149,7 @@ def thor_varicode_encode(text, secondary=False):
     return bits
 
 
-def thor_encode_char(char, secondary=False):
+def thor_encode_char(char: str, secondary: bool = False) -> str:
     """
     Encode a single character using Thor varicode.
 

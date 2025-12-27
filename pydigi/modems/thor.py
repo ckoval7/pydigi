@@ -77,7 +77,7 @@ class Thor(Modem):
 
     Args:
         symlen: Symbol length in samples
-        samplerate: Sample rate in Hz (8000, 11025, or 16000)
+        sample_rate: Sample rate in Hz (8000, 11025, or 16000)
         doublespaced: Tone spacing multiplier (1, 2, or 4)
         interleave_depth: Interleaver depth (4, 10, 25, or 50)
         flushlength: Number of idle characters for postamble
@@ -442,7 +442,7 @@ class Thor(Modem):
         self.bit_count = 0
 
 
-    def estimate_duration(self, text, use_secondary=False):
+    def estimate_duration(self, text: str, use_secondary: bool = False) -> float:
         """
         Estimate transmission duration in seconds.
 

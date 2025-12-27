@@ -88,7 +88,7 @@ _VARICODE_TABLE = [
 ]
 
 
-def encode(text, secondary=False):
+def encode(text: str, secondary: bool = False) -> list:
     """
     Encode text into DominoEX varicode nibbles.
 
@@ -127,7 +127,7 @@ def encode(text, secondary=False):
     return nibbles
 
 
-def encode_char(char, secondary=False):
+def encode_char(char: 'int | str', secondary: bool = False) -> list:
     """
     Encode a single character into DominoEX varicode nibbles.
 

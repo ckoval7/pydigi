@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- Python 3.7 or later
-- NumPy
-- SciPy
+- Python 3.8 or later
+- NumPy >= 1.20.0
+- SciPy >= 1.7.0
 
 ## Install from Source
 
