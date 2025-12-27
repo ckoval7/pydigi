@@ -1,0 +1,197 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project-specific
+/wav/
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pcm
+
+# Test/debug scripts (temporary - remove specific ones from git if needed)
+test_*.py
+debug_*.py
+analyze_*.py
+check_*.py
+compare_*.py
+trace_*.py
+verify_*.py
+generate_*_test.py
+demo_*.py
+plot_*.py
+
+# Claude AI session data
+.claude/
+
+# Development markdown files (keep main docs)
+*_SUMMARY.md
+*_NOTES.md
+*_DEBUG.md
+*_FIX.md
+*_INVESTIGATION.md
+*_ANALYSIS.md
+*_STATUS.md
+*_GUIDE.md
+*_QUICK_REF.md
+*_DELIVERY.md
+*_ROADMAP.md
+*_TESTING_GUIDE.md
+*_TEST_RESULTS.md
+*_DIAGRAMS.md
+*_SUCCESS.md
+*_BUGS_FIXED.md
+*_FIXES_SUMMARY.md
+*_COMPARISON.md
+*_IMPROVEMENTS.md
+*_MIGRATION_SUMMARY.md
+*_STANDARDIZATION_SUMMARY.md
+*_INTEGRATION.md
+
+
+# fldigi project itself
+fldigi/

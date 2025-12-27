@@ -1,0 +1,43 @@
+# Include documentation and license files
+include README.md
+include LICENSE
+include CLAUDE.md
+include QUICKSTART.md
+include API_STANDARD.md
+include PROJECT_TRACKER.md
+include CHANGELOG.md
+include RELEASING.md
+
+# Include configuration files
+include pyproject.toml
+include setup.py
+include requirements.txt
+include mkdocs.yml
+
+# Include examples
+recursive-include examples *.py
+
+# Include documentation
+recursive-include docs *.md *.yml *.yaml
+
+# Exclude unnecessary files
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store
+recursive-exclude * *.swp
+recursive-exclude * *.swo
+
+# Exclude build artifacts, test outputs, and generated files
+exclude .gitignore
+recursive-exclude site *
+recursive-exclude wav *
+recursive-exclude venv *
+recursive-exclude .venv *
+recursive-exclude fldigi *
+recursive-exclude tests *
+prune fldigi
+prune site
+prune wav
+prune venv
+prune .venv
+prune tests

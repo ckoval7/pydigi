@@ -1,0 +1,228 @@
+"""
+FSQ Varicode Encoding
+
+This module implements the FSQ varicode encoding system used in the FSQ digital mode.
+FSQ uses a two-symbol varicode similar to DominoEX, where each character is encoded
+as either one or two symbols.
+
+Reference: fldigi/src/fsq/fsq_varicode.cxx
+
+The varicode table contains 256 entries (one for each ASCII value). Each entry
+consists of two symbols [sym1, sym2]:
+- If sym2 < 29: Only sym1 is transmitted (single-symbol character)
+- If sym2 >= 29: Both sym1 and sym2 are transmitted (double-symbol character)
+
+Symbols range from 0-31, representing tone differences in the MFSK modulation.
+
+Author: PyDigi Project
+Date: 2025-12-15
+"""
+
+import numpy as np
+from typing import List, Tuple
+
+
+# FSQ varicode table from fldigi/src/fsq/fsq_varicode.cxx
+# Format: [sym1, sym2] for each ASCII character 0-255
+# If sym2 < 29, it's a single-symbol character (only sym1 is sent)
+# If sym2 >= 29, it's a double-symbol character (both sym1 and sym2 are sent)
+FSQ_VARICODE = [
+    # 0-7
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 8-15: Tab(8), LF(10)
+    [27, 31], [0, 0], [28, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 16-23
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 24-31
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 32-39: Space(32), !"#$%&'
+    [0, 0], [11, 30], [12, 30], [13, 30], [14, 30], [15, 30], [16, 30], [17, 30],
+    # 40-47: ()*+,-./
+    [18, 30], [19, 30], [20, 30], [21, 30], [27, 29], [22, 30], [27, 0], [23, 30],
+    # 48-55: 0-7
+    [10, 30], [1, 30], [2, 30], [3, 30], [4, 30], [5, 30], [6, 30], [7, 30],
+    # 56-63: 89:;<=>?
+    [8, 30], [9, 30], [24, 30], [25, 30], [26, 30], [0, 31], [27, 30], [28, 29],
+    # 64-71: @ABCDEFG
+    [0, 29], [1, 29], [2, 29], [3, 29], [4, 29], [5, 29], [6, 29], [7, 29],
+    # 72-79: HIJKLMNO
+    [8, 29], [9, 29], [10, 29], [11, 29], [12, 29], [13, 29], [14, 29], [15, 29],
+    # 80-87: PQRSTUVW
+    [16, 29], [17, 29], [18, 29], [19, 29], [20, 29], [21, 29], [22, 29], [23, 29],
+    # 88-95: XYZ[\]^_
+    [24, 29], [25, 29], [26, 29], [1, 31], [2, 31], [3, 31], [4, 31], [5, 31],
+    # 96-103: `abcdefg
+    [9, 31], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0],
+    # 104-111: hijklmno
+    [8, 0], [9, 0], [10, 0], [11, 0], [12, 0], [13, 0], [14, 0], [15, 0],
+    # 112-119: pqrstuvw
+    [16, 0], [17, 0], [18, 0], [19, 0], [20, 0], [21, 0], [22, 0], [23, 0],
+    # 120-127: xyz{|}~DEL
+    [24, 0], [25, 0], [26, 0], [6, 31], [7, 31], [8, 31], [0, 30], [28, 31],
+    # 128-255: Extended ASCII (mostly unused, mapped to [0,0])
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 160-167: Special chars - £ at 163
+    [0, 0], [0, 0], [0, 0], [14, 31], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 176-183: ° at 176, ± at 177
+    [12, 31], [10, 31], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 208-215: × at 215
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [13, 31],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0],
+    # 240-247: ÷ at 247
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [11, 31],
+    [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]
+]
+
+
+# Decode table: maps [prev_nibble * 32 + curr_nibble] to ASCII character
+# Index range: 0-927 (29 possible prev_nibbles * 32 curr_nibbles)
+# Reference: fldigi/src/fsq/fsq_varicode.cxx wsq_varidecode[]
+WSQ_VARIDECODE = [
+    #  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31
+      32, 97, 98, 99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122, 46, 10, 64,126, 61,  # 0
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 65, 49, 91,  # 1
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 66, 50, 92,  # 2
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 67, 51, 93,  # 3
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 68, 52, 94,  # 4
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 69, 53, 95,  # 5
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 70, 54,123,  # 6
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 71, 55,124,  # 7
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 72, 56,125,  # 8
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 73, 57, 96,  # 9
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 74, 48,177,  # 10
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 75, 33,247,  # 11
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 76, 34,176,  # 12
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 77, 35,215,  # 13
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 78, 36,163,  # 14
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 79, 37, -1,  # 15
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 80, 38, -1,  # 16
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 81, 39, -1,  # 17
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 82, 40, -1,  # 18
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 83, 41, -1,  # 19
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 84, 42, -1,  # 20
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 85, 43, -1,  # 21
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 86, 45, -1,  # 22
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 87, 47, -1,  # 23
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 88, 58, -1,  # 24
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 89, 59, -1,  # 25
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 90, 60, -1,  # 26
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 44, 62,  8,  # 27
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 63,  0,127,  # 28
+]
+
+
+def encode_fsq_varicode(text: str) -> List[Tuple[int, int]]:
+    """
+    Encode text using FSQ varicode.
+
+    Args:
+        text: Input text string to encode
+
+    Returns:
+        List of (sym1, sym2) tuples. If sym2 < 29, only sym1 should be transmitted.
+
+    Example:
+        >>> symbols = encode_fsq_varicode("Hello")
+        >>> # Returns: [(8,29), (5,0), (12,0), (12,0), (15,0)]
+        >>> # 'H' -> [8,29] (both symbols), 'e' -> [5,0] (only first symbol), etc.
+    """
+    symbols = []
+
+    for char in text:
+        ascii_val = ord(char)
+        if ascii_val < 256:
+            sym1, sym2 = FSQ_VARICODE[ascii_val]
+            symbols.append((sym1, sym2))
+        else:
+            # Unknown character - use space
+            symbols.append((0, 0))
+
+    return symbols
+
+
+def decode_fsq_varicode(symbols: List[int]) -> str:
+    """
+    Decode FSQ varicode symbols to text.
+
+    Args:
+        symbols: List of symbol values (0-31)
+
+    Returns:
+        Decoded text string
+
+    Note:
+        This is primarily for reference and testing. The actual decoder would
+        process symbols incrementally as they are received.
+    """
+    text = []
+    prev_nibble = 0
+
+    for curr_nibble in symbols:
+        # Single-nibble character (prev < 29, curr < 29)
+        if prev_nibble < 29 and curr_nibble < 29:
+            char_code = WSQ_VARIDECODE[prev_nibble]
+            if char_code > 0:
+                text.append(chr(char_code))
+        # Double-nibble character (prev < 29, 29 <= curr <= 31)
+        elif prev_nibble < 29 and 29 <= curr_nibble <= 31:
+            index = prev_nibble * 32 + curr_nibble
+            if index < len(WSQ_VARIDECODE):
+                char_code = WSQ_VARIDECODE[index]
+                if char_code > 0:
+                    text.append(chr(char_code))
+
+        prev_nibble = curr_nibble
+
+    return ''.join(text)
+
+
+def is_single_symbol_char(ascii_val: int) -> bool:
+    """
+    Check if a character requires only one symbol.
+
+    Args:
+        ascii_val: ASCII value of character
+
+    Returns:
+        True if character uses single symbol, False if double symbol
+    """
+    if ascii_val >= 256:
+        return True  # Unknown chars use single symbol (0)
+
+    sym1, sym2 = FSQ_VARICODE[ascii_val]
+    return sym2 < 29
+
+
+# Convenience function for estimating transmission time
+def count_symbols(text: str) -> int:
+    """
+    Count total number of symbols needed to transmit text.
+
+    Args:
+        text: Input text string
+
+    Returns:
+        Total number of symbols (for duration estimation)
+    """
+    total = 0
+    for char in text:
+        ascii_val = ord(char)
+        if ascii_val < 256:
+            sym1, sym2 = FSQ_VARICODE[ascii_val]
+            total += 1  # sym1 always transmitted
+            if sym2 >= 29:
+                total += 1  # sym2 also transmitted
+        else:
+            total += 1  # Unknown char = single symbol
+
+    return total

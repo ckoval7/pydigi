@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydigi"
+version = "0.1.0"
+description = "Pure Python implementation of digital modem algorithms from fldigi"
+readme = "README.md"
+authors = [
+    {name = "PyDigi Contributors", email = "pydigi@example.com"}
+]
+maintainers = [
+    {name = "PyDigi Contributors", email = "pydigi@example.com"}
+]
+license = {text = "GPL-3.0-or-later"}
+keywords = [
+    "ham radio",
+    "digital modes",
+    "fldigi",
+    "modem",
+    "psk31",
+    "rtty",
+    "cw",
+    "mfsk",
+    "mt63",
+    "olivia",
+    "contestia",
+    "signal processing",
+    "amateur radio",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Telecommunications Industry",
+    "Topic :: Communications :: Ham Radio",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+audio = [
+    "soundfile>=0.10.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=3.0.0",
+    "black>=22.0.0",
+    "mypy>=0.950",
+    "build>=0.7.0",
+    "twine>=4.0.0",
+]
+docs = [
+    "mkdocs>=1.4.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/pydigi"
+Documentation = "https://github.com/yourusername/pydigi/tree/main/docs"
+Repository = "https://github.com/yourusername/pydigi"
+Issues = "https://github.com/yourusername/pydigi/issues"
+Changelog = "https://github.com/yourusername/pydigi/releases"
+Source = "https://github.com/yourusername/pydigi"
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=pydigi --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

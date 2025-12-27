@@ -1,0 +1,65 @@
+site_name: PyDigi
+site_description: Python library for amateur radio digital modes
+site_author: PyDigi Contributors
+repo_url: https://github.com/yourusername/pydigi
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: indigo
+    accent: cyan
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quick Start: quickstart.md
+    - Installation: installation.md
+  - API Reference:
+    - Overview: api/overview.md
+    - Modem Classes: api/modems.md
+    - Audio Utilities: api/audio.md
+    - DSP Core: api/dsp.md
+  - Development Tools:
+    - Signal Analyzer: tools/signal_analyzer.md
+    - Complete Guide: tools/signal_analyzer_guide.md
+    - Quick Reference: tools/signal_analyzer_quick_ref.md
+    - Implementation Details: tools/signal_analyzer_summary.md
+  - Modem Families:
+    - CW (Morse): modems/cw.md
+    - RTTY: modems/rtty.md
+    - PSK Family: modems/psk.md
+    - MFSK Family: modems/mfsk.md
+    - OFDM Modes: modems/ofdm.md
+    - Hell Family: modems/hell.md
+    - Other Modes: modems/other.md
+  - Examples:
+    - Basic Usage: examples/basic.md
+    - Advanced: examples/advanced.md
+    - GNU Radio Integration: examples/gnuradio.md
+  - Developer Docs:
+    - Project Status: dev/project_tracker.md
+    - Contributing: dev/contributing.md
+    - Architecture: dev/architecture.md
