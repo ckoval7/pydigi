@@ -27,11 +27,6 @@ PyDigi is a Python library that reimplements digital mode modem algorithms from 
 pip install pydigi
 ```
 
-For audio file support:
-```bash
-pip install pydigi[audio]
-```
-
 ### From Source
 
 Clone the repository:
@@ -50,16 +45,12 @@ For development with testing tools:
 pip install -e ".[dev]"
 ```
 
-For audio file support (WAV file generation):
-```bash
-pip install -e ".[audio]"
-```
-
 ### Requirements
 
 - Python 3.8 or later
 - NumPy >= 1.20.0
 - SciPy >= 1.7.0
+- soundfile >= 0.10.0 (for WAV file support)
 
 ## Quick Start
 
