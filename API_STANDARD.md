@@ -634,7 +634,7 @@ audio = wefax.modulate("")  # Generates test pattern
 1. Primary interface is `transmit_image()`, not `modulate()`
 2. `tx_process()` generates test pattern instead of processing text
 3. Fixed sample rate: 11025 Hz (matches fldigi)
-4. FM modulation where pixel values map to frequencies
+4. FM where pixel values map to frequencies
 
 **Installation Note:**
 ```bash

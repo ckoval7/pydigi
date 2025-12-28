@@ -1,9 +1,9 @@
 """
 WEFAX (Weather Facsimile) Modem Implementation
 
-WEFAX is an image transmission mode using FM modulation to send weather
-maps and satellite imagery. Unlike other pydigi modems which are text-based,
-WEFAX transmits grayscale images scanline by scanline.
+WEFAX is an image transmission mode using FM (Frequency Modulation) to send
+weather maps and satellite imagery. Unlike other pydigi modems which are
+text-based, WEFAX transmits grayscale images scanline by scanline.
 
 Supported modes:
 - WEFAX_576: IOC=576, default LPM=120, APT START=300Hz, image width=1809 pixels
@@ -25,8 +25,8 @@ class WEFAX(Modem):
     """
     WEFAX (Weather Facsimile) modem for image and text transmission.
 
-    WEFAX uses FM modulation where pixel grayscale values (0-255) are mapped
-    to audio frequencies. The complete transmission includes:
+    WEFAX uses FM where pixel grayscale values (0-255) are mapped to audio
+    frequencies. The complete transmission includes:
     1. APT START tone (5 sec synchronization)
     2. PHASING pattern (20 lines for synchronization)
     3. ENDPHASING (1 line of white)
@@ -130,7 +130,7 @@ class WEFAX(Modem):
         self.apt_stop_freq = self.mode_params["apt_stop"]
         self.image_width = self.mode_params["image_width"]
 
-        # FM modulation parameters
+        # Frequency modulation parameters
         self.carrier = carrier
         self.fm_deviation = fm_deviation
 

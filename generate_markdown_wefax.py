@@ -59,8 +59,8 @@ audio = wefax.modulate("# Hello World")
 **Resolution**: 1809 × 1056 pixels
 **Sample Rate**: `11025 Hz`
 
-> **Note**: WEFAX uses FM modulation where grayscale
-> values are converted to audio frequencies.
+> **Note**: WEFAX uses FM where grayscale values are
+> converted to audio frequencies.
 
 ---
 

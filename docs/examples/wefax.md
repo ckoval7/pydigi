@@ -1,6 +1,6 @@
 # WEFAX User Guide
 
-WEFAX (Weather Facsimile) is a mode used to transmit images and text, particularly weather maps, satellite imagery, and weather bulletins. WEFAX transmits grayscale images using FM modulation.
+WEFAX (Weather Facsimile) is a mode used to transmit images and text, particularly weather maps, satellite imagery, and weather bulletins. WEFAX transmits grayscale images using FM (Frequency Modulation).
 
 **New in pydigi:** WEFAX now supports **text-to-image rendering**, automatically converting text strings into formatted pages that are transmitted as images. This is perfect for weather bulletins, forecasts, and text-based reports.
 
@@ -47,9 +47,9 @@ save_wav("wefax_image.wav", audio, 11025)
 
 ## How WEFAX Works
 
-### FM Modulation
+### Frequency Modulation
 
-WEFAX uses FM modulation where pixel values map to frequencies:
+WEFAX uses FM where pixel values map to frequencies:
 
 ```
 normalized = pixel_value / 256.0
