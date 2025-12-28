@@ -28,7 +28,7 @@ from ..core.dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
-    normalize_audio
+    normalize_audio,
 )
 from ..modems.base import Modem
 from ..varicode.mfsk_varicode import encode_text_to_bits
@@ -77,14 +77,14 @@ class EightPSKFEC(Modem):
     # Optimized for minimal bit errors when phase is off by ±1 position
     # Maps 3-bit symbol values to phase angles
     GRAY_CONSTELLATION = {
-        0b000: complex(1.0, 0.0),              # 0°
-        0b001: complex(0.7071, 0.7071),        # 45°
-        0b010: complex(-0.7071, 0.7071),       # 135°
-        0b011: complex(0.0, 1.0),              # 90°
-        0b100: complex(0.7071, -0.7071),       # 315°
-        0b101: complex(0.0, -1.0),             # 270°
-        0b110: complex(-1.0, 0.0),             # 180°
-        0b111: complex(-0.7071, -0.7071),      # 225°
+        0b000: complex(1.0, 0.0),  # 0°
+        0b001: complex(0.7071, 0.7071),  # 45°
+        0b010: complex(-0.7071, 0.7071),  # 135°
+        0b011: complex(0.0, 1.0),  # 90°
+        0b100: complex(0.7071, -0.7071),  # 315°
+        0b101: complex(0.0, -1.0),  # 270°
+        0b110: complex(-1.0, 0.0),  # 180°
+        0b111: complex(-0.7071, -0.7071),  # 225°
     }
 
     def __init__(
@@ -94,7 +94,7 @@ class EightPSKFEC(Modem):
         frequency: float = 1000.0,
         tx_amplitude: float = 0.8,
         long_interleave: bool = False,
-        use_k16: bool = None
+        use_k16: bool = None,
     ):
         """
         Initialize the 8PSK FEC modem.
@@ -171,7 +171,7 @@ class EightPSKFEC(Modem):
         self._xpsk_sym = 0
 
         # Check if puncturing is used (for 500F, 1000F, 1200F)
-        if not hasattr(self, '_puncturing'):
+        if not hasattr(self, "_puncturing"):
             self._puncturing = False
 
         self._init_parameters()
@@ -423,7 +423,13 @@ class EightPSKFEC(Modem):
     # Removed _apply_baseband_filter - now using shared dsp_utils.apply_baseband_filter
     # Removed _modulate_to_carrier - now using shared dsp_utils.modulate_to_carrier
 
-    def tx_process(self, text: str, preamble_symbols: int = None, postamble_symbols: int = None, apply_filter: bool = True) -> np.ndarray:
+    def tx_process(
+        self,
+        text: str,
+        preamble_symbols: int = None,
+        postamble_symbols: int = None,
+        apply_filter: bool = True,
+    ) -> np.ndarray:
         """
         Process text for transmission.
 
@@ -483,7 +489,7 @@ class EightPSKFEC(Modem):
         sample_rate: Optional[float] = None,
         preamble_symbols: int = None,
         postamble_symbols: int = None,
-        apply_filter: bool = True
+        apply_filter: bool = True,
     ) -> np.ndarray:
         """
         Modulate text into 8PSK FEC audio signal.
@@ -523,48 +529,91 @@ class EightPSKFEC(Modem):
         """String representation of the modem."""
         encoder_type = "K16" if self._use_k16 else "K13"
         punct_mode = "2/3" if self._puncturing else "1/2"
-        return (f"EightPSKFEC(mode={self.mode_name}, baud={self.baud}, "
-                f"encoder={encoder_type}, rate={punct_mode}, "
-                f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)")
+        return (
+            f"EightPSKFEC(mode={self.mode_name}, baud={self.baud}, "
+            f"encoder={encoder_type}, rate={punct_mode}, "
+            f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for common 8PSK FEC modes
 # Named to match fldigi's convention: 8PSK125F, 8PSK125FL, etc.
 
-def EightPSK_125F(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+
+def EightPSK_125F(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK125F modem (125 baud, K=16 FEC)."""
-    return EightPSKFEC(baud=125, sample_rate=sample_rate, frequency=frequency,
-                       tx_amplitude=tx_amplitude, long_interleave=False)
+    return EightPSKFEC(
+        baud=125,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        long_interleave=False,
+    )
 
 
-def EightPSK_125FL(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_125FL(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK125FL modem (125 baud, K=13 FEC, long interleave)."""
-    return EightPSKFEC(baud=125, sample_rate=sample_rate, frequency=frequency,
-                       tx_amplitude=tx_amplitude, long_interleave=True)
+    return EightPSKFEC(
+        baud=125,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        long_interleave=True,
+    )
 
 
-def EightPSK_250F(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_250F(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK250F modem (250 baud, K=16 FEC)."""
-    return EightPSKFEC(baud=250, sample_rate=sample_rate, frequency=frequency,
-                       tx_amplitude=tx_amplitude, long_interleave=False)
+    return EightPSKFEC(
+        baud=250,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        long_interleave=False,
+    )
 
 
-def EightPSK_250FL(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_250FL(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK250FL modem (250 baud, K=13 FEC, long interleave)."""
-    return EightPSKFEC(baud=250, sample_rate=sample_rate, frequency=frequency,
-                       tx_amplitude=tx_amplitude, long_interleave=True)
+    return EightPSKFEC(
+        baud=250,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        long_interleave=True,
+    )
 
 
-def EightPSK_500F(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_500F(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK500F modem (500 baud, K=13 FEC, 2/3 rate punctured)."""
-    return EightPSKFEC(baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSKFEC(
+        baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )
 
 
-def EightPSK_1000F(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_1000F(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK1000F modem (1000 baud, K=13 FEC, 2/3 rate punctured)."""
-    return EightPSKFEC(baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSKFEC(
+        baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )
 
 
-def EightPSK_1200F(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSKFEC:
+def EightPSK_1200F(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSKFEC:
     """Create an 8PSK1200F modem (1200 baud, K=13 FEC, 2/3 rate punctured)."""
-    return EightPSKFEC(baud=1200, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSKFEC(
+        baud=1200, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )

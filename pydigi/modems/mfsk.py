@@ -44,6 +44,7 @@ from ..core.interleave import Interleave, INTERLEAVE_FWD
 from ..varicode.mfsk_varicode import encode_char as mfsk_varicode_encode
 from .base import Modem
 
+
 def gray_encode(value: int) -> int:
     """Encode a value using Gray code algorithm.
 
@@ -97,9 +98,17 @@ class MFSK(Modem):
     Reference: fldigi/src/mfsk/mfsk.cxx
     """
 
-    def __init__(self, symlen: int = 512, symbits: int = 4, depth: int = 10, basetone: int = 64,
-                 sample_rate: int = 8000, frequency: float = 1000,
-                 tx_amplitude: float = 0.8, reverse: bool = False):
+    def __init__(
+        self,
+        symlen: int = 512,
+        symbits: int = 4,
+        depth: int = 10,
+        basetone: int = 64,
+        sample_rate: int = 8000,
+        frequency: float = 1000,
+        tx_amplitude: float = 0.8,
+        reverse: bool = False,
+    ):
         """
         Initialize MFSK modem.
 
@@ -131,7 +140,9 @@ class MFSK(Modem):
         self.numtones = 1 << symbits  # 2^symbits (e.g., 16 for 4 bits)
         self.tonespacing = sample_rate / symlen  # Hz per tone
         self.basefreq = sample_rate * basetone / symlen  # Base frequency in Hz
-        self._bandwidth = (self.numtones - 1) * self.tonespacing  # Use _bandwidth (base class property)
+        self._bandwidth = (
+            self.numtones - 1
+        ) * self.tonespacing  # Use _bandwidth (base class property)
         self.baud_rate = sample_rate / symlen
 
         # FEC encoder (NASA K=7, POLY1=0x6d, POLY2=0x4f)
@@ -293,7 +304,7 @@ class MFSK(Modem):
             fldigi/src/mfsk/mfsk.cxx lines 1114-1118
         """
         samples = []
-        for char in [ord('\r'), 2, ord('\r')]:  # CR, STX, CR
+        for char in [ord("\r"), 2, ord("\r")]:  # CR, STX, CR
             char_samples = self._sendchar(char)
             if len(char_samples) > 0:
                 samples.extend(char_samples)
@@ -307,7 +318,7 @@ class MFSK(Modem):
             fldigi/src/mfsk/mfsk.cxx lines 1150-1153
         """
         samples = []
-        for char in [ord('\r'), 4, ord('\r')]:  # CR, EOT, CR
+        for char in [ord("\r"), 4, ord("\r")]:  # CR, EOT, CR
             char_samples = self._sendchar(char)
             if len(char_samples) > 0:
                 samples.extend(char_samples)
@@ -402,9 +413,14 @@ class MFSK(Modem):
 
         return signal.astype(np.float32)
 
-    def modulate(self, text: str, frequency: float = None,
-                 sample_rate: float = None, preamble: int = None,
-                 reverse: bool = None) -> np.ndarray:
+    def modulate(
+        self,
+        text: str,
+        frequency: float = None,
+        sample_rate: float = None,
+        preamble: int = None,
+        reverse: bool = None,
+    ) -> np.ndarray:
         """
         Modulate text into MFSK audio signal.
 
@@ -443,7 +459,8 @@ class MFSK(Modem):
 
 # Convenience functions for common MFSK modes
 
-def MFSK4(sample_rate: int = 8000) -> 'MFSK':
+
+def MFSK4(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK4 modem (32 tones, 3.90625 baud).
 
@@ -458,13 +475,12 @@ def MFSK4(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 188-196
     """
-    modem = MFSK(symlen=2048, symbits=5, depth=5, basetone=256,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=2048, symbits=5, depth=5, basetone=256, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK8(sample_rate: int = 8000) -> 'MFSK':
+def MFSK8(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK8 modem (32 tones, 7.8125 baud).
 
@@ -479,13 +495,12 @@ def MFSK8(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 197-205
     """
-    modem = MFSK(symlen=1024, symbits=5, depth=5, basetone=128,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=1024, symbits=5, depth=5, basetone=128, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK11(sample_rate: int = 11025) -> 'MFSK':
+def MFSK11(sample_rate: int = 11025) -> "MFSK":
     """
     Create MFSK11 modem (16 tones, 10.77 baud).
 
@@ -500,13 +515,12 @@ def MFSK11(sample_rate: int = 11025) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 265-273
     """
-    modem = MFSK(symlen=1024, symbits=4, depth=10, basetone=93,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=1024, symbits=4, depth=10, basetone=93, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK16(sample_rate: int = 8000) -> 'MFSK':
+def MFSK16(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK16 modem (16 tones, 15.625 baud).
 
@@ -521,13 +535,12 @@ def MFSK16(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 284-294
     """
-    modem = MFSK(symlen=512, symbits=4, depth=10, basetone=64,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=512, symbits=4, depth=10, basetone=64, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK32(sample_rate: int = 8000) -> 'MFSK':
+def MFSK32(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK32 modem (16 tones, 31.25 baud).
 
@@ -542,13 +555,12 @@ def MFSK32(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 215-224
     """
-    modem = MFSK(symlen=256, symbits=4, depth=10, basetone=32,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=256, symbits=4, depth=10, basetone=32, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK64(sample_rate: int = 8000) -> 'MFSK':
+def MFSK64(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK64 modem (16 tones, 62.5 baud).
 
@@ -563,13 +575,12 @@ def MFSK64(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 225-234
     """
-    modem = MFSK(symlen=128, symbits=4, depth=10, basetone=16,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=128, symbits=4, depth=10, basetone=16, sample_rate=sample_rate)
     modem.default_preamble = 180  # Longer preamble for faster mode
     return modem
 
 
-def MFSK22(sample_rate: int = 11025) -> 'MFSK':
+def MFSK22(sample_rate: int = 11025) -> "MFSK":
     """
     Create MFSK22 modem (16 tones, 21.53 baud).
 
@@ -584,13 +595,12 @@ def MFSK22(sample_rate: int = 11025) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 274-282
     """
-    modem = MFSK(symlen=512, symbits=4, depth=10, basetone=46,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=512, symbits=4, depth=10, basetone=46, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK31(sample_rate: int = 8000) -> 'MFSK':
+def MFSK31(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK31 modem (8 tones, 31.25 baud).
 
@@ -605,13 +615,12 @@ def MFSK31(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 206-214
     """
-    modem = MFSK(symlen=256, symbits=3, depth=10, basetone=32,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=256, symbits=3, depth=10, basetone=32, sample_rate=sample_rate)
     modem.default_preamble = 107  # Standard preamble
     return modem
 
 
-def MFSK128(sample_rate: int = 8000) -> 'MFSK':
+def MFSK128(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK128 modem (16 tones, 125 baud).
 
@@ -626,13 +635,12 @@ def MFSK128(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 235-244
     """
-    modem = MFSK(symlen=64, symbits=4, depth=20, basetone=8,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=64, symbits=4, depth=20, basetone=8, sample_rate=sample_rate)
     modem.default_preamble = 214  # Even longer preamble
     return modem
 
 
-def MFSK64L(sample_rate: int = 8000) -> 'MFSK':
+def MFSK64L(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK64L modem (16 tones, 62.5 baud, long interleave).
 
@@ -648,13 +656,12 @@ def MFSK64L(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 246-253
     """
-    modem = MFSK(symlen=128, symbits=4, depth=400, basetone=16,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=128, symbits=4, depth=400, basetone=16, sample_rate=sample_rate)
     modem.default_preamble = 2500  # Very long preamble for sync
     return modem
 
 
-def MFSK128L(sample_rate: int = 8000) -> 'MFSK':
+def MFSK128L(sample_rate: int = 8000) -> "MFSK":
     """
     Create MFSK128L modem (16 tones, 125 baud, long interleave).
 
@@ -670,7 +677,6 @@ def MFSK128L(sample_rate: int = 8000) -> 'MFSK':
     Reference:
         fldigi/src/mfsk/mfsk.cxx lines 255-263
     """
-    modem = MFSK(symlen=64, symbits=4, depth=800, basetone=8,
-                 sample_rate=sample_rate)
+    modem = MFSK(symlen=64, symbits=4, depth=800, basetone=8, sample_rate=sample_rate)
     modem.default_preamble = 5000  # Extremely long preamble for sync
     return modem

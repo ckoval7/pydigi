@@ -56,7 +56,7 @@ class RTTY(Modem):
         shape_alpha: float = 0.5,
         tx_amplitude: float = 0.8,
         preamble_ltrs: int = 8,
-        postamble_ltrs: int = 8
+        postamble_ltrs: int = 8,
     ):
         """
         Initialize RTTY modem.
@@ -134,7 +134,7 @@ class RTTY(Modem):
         high_edge = max(low_edge + 0.05, min(high_edge, 0.99))
 
         # 5th order Butterworth bandpass filter
-        b, a = signal.butter(5, [low_edge, high_edge], btype='band')
+        b, a = signal.butter(5, [low_edge, high_edge], btype="band")
 
         # Apply zero-phase filtering
         filtered = signal.filtfilt(b, a, samples)
@@ -164,7 +164,7 @@ class RTTY(Modem):
         cutoff_normalized = min(cutoff_normalized, 0.95)
 
         # 5th order Butterworth lowpass filter
-        b, a = signal.butter(5, cutoff_normalized, btype='low')
+        b, a = signal.butter(5, cutoff_normalized, btype="low")
 
         # Apply zero-phase filtering
         filtered = signal.filtfilt(b, a, samples)
@@ -239,25 +239,20 @@ class RTTY(Modem):
         # LTRS is Baudot code 0x1F (all 1's = continuous mark)
         for _ in range(self.preamble_ltrs):
             char_samples = self._send_char(
-                BAUDOT_LTRS, mark_freq, space_freq,
-                rise_shape, fall_shape
+                BAUDOT_LTRS, mark_freq, space_freq, rise_shape, fall_shape
             )
             samples.extend(char_samples)
 
         # Send data
         for code in baudot_codes:
             # Transmit one character
-            char_samples = self._send_char(
-                code, mark_freq, space_freq,
-                rise_shape, fall_shape
-            )
+            char_samples = self._send_char(code, mark_freq, space_freq, rise_shape, fall_shape)
             samples.extend(char_samples)
 
         # Send postamble (LTRS characters to ensure clean ending)
         for _ in range(self.postamble_ltrs):
             char_samples = self._send_char(
-                BAUDOT_LTRS, mark_freq, space_freq,
-                rise_shape, fall_shape
+                BAUDOT_LTRS, mark_freq, space_freq, rise_shape, fall_shape
             )
             samples.extend(char_samples)
 
@@ -286,7 +281,7 @@ class RTTY(Modem):
         rise_shape: Optional[np.ndarray],
         fall_shape: Optional[np.ndarray],
         mark_nco: NCO,
-        space_nco: NCO
+        space_nco: NCO,
     ) -> List[float]:
         """
         Send one Baudot character at baseband.
@@ -312,19 +307,25 @@ class RTTY(Modem):
 
         # Start bit (0 = space)
         samples.extend(
-            self._send_bit_baseband(0, mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco)
+            self._send_bit_baseband(
+                0, mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco
+            )
         )
 
         # Data bits (LSB first)
         for i in range(self.bits):
             bit = (code >> i) & 1
             samples.extend(
-                self._send_bit_baseband(bit, mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco)
+                self._send_bit_baseband(
+                    bit, mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco
+                )
             )
 
         # Stop bit(s) (1 = mark)
         samples.extend(
-            self._send_stop_baseband(mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco)
+            self._send_stop_baseband(
+                mark_freq, space_freq, rise_shape, fall_shape, mark_nco, space_nco
+            )
         )
 
         return samples
@@ -335,7 +336,7 @@ class RTTY(Modem):
         mark_freq: float,
         space_freq: float,
         rise_shape: Optional[np.ndarray],
-        fall_shape: Optional[np.ndarray]
+        fall_shape: Optional[np.ndarray],
     ) -> List[float]:
         """
         Send one Baudot character (legacy method for compatibility).
@@ -358,21 +359,15 @@ class RTTY(Modem):
         samples = []
 
         # Start bit (0 = space)
-        samples.extend(
-            self._send_bit(0, mark_freq, space_freq, rise_shape, fall_shape)
-        )
+        samples.extend(self._send_bit(0, mark_freq, space_freq, rise_shape, fall_shape))
 
         # Data bits (LSB first)
         for i in range(self.bits):
             bit = (code >> i) & 1
-            samples.extend(
-                self._send_bit(bit, mark_freq, space_freq, rise_shape, fall_shape)
-            )
+            samples.extend(self._send_bit(bit, mark_freq, space_freq, rise_shape, fall_shape))
 
         # Stop bit(s) (1 = mark)
-        samples.extend(
-            self._send_stop(mark_freq, space_freq, rise_shape, fall_shape)
-        )
+        samples.extend(self._send_stop(mark_freq, space_freq, rise_shape, fall_shape))
 
         return samples
 
@@ -384,7 +379,7 @@ class RTTY(Modem):
         rise_shape: Optional[np.ndarray],
         fall_shape: Optional[np.ndarray],
         mark_nco: NCO,
-        space_nco: NCO
+        space_nco: NCO,
     ) -> np.ndarray:
         """
         Generate baseband samples for one bit period.
@@ -425,7 +420,7 @@ class RTTY(Modem):
         rise_shape: np.ndarray,
         fall_shape: np.ndarray,
         mark_nco: NCO,
-        space_nco: NCO
+        space_nco: NCO,
     ) -> np.ndarray:
         """
         Generate shaped FSK at baseband for one bit.
@@ -490,7 +485,7 @@ class RTTY(Modem):
         rise_shape: Optional[np.ndarray],
         fall_shape: Optional[np.ndarray],
         mark_nco: NCO,
-        space_nco: NCO
+        space_nco: NCO,
     ) -> np.ndarray:
         """
         Generate stop bit(s) at baseband - always mark (1).
@@ -539,7 +534,7 @@ class RTTY(Modem):
         mark_freq: float,
         space_freq: float,
         rise_shape: Optional[np.ndarray],
-        fall_shape: Optional[np.ndarray]
+        fall_shape: Optional[np.ndarray],
     ) -> np.ndarray:
         """
         Generate samples for one bit period.
@@ -556,9 +551,7 @@ class RTTY(Modem):
         """
         if self.shaped and rise_shape is not None:
             # Generate shaped FSK
-            return self._send_bit_shaped(
-                bit, mark_freq, space_freq, rise_shape, fall_shape
-            )
+            return self._send_bit_shaped(bit, mark_freq, space_freq, rise_shape, fall_shape)
         else:
             # Generate unshaped FSK (simple tone switching)
             freq = mark_freq if bit else space_freq
@@ -576,7 +569,7 @@ class RTTY(Modem):
         mark_freq: float,
         space_freq: float,
         rise_shape: np.ndarray,
-        fall_shape: np.ndarray
+        fall_shape: np.ndarray,
     ) -> np.ndarray:
         """
         Generate shaped FSK for one bit.
@@ -637,7 +630,7 @@ class RTTY(Modem):
         mark_freq: float,
         space_freq: float,
         rise_shape: Optional[np.ndarray],
-        fall_shape: Optional[np.ndarray]
+        fall_shape: Optional[np.ndarray],
     ) -> np.ndarray:
         """
         Generate stop bit(s) - always mark (1).
@@ -683,7 +676,7 @@ class RTTY(Modem):
         text: str,
         frequency: Optional[float] = None,
         sample_rate: Optional[float] = None,
-        apply_filter: bool = False
+        apply_filter: bool = False,
     ) -> np.ndarray:
         """
         Modulate text into RTTY audio signal.

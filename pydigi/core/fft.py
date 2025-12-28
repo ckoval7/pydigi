@@ -240,7 +240,7 @@ class OverlapAddFFT:
 
         # Zero-pad impulse response and compute FFT
         ir_padded = np.zeros(fft_size, dtype=np.complex128)
-        ir_padded[:self.ir_len] = impulse_response
+        ir_padded[: self.ir_len] = impulse_response
         self.h_fft = fft(ir_padded)
 
         # Buffers
@@ -318,14 +318,14 @@ class OverlapAddFFT:
 
         for i in range(0, n_samples, self.block_size):
             # Get next block
-            block = samples[i:i + self.block_size]
+            block = samples[i : i + self.block_size]
 
             # Pad if necessary
             if len(block) < self.block_size:
-                block = np.pad(block, (0, self.block_size - len(block)), mode='constant')
+                block = np.pad(block, (0, self.block_size - len(block)), mode="constant")
 
             # Copy to input buffer
-            self.input_buffer[:self.block_size] = block
+            self.input_buffer[: self.block_size] = block
 
             # FFT of input
             x_fft = fft(self.input_buffer)
@@ -337,8 +337,8 @@ class OverlapAddFFT:
             y = ifft(y_fft)
 
             # Overlap and add
-            result_block = self.overlap_buffer + y[:self.block_size]
-            self.overlap_buffer = y[self.block_size:].copy()
+            result_block = self.overlap_buffer + y[: self.block_size]
+            self.overlap_buffer = y[self.block_size :].copy()
 
             # Skip first block for stability
             if self.pass_count > 0:

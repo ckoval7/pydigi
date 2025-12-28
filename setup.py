@@ -1,6 +1,7 @@
 """
 PyDigi - Pure Python implementation of digital modem algorithms from fldigi
 """
+
 from setuptools import setup, find_packages
 
 # Read dependencies from pyproject.toml, but provide fallback for older tools

@@ -104,6 +104,67 @@ audio = scamp.modulate("SCAMP TEST MESSAGE", frequency=1000)
 save_wav("scamp_output.wav", audio, sample_rate=8000)
 ```
 
+### NAVTEX (Maritime Safety Broadcast)
+
+```python
+from pydigi import NAVTEX, SITORB, save_wav
+
+# Create NAVTEX modem (includes headers and phasing)
+navtex = NAVTEX()
+
+# Generate maritime safety message
+audio = navtex.modulate("WEATHER WARNING: GALE FORCE 8 EXPECTED", frequency=1000)
+
+# Save to WAV file (NAVTEX uses 11025 Hz sample rate)
+save_wav("navtex_output.wav", audio, sample_rate=11025)
+
+# Or use SITOR-B (raw mode without NAVTEX headers)
+sitor = SITORB()
+audio = sitor.modulate("CQ CQ DE NAVAREA1 K", frequency=1000)
+save_wav("sitorb_output.wav", audio, sample_rate=11025)
+```
+
+### WEFAX (Weather Facsimile - Text & Image Transmission)
+
+```python
+from pydigi import WEFAX576, save_wav
+import numpy as np
+
+# Create WEFAX-576 modem
+wefax = WEFAX576()
+
+# NEW: Transmit text (automatically rendered as image)
+text = """MARINE WEATHER FORECAST
+ISSUED: 2025-12-27 1800Z
+
+TODAY:
+Winds: NE 10-15 kt
+Waves: 2-3 ft
+Weather: Partly cloudy"""
+
+audio = wefax.modulate(text)
+save_wav("wefax_bulletin.wav", audio, sample_rate=11025)
+
+# Or transmit an image file (requires Pillow: pip install Pillow)
+audio = wefax.transmit_image("weather_map.png")
+save_wav("wefax_output.wav", audio, sample_rate=11025)
+
+# Or transmit from numpy array (no Pillow needed)
+# Create a gradient test image (200 rows x 1809 columns)
+img = np.zeros((200, 1809), dtype=np.uint8)
+for col in range(1809):
+    img[:, col] = int(255 * col / 1809)
+
+audio = wefax.transmit_image(img, lpm=120)
+save_wav("wefax_gradient.wav", audio, sample_rate=11025)
+
+# Generate test pattern (using standard modulate API)
+audio = wefax.modulate("")  # Empty string generates black/white bars
+save_wav("wefax_test.wav", audio, sample_rate=11025)
+```
+
+**Note:** WEFAX is unique - it transmits images, not text. Use `transmit_image()` for actual images or `modulate()` for test patterns.
+
 **All modes decode correctly in fldigi!**
 
 ### Customize CW Parameters
@@ -146,6 +207,30 @@ cw = CW(wpm=20)
 duration = cw.estimate_duration("HELLO WORLD")
 print(f"Transmission will take {duration:.2f} seconds")
 ```
+
+### Silence Padding
+
+Add configurable silence before and after signals (useful for PTT/VOX):
+
+```python
+from pydigi import PSK31, save_wav
+
+# Option 1: Set default silence at modem creation
+psk = PSK31(leading_silence=0.5, trailing_silence=0.5)
+audio = psk.modulate("TEST")  # Automatically includes 0.5s silence on each end
+save_wav("psk_with_default_silence.wav", audio, sample_rate=8000)
+
+# Option 2: Override per transmission
+psk = PSK31()  # No default silence
+audio = psk.modulate("TEST", leading_silence=0.3, trailing_silence=0.2)
+save_wav("psk_with_custom_silence.wav", audio, sample_rate=8000)
+```
+
+Use cases:
+- **PTT activation**: 1.0s leading silence for transmitter to stabilize
+- **VOX triggering**: 0.5s leading silence for VOX circuit to activate
+- **Testing/debugging**: 0.2s silence for visual separation in audio editors
+- **Hardware compatibility**: Ensure SDRs and transceivers have time to sync
 
 ## Working with Audio
 
@@ -278,7 +363,7 @@ print(f"Sample rate: {cw.sample_rate} Hz")
 ## Next Steps
 
 1. **Validate with fldigi:** Open the generated WAV files in fldigi to verify they decode correctly
-   - All 20 mode families decode perfectly!
+   - All 22 mode families decode perfectly!
 2. **Experiment with parameters:**
    - CW: Try different WPM speeds, frequencies, and rise times
    - RTTY: Different baud rates (45, 45.45, 50, 75) and shifts (170, 200, 425, 850 Hz)
@@ -322,6 +407,8 @@ from pydigi import Olivia16_500, Contestia8_250  # Olivia/Contestia
 from pydigi import DominoEX_16, Thor22  # DominoEX/Thor
 from pydigi import MT63_1000L      # MT63 modem
 from pydigi import SCAMPFSK, SCAMPOOK  # SCAMP modems
+from pydigi import NAVTEX, SITORB  # NAVTEX/SITOR-B maritime modes
+from pydigi import WEFAX576, WEFAX288  # WEFAX weather fax (image transmission)
 from pydigi import save_wav        # Save audio to WAV
 from pydigi import load_wav        # Load WAV file
 ```

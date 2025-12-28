@@ -119,7 +119,7 @@ from pydigi import *  # Imports all modem classes and utilities
 
 ## Available Modem Modes
 
-PyDigi supports 140+ modem variants across 19 mode families:
+PyDigi supports 151+ modem variants across 22 mode families:
 
 - **[CW](reference/cw.md)** - Morse code
 - **[RTTY](reference/rtty.md)** - Radioteletype with Baudot encoding
@@ -136,6 +136,7 @@ PyDigi supports 140+ modem variants across 19 mode families:
 - **[FSQ](reference/fsq.md)** - Fast Simple QSO
 - **[MT63](reference/mt63.md)** - 64-carrier OFDM mode
 - **[IFKP](reference/ifkp.md)** - Incremental frequency keying plus
+- **[WEFAX](reference/wefax.md)** - Weather Facsimile (image transmission)
 
 See the [Modem Reference](reference/base.md) section for detailed API documentation for each mode.
 

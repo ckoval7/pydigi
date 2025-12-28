@@ -50,22 +50,22 @@ from ..core.mfsk_modulator import MFSKModulator
 # Common Olivia configurations
 # Format: (tones, bandwidth) - tones must be power of 2, bandwidth in Hz
 OLIVIA_MODES = {
-    'OLIVIA-4-125': (4, 125),
-    'OLIVIA-4-250': (4, 250),
-    'OLIVIA-4-500': (4, 500),
-    'OLIVIA-4-1000': (4, 1000),
-    'OLIVIA-4-2000': (4, 2000),
-    'OLIVIA-8-125': (8, 125),
-    'OLIVIA-8-250': (8, 250),
-    'OLIVIA-8-500': (8, 500),
-    'OLIVIA-8-1000': (8, 1000),
-    'OLIVIA-8-2000': (8, 2000),
-    'OLIVIA-16-500': (16, 500),
-    'OLIVIA-16-1000': (16, 1000),
-    'OLIVIA-16-2000': (16, 2000),
-    'OLIVIA-32-1000': (32, 1000),  # Popular "Olivia 32/1000"
-    'OLIVIA-32-2000': (32, 2000),
-    'OLIVIA-64-2000': (64, 2000),
+    "OLIVIA-4-125": (4, 125),
+    "OLIVIA-4-250": (4, 250),
+    "OLIVIA-4-500": (4, 500),
+    "OLIVIA-4-1000": (4, 1000),
+    "OLIVIA-4-2000": (4, 2000),
+    "OLIVIA-8-125": (8, 125),
+    "OLIVIA-8-250": (8, 250),
+    "OLIVIA-8-500": (8, 500),
+    "OLIVIA-8-1000": (8, 1000),
+    "OLIVIA-8-2000": (8, 2000),
+    "OLIVIA-16-500": (16, 500),
+    "OLIVIA-16-1000": (16, 1000),
+    "OLIVIA-16-2000": (16, 2000),
+    "OLIVIA-32-1000": (32, 1000),  # Popular "Olivia 32/1000"
+    "OLIVIA-32-2000": (32, 2000),
+    "OLIVIA-64-2000": (64, 2000),
 }
 
 
@@ -89,7 +89,7 @@ class Olivia(Modem):
         tx_amplitude: float = 0.8,
         reverse: bool = False,
         send_start_tones: bool = True,
-        send_stop_tones: bool = True
+        send_stop_tones: bool = True,
     ):
         """
         Initialize Olivia modem.
@@ -119,7 +119,7 @@ class Olivia(Modem):
 
         # Calculate bits per symbol
         self.bits_per_symbol = int(np.log2(tones))
-        if 2 ** self.bits_per_symbol != tones:
+        if 2**self.bits_per_symbol != tones:
             raise ValueError(f"Tones must be a power of 2, got {tones}")
 
         # Calculate symbol length
@@ -136,14 +136,14 @@ class Olivia(Modem):
         self.first_carrier = int((self.symbol_len / 16) * first_carrier_mult) + 1
 
         # Create encoder and modulator
-        self.encoder = MFSKEncoder(bits_per_symbol=self.bits_per_symbol, mode='olivia')
+        self.encoder = MFSKEncoder(bits_per_symbol=self.bits_per_symbol, mode="olivia")
         self.modulator = MFSKModulator(
             symbol_len=self.symbol_len,
             first_carrier=self.first_carrier,
             bits_per_symbol=self.bits_per_symbol,
             sample_rate=sample_rate,
             use_gray_code=True,
-            reverse=reverse
+            reverse=reverse,
         )
 
         # Preamble configuration
@@ -280,7 +280,7 @@ class Olivia(Modem):
         # Process in chunks of bits_per_symbol
         for i in range(0, len(text_bytes), self.bits_per_symbol):
             # Get chunk of characters (exactly bits_per_symbol)
-            chunk = text_bytes[i:i + self.bits_per_symbol]
+            chunk = text_bytes[i : i + self.bits_per_symbol]
 
             # Build input block
             input_block = np.array(chunk, dtype=np.uint8)

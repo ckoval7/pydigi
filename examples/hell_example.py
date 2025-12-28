@@ -18,10 +18,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pydigi.modems.hell import (
-    FeldHell, SlowHell, HellX5, HellX9,
-    FSKHell245, FSKHell105, Hell80
-)
+from pydigi.modems.hell import FeldHell, SlowHell, HellX5, HellX9, FSKHell245, FSKHell105, Hell80
 from pydigi.utils.audio import save_wav
 
 
@@ -171,6 +168,7 @@ def example_all_modes_comparison():
         all_audio.extend(silence)
 
     import numpy as np
+
     all_audio = np.array(all_audio, dtype=np.float64)
 
     filename = "hell_all_modes.wav"

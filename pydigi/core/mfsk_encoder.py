@@ -27,7 +27,7 @@ class MFSKEncoder:
     SCRAMBLING_CODE_OLIVIA = 0xE257E6D0291574EC
     SCRAMBLING_CODE_CONTESTIA = 0xEDB88320
 
-    def __init__(self, bits_per_symbol=5, mode='olivia'):
+    def __init__(self, bits_per_symbol=5, mode="olivia"):
         """
         Initialize the MFSK encoder.
 
@@ -42,7 +42,7 @@ class MFSKEncoder:
         self.mode = mode.lower()
 
         # Set mode-specific parameters
-        if self.mode == 'contestia':
+        if self.mode == "contestia":
             self.scrambling_code = self.SCRAMBLING_CODE_CONTESTIA
             self.bits_per_character = 6
             self.n_shift = 5
@@ -72,15 +72,15 @@ class MFSKEncoder:
         mask = (self.symbols_per_block << 1) - 1
 
         # Apply mode-specific character mapping
-        if self.mode == 'contestia':
+        if self.mode == "contestia":
             # Contestia character mapping
-            if ord('a') <= char <= ord('z'):
-                char = char - ord('a') + ord('A')  # Convert to uppercase
-            if char == ord(' '):
+            if ord("a") <= char <= ord("z"):
+                char = char - ord("a") + ord("A")  # Convert to uppercase
+            if char == ord(" "):
                 char = 59
-            elif char == ord('\r'):
+            elif char == ord("\r"):
                 char = 60
-            elif char == ord('\n'):
+            elif char == ord("\n"):
                 char = 0
             elif 33 <= char <= 90:
                 char -= 32
@@ -89,7 +89,7 @@ class MFSKEncoder:
             elif char == 0:
                 char = 0
             else:
-                char = ord('?') - 32
+                char = ord("?") - 32
         else:
             # Olivia just masks to valid range
             char &= mask

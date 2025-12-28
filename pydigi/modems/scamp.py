@@ -24,7 +24,7 @@ from ..core.golay import (
     SCAMP_SYNC_CODEWORD,
     SCAMP_RES_CODE_END_TRANSMISSION_FRAME,
     golay_encode,
-    SCAMP_RES_CODE_END_TRANSMISSION
+    SCAMP_RES_CODE_END_TRANSMISSION,
 )
 
 
@@ -84,66 +84,66 @@ class SCAMP(Modem):
     # Format: 'mode_name': (is_fsk, samples_per_bit_base, shift_hz, bandwidth_hz, channel_bw_hz)
     # samples_per_bit_base is multiplied by (samplerate/2000) to get actual samples
     MODES = {
-        'SCAMPFSK': {
-            'is_fsk': True,
-            'samples_per_bit': 60,      # 60 * (8000/2000) = 240 samples/bit
-            'shift_hz': 66.67,          # Frequency shift
-            'bandwidth_hz': 133.33,     # Total bandwidth
-            'channel_bw_hz': 33.33,     # Channel bandwidth
-            'baud': 33.33               # 8000/240 = 33.33 baud
+        "SCAMPFSK": {
+            "is_fsk": True,
+            "samples_per_bit": 60,  # 60 * (8000/2000) = 240 samples/bit
+            "shift_hz": 66.67,  # Frequency shift
+            "bandwidth_hz": 133.33,  # Total bandwidth
+            "channel_bw_hz": 33.33,  # Channel bandwidth
+            "baud": 33.33,  # 8000/240 = 33.33 baud
         },
-        'SCAMPOOK': {
-            'is_fsk': False,
-            'samples_per_bit': 64,      # 64 * (8000/2000) = 256 samples/bit
-            'shift_hz': 0,              # No shift for OOK
-            'bandwidth_hz': 62.5,       # Total bandwidth
-            'channel_bw_hz': 31.25,     # Channel bandwidth
-            'baud': 31.25               # 8000/256 = 31.25 baud
+        "SCAMPOOK": {
+            "is_fsk": False,
+            "samples_per_bit": 64,  # 64 * (8000/2000) = 256 samples/bit
+            "shift_hz": 0,  # No shift for OOK
+            "bandwidth_hz": 62.5,  # Total bandwidth
+            "channel_bw_hz": 31.25,  # Channel bandwidth
+            "baud": 31.25,  # 8000/256 = 31.25 baud
         },
-        'SCFSKFST': {
-            'is_fsk': True,
-            'samples_per_bit': 24,      # 24 * (8000/2000) = 96 samples/bit
-            'shift_hz': 166.67,         # Frequency shift
-            'bandwidth_hz': 333.33,     # Total bandwidth
-            'channel_bw_hz': 83.33,     # Channel bandwidth
-            'baud': 83.33               # 8000/96 = 83.33 baud
+        "SCFSKFST": {
+            "is_fsk": True,
+            "samples_per_bit": 24,  # 24 * (8000/2000) = 96 samples/bit
+            "shift_hz": 166.67,  # Frequency shift
+            "bandwidth_hz": 333.33,  # Total bandwidth
+            "channel_bw_hz": 83.33,  # Channel bandwidth
+            "baud": 83.33,  # 8000/96 = 83.33 baud
         },
-        'SCFSKSLW': {
-            'is_fsk': True,
-            'samples_per_bit': 144,     # 144 * (8000/2000) = 576 samples/bit
-            'shift_hz': 41.67,          # Frequency shift
-            'bandwidth_hz': 69.44,      # Total bandwidth (41.67 + 2*13.89)
-            'channel_bw_hz': 41.67,     # Channel bandwidth
-            'baud': 13.89               # 8000/576 = 13.89 baud
+        "SCFSKSLW": {
+            "is_fsk": True,
+            "samples_per_bit": 144,  # 144 * (8000/2000) = 576 samples/bit
+            "shift_hz": 41.67,  # Frequency shift
+            "bandwidth_hz": 69.44,  # Total bandwidth (41.67 + 2*13.89)
+            "channel_bw_hz": 41.67,  # Channel bandwidth
+            "baud": 13.89,  # 8000/576 = 13.89 baud
         },
-        'SCOOKSLW': {
-            'is_fsk': False,
-            'samples_per_bit': 144,     # 144 * (8000/2000) = 576 samples/bit
-            'shift_hz': 0,              # No shift for OOK
-            'bandwidth_hz': 27.78,      # Total bandwidth (2*13.89)
-            'channel_bw_hz': 41.67,     # Channel bandwidth
-            'baud': 13.89               # 8000/576 = 13.89 baud
+        "SCOOKSLW": {
+            "is_fsk": False,
+            "samples_per_bit": 144,  # 144 * (8000/2000) = 576 samples/bit
+            "shift_hz": 0,  # No shift for OOK
+            "bandwidth_hz": 27.78,  # Total bandwidth (2*13.89)
+            "channel_bw_hz": 41.67,  # Channel bandwidth
+            "baud": 13.89,  # 8000/576 = 13.89 baud
         },
-        'SCFSKVSL': {
-            'is_fsk': True,
-            'samples_per_bit': 288,     # 288 * (8000/2000) = 1152 samples/bit
-            'shift_hz': 20.83,          # Frequency shift (half of SCFSKSLW)
-            'bandwidth_hz': 34.72,      # Total bandwidth (0.5*(41.67+2*13.89))
-            'channel_bw_hz': 20.83,     # Channel bandwidth
-            'baud': 6.94                # 8000/1152 = 6.94 baud
+        "SCFSKVSL": {
+            "is_fsk": True,
+            "samples_per_bit": 288,  # 288 * (8000/2000) = 1152 samples/bit
+            "shift_hz": 20.83,  # Frequency shift (half of SCFSKSLW)
+            "bandwidth_hz": 34.72,  # Total bandwidth (0.5*(41.67+2*13.89))
+            "channel_bw_hz": 20.83,  # Channel bandwidth
+            "baud": 6.94,  # 8000/1152 = 6.94 baud
         },
     }
 
     def __init__(
         self,
-        mode: str = 'SCAMPFSK',
+        mode: str = "SCAMPFSK",
         sample_rate: int = 8000,
         frequency: float = 1000.0,
         tx_amplitude: float = 0.8,
         repeat_frames: int = None,
         resync_frames: int = 0,
         enable_filter: bool = True,
-        filter_bw_multiplier: float = 1.5
+        filter_bw_multiplier: float = 1.5,
     ):
         """
         Initialize the SCAMP modem.
@@ -175,22 +175,22 @@ class SCAMP(Modem):
         super().__init__(mode_name=mode, sample_rate=sample_rate, frequency=frequency)
 
         if mode not in self.MODES:
-            valid_modes = ', '.join(self.MODES.keys())
+            valid_modes = ", ".join(self.MODES.keys())
             raise ValueError(f"Invalid SCAMP mode '{mode}'. Valid modes: {valid_modes}")
 
         self.mode = mode
         mode_cfg = self.MODES[mode]
 
         # Mode parameters
-        self.is_fsk = mode_cfg['is_fsk']
-        self.shift_hz = mode_cfg['shift_hz']
-        self.bandwidth_hz = mode_cfg['bandwidth_hz']
-        self.channel_bw_hz = mode_cfg['channel_bw_hz']
-        self.baud = mode_cfg['baud']
+        self.is_fsk = mode_cfg["is_fsk"]
+        self.shift_hz = mode_cfg["shift_hz"]
+        self.bandwidth_hz = mode_cfg["bandwidth_hz"]
+        self.channel_bw_hz = mode_cfg["channel_bw_hz"]
+        self.baud = mode_cfg["baud"]
 
         # Calculate samples per bit
         # In fldigi: circbuffer_samples = base * (samplerate/2000)
-        base = mode_cfg['samples_per_bit']
+        base = mode_cfg["samples_per_bit"]
         self.samples_per_bit = int(base * (self.sample_rate / 2000))
 
         # TX parameters
@@ -199,9 +199,9 @@ class SCAMP(Modem):
         # Set default repeat_frames based on mode speed if not specified
         # Faster modes need more repetitions for reliable end-of-transmission detection
         if repeat_frames is None:
-            if mode == 'SCFSKFST':  # Fast mode (83.33 baud)
+            if mode == "SCFSKFST":  # Fast mode (83.33 baud)
                 repeat_frames = 4
-            elif mode in ['SCAMPFSK', 'SCAMPOOK']:  # Standard modes (31-33 baud)
+            elif mode in ["SCAMPFSK", "SCAMPOOK"]:  # Standard modes (31-33 baud)
                 repeat_frames = 2
             else:  # Slow/very slow modes (6-14 baud)
                 repeat_frames = 1
@@ -251,7 +251,7 @@ class SCAMP(Modem):
 
         # Design 5th order Butterworth lowpass filter
         # Butterworth provides flat passband and smooth rolloff
-        b, a = signal.butter(5, cutoff_normalized, btype='low')
+        b, a = signal.butter(5, cutoff_normalized, btype="low")
 
         # Apply zero-phase filtering (filtfilt = forward + backward pass)
         # This eliminates phase distortion while doubling the filter order
@@ -499,9 +499,9 @@ def create_mode_instance(mode: str, **kwargs) -> SCAMP:
 
 
 # Export convenience constructors (matching API standard)
-SCAMPFSK = lambda **kwargs: SCAMP(mode='SCAMPFSK', **kwargs)
-SCAMPOOK = lambda **kwargs: SCAMP(mode='SCAMPOOK', **kwargs)
-SCFSKFST = lambda **kwargs: SCAMP(mode='SCFSKFST', **kwargs)
-SCFSKSLW = lambda **kwargs: SCAMP(mode='SCFSKSLW', **kwargs)
-SCOOKSLW = lambda **kwargs: SCAMP(mode='SCOOKSLW', **kwargs)
-SCFSKVSL = lambda **kwargs: SCAMP(mode='SCFSKVSL', **kwargs)
+SCAMPFSK = lambda **kwargs: SCAMP(mode="SCAMPFSK", **kwargs)
+SCAMPOOK = lambda **kwargs: SCAMP(mode="SCAMPOOK", **kwargs)
+SCFSKFST = lambda **kwargs: SCAMP(mode="SCFSKFST", **kwargs)
+SCFSKSLW = lambda **kwargs: SCAMP(mode="SCFSKSLW", **kwargs)
+SCOOKSLW = lambda **kwargs: SCAMP(mode="SCOOKSLW", **kwargs)
+SCFSKVSL = lambda **kwargs: SCAMP(mode="SCFSKVSL", **kwargs)

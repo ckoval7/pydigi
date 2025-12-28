@@ -17,7 +17,7 @@ from ..core.dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
-    normalize_audio
+    normalize_audio,
 )
 from ..modems.base import Modem
 from ..varicode.psk_varicode import encode_text_to_bits
@@ -66,10 +66,10 @@ class QPSK(Modem):
     # After reversal operation: sym = (4 - sym) & 3 (from fldigi psk.cxx:2250-2251)
     # Then multiply by 4 to index into sym_vec_pos[]
     CONSTELLATION = {
-        0: complex(-1.0, 0.0),      # 180° - encoder 0 -> rev 0 -> index 0
-        1: complex(0.0, 1.0),       # 90°  - encoder 1 -> rev 3 -> index 12
-        2: complex(1.0, 0.0),       # 0°   - encoder 2 -> rev 2 -> index 8
-        3: complex(0.0, -1.0),      # 270° - encoder 3 -> rev 1 -> index 4
+        0: complex(-1.0, 0.0),  # 180° - encoder 0 -> rev 0 -> index 0
+        1: complex(0.0, 1.0),  # 90°  - encoder 1 -> rev 3 -> index 12
+        2: complex(1.0, 0.0),  # 0°   - encoder 2 -> rev 2 -> index 8
+        3: complex(0.0, -1.0),  # 270° - encoder 3 -> rev 1 -> index 4
     }
 
     def __init__(
@@ -77,7 +77,7 @@ class QPSK(Modem):
         baud: float = 31.25,
         sample_rate: float = 8000.0,
         frequency: float = 1000.0,
-        tx_amplitude: float = 0.8
+        tx_amplitude: float = 0.8,
     ):
         """
         Initialize the QPSK modem.
@@ -103,7 +103,7 @@ class QPSK(Modem):
             125: "QPSK125",
             250: "QPSK250",
             500: "QPSK500",
-            1000: "QPSK1000"
+            1000: "QPSK1000",
         }
         mode_name = baud_map.get(baud, f"QPSK{int(baud)}")
 
@@ -283,7 +283,13 @@ class QPSK(Modem):
     # Removed _apply_baseband_filter - now using shared dsp_utils.apply_baseband_filter
     # Removed _modulate_to_carrier - now using shared dsp_utils.modulate_to_carrier
 
-    def tx_process(self, text: str, preamble_symbols: int = 32, postamble_symbols: int = 32, apply_filter: bool = True) -> np.ndarray:
+    def tx_process(
+        self,
+        text: str,
+        preamble_symbols: int = 32,
+        postamble_symbols: int = 32,
+        apply_filter: bool = True,
+    ) -> np.ndarray:
         """
         Process text for transmission.
 
@@ -343,7 +349,7 @@ class QPSK(Modem):
         sample_rate: Optional[float] = None,
         preamble_symbols: int = 32,
         postamble_symbols: int = 32,
-        apply_filter: bool = True
+        apply_filter: bool = True,
     ) -> np.ndarray:
         """
         Modulate text into QPSK audio signal.
@@ -379,7 +385,9 @@ class QPSK(Modem):
 
         return audio
 
-    def estimate_duration(self, text: str, preamble_symbols: int = 32, postamble_symbols: int = 32) -> float:
+    def estimate_duration(
+        self, text: str, preamble_symbols: int = 32, postamble_symbols: int = 32
+    ) -> float:
         """
         Estimate transmission duration in seconds.
 
@@ -407,32 +415,45 @@ class QPSK(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"QPSK(mode={self.mode_name}, baud={self.baud}, "
-                f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)")
+        return (
+            f"QPSK(mode={self.mode_name}, baud={self.baud}, "
+            f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for common QPSK modes
 
-def QPSK31(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> QPSK:
+
+def QPSK31(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> QPSK:
     """Create a QPSK31 modem (31.25 baud)."""
     return QPSK(baud=31.25, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
 
 
-def QPSK63(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> QPSK:
+def QPSK63(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> QPSK:
     """Create a QPSK63 modem (62.5 baud)."""
     return QPSK(baud=62.5, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
 
 
-def QPSK125(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> QPSK:
+def QPSK125(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> QPSK:
     """Create a QPSK125 modem (125 baud)."""
     return QPSK(baud=125, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
 
 
-def QPSK250(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> QPSK:
+def QPSK250(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> QPSK:
     """Create a QPSK250 modem (250 baud)."""
     return QPSK(baud=250, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
 
 
-def QPSK500(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> QPSK:
+def QPSK500(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> QPSK:
     """Create a QPSK500 modem (500 baud)."""
     return QPSK(baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)

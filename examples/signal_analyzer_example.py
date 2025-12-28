@@ -18,16 +18,15 @@ from pydigi.utils import (
 
 def example_1_basic_analysis():
     """Example 1: Basic signal analysis."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 1: Basic Signal Analysis")
-    print("="*70)
+    print("=" * 70)
 
     # Generate a test signal
     signal = pydigi.psk31_modulate("HELLO WORLD", freq=1000, sample_rate=8000)
 
     # Quick analysis with automatic plotting
-    metrics = quick_analyze(signal, sample_rate=8000,
-                           plot=True, plot_path='ex1_psk31_analysis.png')
+    metrics = quick_analyze(signal, sample_rate=8000, plot=True, plot_path="ex1_psk31_analysis.png")
 
     print(f"\nKey metrics:")
     print(f"  Duration: {metrics.duration:.2f}s")
@@ -38,9 +37,9 @@ def example_1_basic_analysis():
 
 def example_2_advanced_analysis():
     """Example 2: Advanced analysis with custom settings."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 2: Advanced Analysis")
-    print("="*70)
+    print("=" * 70)
 
     # Generate signal
     signal = pydigi.rtty_modulate("THE QUICK BROWN FOX", freq=1000, sample_rate=8000)
@@ -58,18 +57,20 @@ def example_2_advanced_analysis():
     print("\nWindow analysis (first 10 windows, 100ms each):")
     windows = analyzer.analyze_windows(window_duration=0.1)
     for window in windows[:10]:
-        print(f"  {window['start_time']:.2f}s - {window['end_time']:.2f}s: "
-              f"RMS={window['rms']:.4f}, Peak={window['peak']:.4f}")
+        print(
+            f"  {window['start_time']:.2f}s - {window['end_time']:.2f}s: "
+            f"RMS={window['rms']:.4f}, Peak={window['peak']:.4f}"
+        )
 
     # Generate plots
-    analyzer.plot(save_path='ex2_rtty_advanced.png')
+    analyzer.plot(save_path="ex2_rtty_advanced.png")
 
 
 def example_3_compare_modes():
     """Example 3: Compare two different modem signals."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 3: Compare Different Modes")
-    print("="*70)
+    print("=" * 70)
 
     text = "TEST"
 
@@ -78,10 +79,15 @@ def example_3_compare_modes():
     psk63_signal = pydigi.psk63_modulate(text, freq=1000, sample_rate=8000)
 
     # Compare them
-    comparison = quick_compare(psk31_signal, psk63_signal,
-                              label1="PSK31", label2="PSK63",
-                              sample_rate=8000,
-                              plot=True, plot_path='ex3_psk31_vs_psk63.png')
+    comparison = quick_compare(
+        psk31_signal,
+        psk63_signal,
+        label1="PSK31",
+        label2="PSK63",
+        sample_rate=8000,
+        plot=True,
+        plot_path="ex3_psk31_vs_psk63.png",
+    )
 
     print(f"\nKey differences:")
     print(f"  RMS ratio: {comparison['rms_ratio']:.3f} ({comparison['rms_diff_db']:+.2f} dB)")
@@ -90,9 +96,9 @@ def example_3_compare_modes():
 
 def example_4_compare_with_fldigi():
     """Example 4: Compare our signal with fldigi reference."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 4: Compare with fldigi Reference")
-    print("="*70)
+    print("=" * 70)
 
     # Generate our signal
     our_signal = pydigi.mt63_1000l_modulate("TEST", freq=1000, sample_rate=8000)
@@ -102,9 +108,9 @@ def example_4_compare_with_fldigi():
     fldigi_wav = "fldigi_mt63_1000l_test.wav"
 
     try:
-        comparison = compare_with_fldigi(our_signal, fldigi_wav,
-                                        sample_rate=8000,
-                                        plot_path='ex4_fldigi_comparison.png')
+        comparison = compare_with_fldigi(
+            our_signal, fldigi_wav, sample_rate=8000, plot_path="ex4_fldigi_comparison.png"
+        )
 
         print(f"\nComparison with fldigi:")
         print(f"  Correlation: {comparison.get('correlation', 'N/A')}")
@@ -118,9 +124,9 @@ def example_4_compare_with_fldigi():
 
 def example_5_detect_problems():
     """Example 5: Use analyzer to detect common problems."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 5: Problem Detection")
-    print("="*70)
+    print("=" * 70)
 
     # Generate a signal
     signal = pydigi.psk31_modulate("CQ CQ CQ DE PYDIGI", freq=1500, sample_rate=8000)
@@ -166,14 +172,14 @@ def example_5_detect_problems():
         print(f"  ✓ Crest factor acceptable: {metrics.crest_factor:.1f}")
 
     analyzer.print_metrics()
-    analyzer.plot(save_path='ex5_problem_detection.png')
+    analyzer.plot(save_path="ex5_problem_detection.png")
 
 
 def example_6_batch_analysis():
     """Example 6: Batch analyze multiple modes."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("EXAMPLE 6: Batch Mode Analysis")
-    print("="*70)
+    print("=" * 70)
 
     # Test multiple modes
     modes = [
@@ -202,24 +208,30 @@ def example_6_batch_analysis():
 
             # Quick summary
             freq_error = metrics.peak_freq - target_freq
-            print(f"{mode_name:8s}: Peak={metrics.peak_freq:7.1f} Hz "
-                  f"(target={target_freq:4d} Hz, error={freq_error:+6.1f} Hz), "
-                  f"RMS={metrics.rms:.4f}, "
-                  f"BW={metrics.bandwidth_3db:6.1f} Hz")
+            print(
+                f"{mode_name:8s}: Peak={metrics.peak_freq:7.1f} Hz "
+                f"(target={target_freq:4d} Hz, error={freq_error:+6.1f} Hz), "
+                f"RMS={metrics.rms:.4f}, "
+                f"BW={metrics.bandwidth_3db:6.1f} Hz"
+            )
 
         except Exception as e:
             print(f"{mode_name:8s}: ERROR - {e}")
 
     # Summary table
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("SUMMARY")
-    print("="*70)
-    print(f"{'Mode':<10} {'Duration':<10} {'Peak Freq':<12} {'Freq Error':<12} {'RMS':<8} {'BW (-3dB)'}")
+    print("=" * 70)
+    print(
+        f"{'Mode':<10} {'Duration':<10} {'Peak Freq':<12} {'Freq Error':<12} {'RMS':<8} {'BW (-3dB)'}"
+    )
     print("-" * 70)
     for mode_name, metrics, target_freq in results:
         freq_error = metrics.peak_freq - target_freq
-        print(f"{mode_name:<10} {metrics.duration:>6.2f}s    {metrics.peak_freq:>7.1f} Hz   "
-              f"{freq_error:>+7.1f} Hz    {metrics.rms:>6.4f}   {metrics.bandwidth_3db:>6.1f} Hz")
+        print(
+            f"{mode_name:<10} {metrics.duration:>6.2f}s    {metrics.peak_freq:>7.1f} Hz   "
+            f"{freq_error:>+7.1f} Hz    {metrics.rms:>6.4f}   {metrics.bandwidth_3db:>6.1f} Hz"
+        )
 
 
 if __name__ == "__main__":
@@ -259,6 +271,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nExample 6 failed: {e}")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("Examples complete! Check the generated PNG files for visualizations.")
-    print("="*70)
+    print("=" * 70)

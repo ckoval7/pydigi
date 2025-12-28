@@ -68,6 +68,9 @@ docs = [
     "mkdocs>=1.4.0",
     "mkdocs-material>=9.0.0",
 ]
+image = [
+    "Pillow>=8.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/yourusername/pydigi"

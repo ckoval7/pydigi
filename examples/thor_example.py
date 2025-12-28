@@ -13,12 +13,25 @@ import os
 import sys
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pydigi import (
-    ThorMicro, Thor4, Thor5, Thor8, Thor11, Thor16, Thor22,
-    Thor25, Thor32, Thor44, Thor56, Thor25x4, Thor50x1, Thor50x2, Thor100,
-    save_wav
+    ThorMicro,
+    Thor4,
+    Thor5,
+    Thor8,
+    Thor11,
+    Thor16,
+    Thor22,
+    Thor25,
+    Thor32,
+    Thor44,
+    Thor56,
+    Thor25x4,
+    Thor50x1,
+    Thor50x2,
+    Thor100,
+    save_wav,
 )
 
 
@@ -275,8 +288,10 @@ def example10_all_thor_modes():
         filename = f"thor_all_{name.replace('x', '_')}.wav"
         save_wav(filename, audio, modem.samplerate)
 
-        print(f"  Thor {name:6s}: {modem.baud_rate:6.2f} baud, "
-              f"{duration:6.2f}s, {modem.samplerate:5d} Hz - {filename}")
+        print(
+            f"  Thor {name:6s}: {modem.baud_rate:6.2f} baud, "
+            f"{duration:6.2f}s, {modem.samplerate:5d} Hz - {filename}"
+        )
 
 
 def main():

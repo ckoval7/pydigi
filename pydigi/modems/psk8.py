@@ -20,7 +20,7 @@ from ..core.dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
-    normalize_audio
+    normalize_audio,
 )
 from ..modems.base import Modem
 from ..varicode.mfsk_varicode import encode_char
@@ -67,14 +67,14 @@ class EightPSK(Modem):
     # For 8PSK without FEC: sym *= 2 to map into 16-position constellation
     # Maps 3-bit symbol values to phase angles
     CONSTELLATION = {
-        0: complex(-1.0, 0.0),              # 180° - sym*2=0
-        1: complex(-0.7071, -0.7071),       # 225° - sym*2=2
-        2: complex(0.0, -1.0),              # 270° - sym*2=4
-        3: complex(0.7071, -0.7071),        # 315° - sym*2=6
-        4: complex(1.0, 0.0),               # 0°   - sym*2=8
-        5: complex(0.7071, 0.7071),         # 45°  - sym*2=10
-        6: complex(0.0, 1.0),               # 90°  - sym*2=12
-        7: complex(-0.7071, 0.7071),        # 135° - sym*2=14
+        0: complex(-1.0, 0.0),  # 180° - sym*2=0
+        1: complex(-0.7071, -0.7071),  # 225° - sym*2=2
+        2: complex(0.0, -1.0),  # 270° - sym*2=4
+        3: complex(0.7071, -0.7071),  # 315° - sym*2=6
+        4: complex(1.0, 0.0),  # 0°   - sym*2=8
+        5: complex(0.7071, 0.7071),  # 45°  - sym*2=10
+        6: complex(0.0, 1.0),  # 90°  - sym*2=12
+        7: complex(-0.7071, 0.7071),  # 135° - sym*2=14
     }
 
     def __init__(
@@ -82,7 +82,7 @@ class EightPSK(Modem):
         baud: float = 125,
         sample_rate: float = 8000.0,
         frequency: float = 1000.0,
-        tx_amplitude: float = 0.8
+        tx_amplitude: float = 0.8,
     ):
         """
         Initialize the 8PSK modem.
@@ -106,7 +106,7 @@ class EightPSK(Modem):
             250: "8PSK250",
             500: "8PSK500",
             1000: "8PSK1000",
-            1200: "8PSK1200"
+            1200: "8PSK1200",
         }
         mode_name = baud_map.get(baud, f"8PSK{int(baud)}")
 
@@ -122,7 +122,7 @@ class EightPSK(Modem):
         self._symbol_samples = 0
         self._tx_shape = None
         self._bit_buffer = 0  # Accumulate 3 bits before transmission
-        self._bit_count = 0   # Number of bits in buffer
+        self._bit_count = 0  # Number of bits in buffer
         self._init_parameters()
 
     def _init_parameters(self):
@@ -325,7 +325,13 @@ class EightPSK(Modem):
     # Removed _apply_baseband_filter - now using shared dsp_utils.apply_baseband_filter
     # Removed _modulate_to_carrier - now using shared dsp_utils.modulate_to_carrier
 
-    def tx_process(self, text: str, preamble_symbols: int = None, postamble_symbols: int = None, apply_filter: bool = True) -> np.ndarray:
+    def tx_process(
+        self,
+        text: str,
+        preamble_symbols: int = None,
+        postamble_symbols: int = None,
+        apply_filter: bool = True,
+    ) -> np.ndarray:
         """
         Process text for transmission.
 
@@ -385,7 +391,7 @@ class EightPSK(Modem):
         sample_rate: Optional[float] = None,
         preamble_symbols: int = None,
         postamble_symbols: int = None,
-        apply_filter: bool = True
+        apply_filter: bool = True,
     ) -> np.ndarray:
         """
         Modulate text into 8PSK audio signal.
@@ -421,7 +427,9 @@ class EightPSK(Modem):
 
         return audio
 
-    def estimate_duration(self, text: str, preamble_symbols: int = None, postamble_symbols: int = None) -> float:
+    def estimate_duration(
+        self, text: str, preamble_symbols: int = None, postamble_symbols: int = None
+    ) -> float:
         """
         Estimate transmission duration in seconds.
 
@@ -457,27 +465,46 @@ class EightPSK(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"EightPSK(mode={self.mode_name}, baud={self.baud}, "
-                f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)")
+        return (
+            f"EightPSK(mode={self.mode_name}, baud={self.baud}, "
+            f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for common 8PSK modes
 
-def EightPSK_125(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSK:
+
+def EightPSK_125(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSK:
     """Create an 8PSK125 modem (125 baud, 375 bits/sec)."""
-    return EightPSK(baud=125, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSK(
+        baud=125, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )
 
 
-def EightPSK_250(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSK:
+def EightPSK_250(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSK:
     """Create an 8PSK250 modem (250 baud, 750 bits/sec)."""
-    return EightPSK(baud=250, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSK(
+        baud=250, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )
 
 
-def EightPSK_500(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSK:
+def EightPSK_500(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSK:
     """Create an 8PSK500 modem (500 baud, 1500 bits/sec)."""
-    return EightPSK(baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSK(
+        baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )
 
 
-def EightPSK_1000(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> EightPSK:
+def EightPSK_1000(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> EightPSK:
     """Create an 8PSK1000 modem (1000 baud, 3000 bits/sec)."""
-    return EightPSK(baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return EightPSK(
+        baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+    )

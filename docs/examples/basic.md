@@ -98,6 +98,56 @@ audio = olivia.modulate("OLIVIA TEST - ROBUST MODE")
 save_wav("olivia_test.wav", audio, sample_rate=olivia.sample_rate)
 ```
 
+### NAVTEX (Maritime Safety Broadcast)
+
+```python
+from pydigi import NAVTEX, SITORB, save_wav
+
+# Create NAVTEX modem (includes headers, phasing, and FEC)
+navtex = NAVTEX(frequency=1000)
+
+# Maritime safety message - header and trailer added automatically
+text = "WEATHER WARNING: GALE FORCE 8 EXPECTED IN SEA AREA VIKING"
+audio = navtex.modulate(text)
+
+# NAVTEX uses 11025 Hz sample rate (100 baud, 170 Hz shift)
+save_wav("navtex_test.wav", audio, sample_rate=11025)
+
+# Or use SITOR-B for raw transmission without NAVTEX structure
+sitorb = SITORB(frequency=1000)
+audio = sitorb.modulate("CQ CQ CQ DE NAVAREA1 K")
+save_wav("sitorb_test.wav", audio, sample_rate=11025)
+```
+
+### WEFAX (Weather Facsimile - Image Transmission)
+
+```python
+from pydigi import WEFAX576, save_wav
+import numpy as np
+
+# Create WEFAX-576 modem
+wefax = WEFAX576()
+
+# Option 1: Transmit test pattern (no image needed)
+audio_test = wefax.modulate("")
+save_wav("wefax_test.wav", audio_test, sample_rate=11025)
+
+# Option 2: Transmit from numpy array
+# Create gradient image (200 rows x 1809 columns)
+img = np.zeros((200, 1809), dtype=np.uint8)
+for col in range(1809):
+    img[:, col] = int(255 * col / 1809)
+
+audio_gradient = wefax.transmit_image(img, lpm=120)
+save_wav("wefax_gradient.wav", audio_gradient, sample_rate=11025)
+
+# Option 3: Transmit from image file (requires Pillow)
+# audio = wefax.transmit_image("weather_map.png")
+# save_wav("wefax_image.wav", audio, sample_rate=11025)
+```
+
+**Note:** WEFAX transmits images, not text. Use `transmit_image()` for image data.
+
 ## Working with Audio Files
 
 ### Save to WAV
@@ -326,6 +376,65 @@ for i, msg in enumerate(messages):
     filename = f"output/message_{i+1:02d}.wav"
     save_wav(filename, audio, sample_rate=psk.sample_rate)
     print(f"Created {filename}")
+```
+
+## Silence Padding
+
+### Add Silence Before and After Signal
+
+```python
+from pydigi import PSK31, CW, save_wav
+
+# Set default silence at modem creation
+psk = PSK31(leading_silence=0.5, trailing_silence=0.5)
+audio = psk.modulate("TEST MESSAGE")
+save_wav("psk_with_silence.wav", audio, sample_rate=psk.sample_rate)
+
+# Override per transmission
+cw = CW(wpm=20)
+audio = cw.modulate("CQ DE W1ABC", leading_silence=1.0, trailing_silence=0.5)
+save_wav("cw_with_silence.wav", audio, sample_rate=cw.sample_rate)
+```
+
+### Use Cases for Silence Padding
+
+```python
+from pydigi import RTTY, save_wav
+
+rtty = RTTY(baud=45.45, shift=170)
+
+# PTT activation (1 second lead-in for transmitter to stabilize)
+audio = rtty.modulate("RYRYRY", leading_silence=1.0, trailing_silence=0.5)
+save_wav("rtty_ptt.wav", audio, sample_rate=rtty.sample_rate)
+
+# VOX triggering (500ms lead-in for VOX to activate)
+audio = rtty.modulate("TEST", leading_silence=0.5, trailing_silence=0.3)
+save_wav("rtty_vox.wav", audio, sample_rate=rtty.sample_rate)
+
+# Visual separation (easy to see start/end in audio editor)
+audio = rtty.modulate("DEBUG", leading_silence=0.2, trailing_silence=0.2)
+save_wav("rtty_debug.wav", audio, sample_rate=rtty.sample_rate)
+```
+
+### Calculating Total Duration
+
+```python
+from pydigi import PSK31
+
+psk = PSK31()
+text = "HELLO WORLD"
+
+# Without silence
+audio_no_silence = psk.modulate(text)
+duration_no_silence = len(audio_no_silence) / psk.sample_rate
+
+# With silence
+audio_with_silence = psk.modulate(text, leading_silence=0.5, trailing_silence=0.5)
+duration_with_silence = len(audio_with_silence) / psk.sample_rate
+
+print(f"Without silence: {duration_no_silence:.2f}s ({len(audio_no_silence)} samples)")
+print(f"With silence: {duration_with_silence:.2f}s ({len(audio_with_silence)} samples)")
+print(f"Added silence: {duration_with_silence - duration_no_silence:.2f}s")
 ```
 
 ## Next Steps

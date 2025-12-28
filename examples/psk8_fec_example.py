@@ -9,17 +9,22 @@ Demonstrates all 7 8PSK FEC modes with different configurations:
 """
 
 from pydigi.modems.psk8_fec import (
-    PSK8_125F, PSK8_125FL, PSK8_250F, PSK8_250FL,
-    PSK8_500F, PSK8_1000F, PSK8_1200F
+    PSK8_125F,
+    PSK8_125FL,
+    PSK8_250F,
+    PSK8_250FL,
+    PSK8_500F,
+    PSK8_1000F,
+    PSK8_1200F,
 )
 from pydigi.utils.audio import save_wav
 
 
 def example_8psk125f():
     """Example: 8PSK125F - 125 baud with K=16 FEC."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK125F - 125 baud, K=16 FEC, 1/2 rate")
-    print("="*60)
+    print("=" * 60)
 
     # Create modem
     modem = PSK8_125F()
@@ -39,9 +44,9 @@ def example_8psk125f():
 
 def example_8psk125fl():
     """Example: 8PSK125FL - 125 baud with K=13 FEC and long interleave."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK125FL - 125 baud, K=13 FEC, Long Interleave")
-    print("="*60)
+    print("=" * 60)
 
     # Create modem with long interleave
     modem = PSK8_125FL()
@@ -62,9 +67,9 @@ def example_8psk125fl():
 
 def example_8psk250f():
     """Example: 8PSK250F - 250 baud with K=16 FEC."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK250F - 250 baud, K=16 FEC, 1/2 rate")
-    print("="*60)
+    print("=" * 60)
 
     # Create modem
     modem = PSK8_250F()
@@ -84,9 +89,9 @@ def example_8psk250f():
 
 def example_8psk500f():
     """Example: 8PSK500F - 500 baud with K=13 FEC and puncturing."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK500F - 500 baud, K=13 FEC, 2/3 rate (punctured)")
-    print("="*60)
+    print("=" * 60)
 
     # Create modem
     modem = PSK8_500F()
@@ -107,9 +112,9 @@ def example_8psk500f():
 
 def example_8psk1000f():
     """Example: 8PSK1000F - 1000 baud with K=13 FEC and puncturing."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK1000F - 1000 baud, K=13 FEC, 2/3 rate (punctured)")
-    print("="*60)
+    print("=" * 60)
 
     # Create modem
     modem = PSK8_1000F()
@@ -129,9 +134,9 @@ def example_8psk1000f():
 
 def example_comparison():
     """Example: Compare all 8PSK FEC modes."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK FEC Mode Comparison")
-    print("="*60)
+    print("=" * 60)
 
     modes = [
         (PSK8_125F(), "8PSK125F", 1000, "~188 bits/sec"),
@@ -163,9 +168,9 @@ def example_comparison():
 
 def main():
     """Run all examples."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("8PSK FEC Examples")
-    print("="*60)
+    print("=" * 60)
 
     example_8psk125f()
     example_8psk125fl()
@@ -174,9 +179,9 @@ def main():
     example_8psk1000f()
     example_comparison()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("All examples complete!")
-    print("="*60)
+    print("=" * 60)
 
 
 if __name__ == "__main__":

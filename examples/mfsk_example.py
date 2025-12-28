@@ -10,7 +10,8 @@ for reliable data transmission.
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pydigi import MFSK16, MFSK32, MFSK64, MFSK8, save_wav
 
@@ -116,8 +117,9 @@ def example_5_mode_comparison():
         save_wav(filename, audio, modem.sample_rate)
 
         duration = len(audio) / modem.sample_rate
-        print(f"{name:8s}: {duration:6.2f}s, {len(audio):6d} samples, "
-              f"{modem.baud_rate:7.4f} baud")
+        print(
+            f"{name:8s}: {duration:6.2f}s, {len(audio):6d} samples, " f"{modem.baud_rate:7.4f} baud"
+        )
 
 
 def example_6_special_characters():
@@ -177,9 +179,11 @@ def example_9_long_message():
     print("\n=== Example 9: Long Message ===")
 
     modem = MFSK16()
-    text = ("THIS IS A LONGER MESSAGE TO DEMONSTRATE MFSK16 TRANSMISSION. "
-            "THE MODEM USES VITERBI FEC AND INTERLEAVING FOR IMPROVED "
-            "RELIABILITY. 73 DE W1ABC K")
+    text = (
+        "THIS IS A LONGER MESSAGE TO DEMONSTRATE MFSK16 TRANSMISSION. "
+        "THE MODEM USES VITERBI FEC AND INTERLEAVING FOR IMPROVED "
+        "RELIABILITY. 73 DE W1ABC K"
+    )
 
     audio = modem.modulate(text, frequency=1000)
 

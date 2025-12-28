@@ -15,7 +15,7 @@ import sys
 import os
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pydigi.modems.fsq import FSQ, FSQ_2, FSQ_3, FSQ_6
 from pydigi.utils.audio import save_wav
@@ -161,12 +161,13 @@ def example_6_no_preamble():
     print("Mode: No preamble/postamble (raw data mode)")
 
     # Generate audio without preamble/postamble
-    audio = fsq.modulate(text, frequency=1500.0,
-                        add_preamble=False, add_postamble=False)
+    audio = fsq.modulate(text, frequency=1500.0, add_preamble=False, add_postamble=False)
     duration = len(audio) / fsq.sample_rate
 
     print(f"Generated {len(audio)} samples ({duration:.2f}s)")
-    print(f"Estimated duration: {fsq.estimate_duration(text, add_preamble=False, add_postamble=False):.2f}s")
+    print(
+        f"Estimated duration: {fsq.estimate_duration(text, add_preamble=False, add_postamble=False):.2f}s"
+    )
 
     # Save to WAV
     filename = "fsq_no_preamble.wav"
@@ -194,7 +195,9 @@ def example_7_speed_comparison():
         duration = len(audio) / fsq.sample_rate
         estimated = fsq.estimate_duration(text)
 
-        print(f"{baud_rate} baud: {len(audio):6d} samples, {duration:6.2f}s (est: {estimated:6.2f}s)")
+        print(
+            f"{baud_rate} baud: {len(audio):6d} samples, {duration:6.2f}s (est: {estimated:6.2f}s)"
+        )
 
         filename = f"fsq_speed_comp_{baud_rate}baud.wav"
         save_wav(filename, audio, fsq.sample_rate)
@@ -249,7 +252,7 @@ def example_9_all_speeds():
         print(f"{baud_rate:4.1f} baud: {len(audio):6d} samples, {duration:6.2f}s")
 
         # Use baud rate string that's filesystem-safe
-        baud_str = str(baud_rate).replace('.', '_')
+        baud_str = str(baud_rate).replace(".", "_")
         filename = f"fsq_all_speeds_{baud_str}baud.wav"
         save_wav(filename, audio, fsq.sample_rate)
         print(f"  Saved to {filename}")

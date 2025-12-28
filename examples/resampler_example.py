@@ -9,7 +9,8 @@ Also useful for resampling any modem output to match your audio hardware.
 """
 
 import sys
-sys.path.insert(0, '.')
+
+sys.path.insert(0, ".")
 
 import numpy as np
 from pydigi.modems.scamp import SCAMP
@@ -31,7 +32,7 @@ def example_basic_resampling():
     print("=" * 60)
 
     # SCAMP is locked at 8000 Hz
-    scamp = SCAMP(mode='SCAMPFSK', frequency=1500)
+    scamp = SCAMP(mode="SCAMPFSK", frequency=1500)
     audio_8k = scamp.modulate("HELLO WORLD FROM SCAMP")
 
     print(f"Original audio: {len(audio_8k)} samples at {scamp.sample_rate} Hz")
@@ -52,7 +53,7 @@ def example_scamp_resampling():
     print("=" * 60)
 
     # SCAMP is also locked at 8000 Hz
-    scamp = SCAMP(mode='SCAMPFSK', frequency=1000)
+    scamp = SCAMP(mode="SCAMPFSK", frequency=1000)
     audio_8k = scamp.modulate("CQ CQ CQ DE W1ABC W1ABC K")
 
     print(f"Original: {len(audio_8k)} samples at {scamp.sample_rate} Hz")
@@ -87,13 +88,13 @@ def example_preset_resampling():
     print("Example 4: Using presets for common conversions")
     print("=" * 60)
 
-    scamp = SCAMP(mode='SCAMPFSK', frequency=1000)
+    scamp = SCAMP(mode="SCAMPFSK", frequency=1000)
     audio = scamp.modulate("PRESET TEST")
 
     # Use convenient presets
-    audio_48k = resample_preset(audio, '8k_to_48k')
-    audio_44k = resample_preset(audio, '8k_to_44k')
-    audio_16k = resample_preset(audio, '8k_to_16k')
+    audio_48k = resample_preset(audio, "8k_to_48k")
+    audio_44k = resample_preset(audio, "8k_to_44k")
+    audio_16k = resample_preset(audio, "8k_to_16k")
 
     print(f"Original (8kHz): {len(audio)} samples")
     print(f"48kHz preset: {len(audio_48k)} samples")
@@ -133,7 +134,7 @@ def example_save_resampled_wav():
         from scipy.io import wavfile
 
         # Generate SCAMP signal
-        scamp = SCAMP(mode='SCAMPFSK', frequency=1500)
+        scamp = SCAMP(mode="SCAMPFSK", frequency=1500)
         message = "CQ CQ CQ DE W1ABC W1ABC SCAMP TEST K"
         audio_8k = scamp.modulate(message)
 
@@ -144,7 +145,7 @@ def example_save_resampled_wav():
         audio_int16 = np.int16(audio_48k * 32767)
 
         # Save to WAV file
-        filename = '/tmp/scamp_48khz.wav'
+        filename = "/tmp/scamp_48khz.wav"
         wavfile.write(filename, 48000, audio_int16)
 
         print(f"Saved: {filename}")
@@ -166,7 +167,7 @@ def example_gnuradio_use_case():
     target_rate = 48000
 
     # Generate SCAMP signal (locked at 8000 Hz)
-    scamp = SCAMP(mode='SCAMPFSK', frequency=1500)
+    scamp = SCAMP(mode="SCAMPFSK", frequency=1500)
     audio_8k = scamp.modulate("GNU RADIO TEST")
 
     # Resample for GNU Radio
@@ -199,8 +200,8 @@ def example_comparison():
     peak_8k = np.max(np.abs(audio_8k))
     peak_48k = np.max(np.abs(audio_48k))
 
-    rms_8k = np.sqrt(np.mean(audio_8k ** 2))
-    rms_48k = np.sqrt(np.mean(audio_48k ** 2))
+    rms_8k = np.sqrt(np.mean(audio_8k**2))
+    rms_48k = np.sqrt(np.mean(audio_48k**2))
 
     print(f"Duration preservation:")
     print(f"  8kHz: {duration_8k:.4f} seconds")
@@ -215,7 +216,7 @@ def example_comparison():
     print()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("PYDIGI RESAMPLER EXAMPLES")
     print("=" * 60 + "\n")

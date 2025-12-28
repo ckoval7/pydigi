@@ -12,10 +12,11 @@ import sys
 import os
 
 # Add parent directory to path to import pydigi
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from pydigi.modems.psk import PSK, PSK31, PSK63, PSK125, PSK250, PSK500
 from pydigi.utils.audio import save_wav
+
 
 def example1_psk31_basic():
     """Example 1: Basic PSK31 transmission."""
@@ -104,7 +105,7 @@ def example4_mode_comparison():
         ("PSK31", PSK31(frequency=1000)),
         ("PSK63", PSK63(frequency=1000)),
         ("PSK125", PSK125(frequency=1000)),
-        ("PSK250", PSK250(frequency=1000))
+        ("PSK250", PSK250(frequency=1000)),
     ]
 
     print(f"Message: {text}")
@@ -233,6 +234,7 @@ def main():
         except Exception as e:
             print(f"ERROR in {name}: {e}")
             import traceback
+
             traceback.print_exc()
             print()
 

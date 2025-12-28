@@ -33,10 +33,7 @@ def generate_raised_cosine_shape(length: int) -> np.ndarray:
 
 
 def apply_baseband_filter(
-    i_samples: np.ndarray,
-    q_samples: np.ndarray,
-    baud: float,
-    sample_rate: float
+    i_samples: np.ndarray, q_samples: np.ndarray, baud: float, sample_rate: float
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Apply lowpass filter to baseband I/Q signals.
@@ -66,7 +63,7 @@ def apply_baseband_filter(
     cutoff_normalized = min(cutoff_normalized, 0.95)
 
     # 5th order Butterworth lowpass filter
-    b, a = signal.butter(5, cutoff_normalized, btype='low')
+    b, a = signal.butter(5, cutoff_normalized, btype="low")
 
     # Apply zero-phase filtering to both I and Q
     i_filtered = signal.filtfilt(b, a, i_samples)
@@ -76,10 +73,7 @@ def apply_baseband_filter(
 
 
 def modulate_to_carrier(
-    i_samples: np.ndarray,
-    q_samples: np.ndarray,
-    frequency: float,
-    sample_rate: float
+    i_samples: np.ndarray, q_samples: np.ndarray, frequency: float, sample_rate: float
 ) -> np.ndarray:
     """
     Mix baseband I/Q signal to carrier frequency.

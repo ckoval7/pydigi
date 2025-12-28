@@ -129,7 +129,7 @@ def generate_tone(
     duration: float,
     sample_rate: float = 8000.0,
     amplitude: float = 1.0,
-    phase: float = 0.0
+    phase: float = 0.0,
 ) -> np.ndarray:
     """
     Generate a real sinusoidal tone.
@@ -161,7 +161,7 @@ def generate_complex_tone(
     duration: float,
     sample_rate: float = 8000.0,
     amplitude: float = 1.0,
-    phase: float = 0.0
+    phase: float = 0.0,
 ) -> np.ndarray:
     """
     Generate a complex exponential tone.

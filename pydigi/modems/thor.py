@@ -88,24 +88,33 @@ class Thor(Modem):
     """
 
     # Thor constants
-    NUMTONES = 18           # Number of MFSK tones (fldigi: THORNUMTONES)
-    BASEFREQ = 1500.0       # Base frequency in Hz (fldigi: THORBASEFREQ)
-    INTERLEAVE_SIZE = 4     # Interleaver block size (4 bits per symbol)
+    NUMTONES = 18  # Number of MFSK tones (fldigi: THORNUMTONES)
+    BASEFREQ = 1500.0  # Base frequency in Hz (fldigi: THORBASEFREQ)
+    INTERLEAVE_SIZE = 4  # Interleaver block size (4 bits per symbol)
 
     # NASA Voyager codes (K=7) - used for most Thor modes
     K7_CONSTRAINT = 7
-    K7_POLY1 = 0x6d  # 109
-    K7_POLY2 = 0x4f  # 79
+    K7_POLY1 = 0x6D  # 109
+    K7_POLY2 = 0x4F  # 79
 
     # IEEE codes (K=15) - used for high-speed modes
     K15_CONSTRAINT = 15
     K15_POLY1 = 0o44735  # 18909 decimal
     K15_POLY2 = 0o63057  # 26139 decimal
 
-    def __init__(self, symlen: int, sample_rate: int = 8000, frequency: float = 1500.0,
-                 tx_amplitude: float = 0.8, doublespaced: int = 1, interleave_depth: int = 10,
-                 flushlength: int = 4, use_k15: bool = False,
-                 secondary_text: str = "fldigi pydigi", mode_name: str = "Thor"):
+    def __init__(
+        self,
+        symlen: int,
+        sample_rate: int = 8000,
+        frequency: float = 1500.0,
+        tx_amplitude: float = 0.8,
+        doublespaced: int = 1,
+        interleave_depth: int = 10,
+        flushlength: int = 4,
+        use_k15: bool = False,
+        secondary_text: str = "fldigi pydigi",
+        mode_name: str = "Thor",
+    ):
         super().__init__(mode_name=mode_name, sample_rate=sample_rate, frequency=frequency)
 
         self.symlen = symlen
@@ -128,13 +137,9 @@ class Thor(Modem):
         # Initialize Viterbi encoder
         # Reference: fldigi/src/thor/thor.cxx lines 398-407
         if use_k15:
-            self.encoder = ConvolutionalEncoder(
-                self.K15_CONSTRAINT, self.K15_POLY1, self.K15_POLY2
-            )
+            self.encoder = ConvolutionalEncoder(self.K15_CONSTRAINT, self.K15_POLY1, self.K15_POLY2)
         else:
-            self.encoder = ConvolutionalEncoder(
-                self.K7_CONSTRAINT, self.K7_POLY1, self.K7_POLY2
-            )
+            self.encoder = ConvolutionalEncoder(self.K7_CONSTRAINT, self.K7_POLY1, self.K7_POLY2)
 
         # Initialize interleaver
         # Reference: fldigi/src/thor/thor.cxx line 408
@@ -174,7 +179,7 @@ class Thor(Modem):
         output = []
 
         # Determine if this is Thor Micro mode (symlen == 4000)
-        is_micro = (self.symlen == 4000)
+        is_micro = self.symlen == 4000
 
         # Send preamble
         self._send_preamble(self.frequency, output, is_micro)
@@ -326,7 +331,7 @@ class Thor(Modem):
 
         Reference: fldigi/src/thor/thor.cxx - sendidle() lines 1270-1273
         """
-        self._send_char('\x00', frequency, output, secondary=False)
+        self._send_char("\x00", frequency, output, secondary=False)
 
     def _get_secondary_char(self):
         """
@@ -335,7 +340,7 @@ class Thor(Modem):
         Reference: fldigi/src/thor/thor.cxx - get_secondary_char() lines 1197-1204
         """
         if len(self.secondary_text) == 0:
-            return ' '
+            return " "
 
         if self.secondary_ptr >= len(self.secondary_text):
             self.secondary_ptr = 0
@@ -403,11 +408,11 @@ class Thor(Modem):
 
         Reference: fldigi/src/thor/thor.cxx - tx_process() lines 1329-1335
         """
-        self._send_char('\r', frequency, output, secondary=False)
+        self._send_char("\r", frequency, output, secondary=False)
 
         if not is_micro:
-            self._send_char('\x02', frequency, output, secondary=False)  # STX
-            self._send_char('\r', frequency, output, secondary=False)
+            self._send_char("\x02", frequency, output, secondary=False)  # STX
+            self._send_char("\r", frequency, output, secondary=False)
 
     def _send_end_sequence(self, frequency, output, is_micro=False):
         """
@@ -419,11 +424,11 @@ class Thor(Modem):
 
         Reference: fldigi/src/thor/thor.cxx - tx_process() lines 1358-1364
         """
-        self._send_char('\r', frequency, output, secondary=False)
+        self._send_char("\r", frequency, output, secondary=False)
 
         if not is_micro:
-            self._send_char('\x04', frequency, output, secondary=False)  # EOT
-            self._send_char('\r', frequency, output, secondary=False)
+            self._send_char("\x04", frequency, output, secondary=False)  # EOT
+            self._send_char("\r", frequency, output, secondary=False)
 
     def _send_postamble(self, frequency, output):
         """
@@ -440,7 +445,6 @@ class Thor(Modem):
         # Reference: fldigi/src/thor/thor.cxx line 1308
         self.bit_accumulator = 0
         self.bit_count = 0
-
 
     def estimate_duration(self, text: str, use_secondary: bool = False) -> float:
         """
@@ -473,7 +477,9 @@ class Thor(Modem):
         # Postamble: flushlength idle characters (~50 symbols each)
         postamble_symbols = self.flushlength * 50
 
-        total_symbols = preamble_symbols + start_symbols + data_symbols + end_symbols + postamble_symbols
+        total_symbols = (
+            preamble_symbols + start_symbols + data_symbols + end_symbols + postamble_symbols
+        )
 
         # Convert symbols to time
         symbol_duration = self.symlen / self.sample_rate
@@ -483,6 +489,7 @@ class Thor(Modem):
 # ============================================================================
 # Thor Mode Factory Functions
 # ============================================================================
+
 
 def ThorMicro():
     """
@@ -501,7 +508,7 @@ def ThorMicro():
         doublespaced=1,
         interleave_depth=4,
         flushlength=4,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -522,7 +529,7 @@ def Thor4():
         doublespaced=2,
         interleave_depth=10,
         flushlength=4,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -543,7 +550,7 @@ def Thor5():
         doublespaced=2,
         interleave_depth=10,
         flushlength=4,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -564,7 +571,7 @@ def Thor8():
         doublespaced=2,
         interleave_depth=10,
         flushlength=4,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -585,7 +592,7 @@ def Thor11():
         doublespaced=1,
         interleave_depth=10,
         flushlength=8,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -607,7 +614,7 @@ def Thor16():
         doublespaced=1,
         interleave_depth=10,
         flushlength=8,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -628,7 +635,7 @@ def Thor22():
         doublespaced=1,
         interleave_depth=10,
         flushlength=16,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -650,7 +657,7 @@ def Thor25():
         doublespaced=1,
         interleave_depth=25,
         flushlength=20,
-        use_k15=True
+        use_k15=True,
     )
 
 
@@ -670,7 +677,7 @@ def Thor32():
         doublespaced=1,
         interleave_depth=10,
         flushlength=20,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -690,7 +697,7 @@ def Thor44():
         doublespaced=1,
         interleave_depth=10,
         flushlength=16,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -710,7 +717,7 @@ def Thor56():
         doublespaced=1,
         interleave_depth=10,
         flushlength=20,
-        use_k15=False
+        use_k15=False,
     )
 
 
@@ -732,7 +739,7 @@ def Thor25x4():
         doublespaced=4,
         interleave_depth=50,
         flushlength=40,
-        use_k15=True
+        use_k15=True,
     )
 
 
@@ -754,7 +761,7 @@ def Thor50x1():
         doublespaced=1,
         interleave_depth=50,
         flushlength=40,
-        use_k15=True
+        use_k15=True,
     )
 
 
@@ -776,7 +783,7 @@ def Thor50x2():
         doublespaced=2,
         interleave_depth=50,
         flushlength=40,
-        use_k15=True
+        use_k15=True,
     )
 
 
@@ -798,5 +805,5 @@ def Thor100():
         doublespaced=1,
         interleave_depth=50,
         flushlength=40,
-        use_k15=True
+        use_k15=True,
     )

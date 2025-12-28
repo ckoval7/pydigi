@@ -11,9 +11,12 @@ Demonstrates PSK Extended modes including:
 from pydigi.modems.psk import PSK1000
 from pydigi.modems.psk_extended import (
     PSK63F,
-    PSK_2X_PSK500, PSK_4X_PSK500,
-    PSK_2X_PSK800, PSK_2X_PSK1000,
-    PSK_6X_PSK250, PSK_12X_PSK125
+    PSK_2X_PSK500,
+    PSK_4X_PSK500,
+    PSK_2X_PSK800,
+    PSK_2X_PSK1000,
+    PSK_6X_PSK250,
+    PSK_12X_PSK125,
 )
 from pydigi.utils.audio import save_wav
 
@@ -94,7 +97,7 @@ modes = [
     ("6X_PSK250", PSK_6X_PSK250()),
     ("12X_PSK125", PSK_12X_PSK125()),
     ("2X_PSK800", PSK_2X_PSK800()),
-    ("2X_PSK1000", PSK_2X_PSK1000())
+    ("2X_PSK1000", PSK_2X_PSK1000()),
 ]
 
 short_msg = "TEST"
@@ -104,7 +107,9 @@ for name, modem in modes:
     bandwidth = modem.num_carriers * modem.separation * modem.baud
     filename = f"{name.lower()}_output.wav"
     save_wav(filename, audio, 8000)
-    print(f"{name:15s}: {modem.num_carriers:2d} carriers × {modem.baud:4.0f} baud = ~{bandwidth:4.0f} Hz BW, {duration:.2f}s → {filename}")
+    print(
+        f"{name:15s}: {modem.num_carriers:2d} carriers × {modem.baud:4.0f} baud = ~{bandwidth:4.0f} Hz BW, {duration:.2f}s → {filename}"
+    )
 
 print()
 print("=" * 60)

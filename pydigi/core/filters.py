@@ -123,11 +123,7 @@ class FIRFilter:
         taps: Filter coefficients
     """
 
-    def __init__(
-        self,
-        taps: np.ndarray,
-        decimation: int = 1
-    ):
+    def __init__(self, taps: np.ndarray, decimation: int = 1):
         """
         Initialize the FIR filter.
 
@@ -204,11 +200,7 @@ class FIRFilter:
         return np.array(output, dtype=np.complex128)
 
     @staticmethod
-    def design_lowpass(
-        length: int,
-        cutoff: float,
-        window: str = 'hamming'
-    ) -> 'FIRFilter':
+    def design_lowpass(length: int, cutoff: float, window: str = "hamming") -> "FIRFilter":
         """
         Design a lowpass FIR filter.
 
@@ -229,9 +221,9 @@ class FIRFilter:
             # Windowed sinc lowpass
             x = 2.0 * cutoff * sinc(2.0 * cutoff * t)
 
-            if window == 'hamming':
+            if window == "hamming":
                 x *= hamming(h)
-            elif window == 'blackman':
+            elif window == "blackman":
                 x *= blackman(h)
 
             taps[i] = x
@@ -240,11 +232,8 @@ class FIRFilter:
 
     @staticmethod
     def design_bandpass(
-        length: int,
-        f_low: float,
-        f_high: float,
-        window: str = 'hamming'
-    ) -> 'FIRFilter':
+        length: int, f_low: float, f_high: float, window: str = "hamming"
+    ) -> "FIRFilter":
         """
         Design a bandpass FIR filter.
 
@@ -264,12 +253,11 @@ class FIRFilter:
             h = i / (length - 1.0)
 
             # Windowed sinc bandpass (difference of two lowpass filters)
-            x = (2.0 * f_high * sinc(2.0 * f_high * t) -
-                 2.0 * f_low * sinc(2.0 * f_low * t))
+            x = 2.0 * f_high * sinc(2.0 * f_high * t) - 2.0 * f_low * sinc(2.0 * f_low * t)
 
-            if window == 'hamming':
+            if window == "hamming":
                 x *= hamming(h)
-            elif window == 'blackman':
+            elif window == "blackman":
                 x *= blackman(h)
 
             taps[i] = x
@@ -278,11 +266,8 @@ class FIRFilter:
 
     @staticmethod
     def design_hilbert(
-        length: int,
-        f_low: float,
-        f_high: float,
-        window: str = 'hamming'
-    ) -> 'FIRFilter':
+        length: int, f_low: float, f_high: float, window: str = "hamming"
+    ) -> "FIRFilter":
         """
         Design a Hilbert transform filter.
 
@@ -304,15 +289,14 @@ class FIRFilter:
             h = i / (length - 1.0)
 
             # Windowed cosc for Hilbert transform
-            x = (2.0 * f_high * cosc(2.0 * f_high * t) -
-                 2.0 * f_low * cosc(2.0 * f_low * t))
+            x = 2.0 * f_high * cosc(2.0 * f_high * t) - 2.0 * f_low * cosc(2.0 * f_low * t)
 
             # Time reversal for actual filter
             x = -x
 
-            if window == 'hamming':
+            if window == "hamming":
                 x *= hamming(h)
-            elif window == 'blackman':
+            elif window == "blackman":
                 x *= blackman(h)
 
             taps[i] = x

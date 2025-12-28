@@ -17,10 +17,12 @@ def blackman3_window(phase):
     Returns:
         Window value
     """
-    return (0.35875 +
-            0.48829 * np.cos(phase) +
-            0.14128 * np.cos(2 * phase) +
-            0.01168 * np.cos(3 * phase))
+    return (
+        0.35875
+        + 0.48829 * np.cos(phase)
+        + 0.14128 * np.cos(2 * phase)
+        + 0.01168 * np.cos(3 * phase)
+    )
 
 
 def design_windowed_fir(low_omega, high_omega, length, window_func=blackman3_window, shift=0.0):

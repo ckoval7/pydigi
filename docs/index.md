@@ -5,7 +5,7 @@ PyDigi is a pure Python library for generating digital amateur radio signals. It
 ## Features
 
 - **Pure Python implementation** - No compiled dependencies, easy to understand and modify
-- **Extensive modem support** - 20 mode families, ~147 mode variants
+- **Extensive modem support** - 22 mode families, ~151 mode variants
 - **Clean API** - Simple `modulate(text)` interface returns audio samples
 - **fldigi compatible** - All generated signals decode correctly in fldigi
 - **Flexible output** - Returns numpy arrays for use with GNU Radio, WAV files, or direct audio playback
@@ -45,7 +45,7 @@ save_wav("output.wav", audio, sample_rate=8000)
 - **Thor**: Micro, 4, 5, 8, 11, 16, 22, 25, 32, 44, 56, 25x4, 50x1, 50x2, 100
 - **MT63**: MT63-500/1000/2000 (Short/Long interleaver)
 
-### Other Modes - 33 variants
+### Other Modes - 37 variants
 - **CW** (Morse Code) - Variable WPM with prosign support
 - **RTTY** (Radioteletype) - Baudot encoding with configurable shift
 - **Hell** (Hellschreiber) - Feld Hell, Slow Hell, HellX5/X9, FSK Hell
@@ -53,8 +53,10 @@ save_wav("output.wav", audio, sample_rate=8000)
 - **FSQ** - FSQ-2, FSQ-3, FSQ-6
 - **IFKP** - IFKP-0.5, IFKP-1.0, IFKP-2.0 (Incremental Frequency Keying with FEC)
 - **SCAMP** - SCAMPFSK, SCAMPOOK, SCFSKFST, SCFSKSLW, SCOOKSLW, SCFSKVSL (Golay FEC)
+- **NAVTEX/SITOR-B** - Maritime safety broadcast modes
+- **WEFAX** (Weather Facsimile) - WEFAX-576, WEFAX-288 (Image transmission)
 
-**Total: 20 mode families, ~147 mode variants**
+**Total: 22 mode families, ~151 mode variants - All modes decode correctly in fldigi!**
 
 ## Design Philosophy
 

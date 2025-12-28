@@ -17,7 +17,7 @@ from ..core.dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
-    normalize_audio
+    normalize_audio,
 )
 from ..modems.base import Modem
 from ..varicode.psk_varicode import encode_text_to_bits
@@ -69,7 +69,9 @@ class PSK(Modem):
         tx_amplitude: float = 0.8,
         preamble_symbols: int = 32,
         postamble_symbols: int = 32,
-        apply_filter: bool = True
+        apply_filter: bool = True,
+        leading_silence: float = 0.0,
+        trailing_silence: float = 0.0,
     ):
         """
         Initialize the PSK modem.
@@ -88,6 +90,8 @@ class PSK(Modem):
             preamble_symbols: Number of preamble symbols for sync (default: 32)
             postamble_symbols: Number of postamble symbols for clean ending (default: 32)
             apply_filter: Apply baseband lowpass filtering (default: True, recommended)
+            leading_silence: Duration of silence in seconds to add before signal (default: 0.0)
+            trailing_silence: Duration of silence in seconds to add after signal (default: 0.0)
 
         Raises:
             ValueError: If baud rate is <= 0 or > 1000
@@ -99,11 +103,17 @@ class PSK(Modem):
             125: "PSK125",
             250: "PSK250",
             500: "PSK500",
-            1000: "PSK1000"
+            1000: "PSK1000",
         }
         mode_name = baud_map.get(baud, f"PSK{int(baud)}")
 
-        super().__init__(mode_name=mode_name, sample_rate=sample_rate, frequency=frequency)
+        super().__init__(
+            mode_name=mode_name,
+            sample_rate=sample_rate,
+            frequency=frequency,
+            leading_silence=leading_silence,
+            trailing_silence=trailing_silence,
+        )
 
         if baud <= 0 or baud > 1000:
             raise ValueError(f"Baud rate must be > 0 and <= 1000, got {baud}")
@@ -210,7 +220,7 @@ class PSK(Modem):
         if symbol == 0:
             symbol_complex = complex(-1.0, 0.0)  # 180° phase change
         else:
-            symbol_complex = complex(1.0, 0.0)   # No phase change
+            symbol_complex = complex(1.0, 0.0)  # No phase change
 
         # Get previous symbol (stored as complex value)
         prev_symbol_complex = complex(np.cos(self._prev_phase), np.sin(self._prev_phase))
@@ -226,7 +236,7 @@ class PSK(Modem):
             # Interpolate between previous and current symbol
             # using the raised cosine shape (matches fldigi exactly)
             shape_a = self._tx_shape[i]  # Weight for previous symbol (0->1)
-            shape_b = 1.0 - shape_a       # Weight for new symbol (1->0)
+            shape_b = 1.0 - shape_a  # Weight for new symbol (1->0)
 
             # Linear interpolation in complex plane (fldigi line 2270-2271)
             # This generates the baseband I/Q signal
@@ -323,7 +333,7 @@ class PSK(Modem):
         high_edge = max(low_edge + 0.05, min(high_edge, 0.99))
 
         # 4th order Butterworth bandpass filter (lower order to reduce ringing)
-        b, a = signal.butter(4, [low_edge, high_edge], btype='band')
+        b, a = signal.butter(4, [low_edge, high_edge], btype="band")
 
         # Apply zero-phase filtering (filtfilt) to avoid phase distortion
         filtered = signal.filtfilt(b, a, samples)
@@ -393,7 +403,9 @@ class PSK(Modem):
         sample_rate: Optional[float] = None,
         preamble_symbols: Optional[int] = None,
         postamble_symbols: Optional[int] = None,
-        apply_filter: Optional[bool] = None
+        apply_filter: Optional[bool] = None,
+        leading_silence: Optional[float] = None,
+        trailing_silence: Optional[float] = None,
     ) -> np.ndarray:
         """
         Modulate text into PSK audio signal.
@@ -407,6 +419,8 @@ class PSK(Modem):
             preamble_symbols: Number of preamble symbols (default: uses initialized value)
             postamble_symbols: Number of postamble symbols (default: uses initialized value)
             apply_filter: Apply baseband lowpass filtering (default: uses initialized value)
+            leading_silence: Duration of silence in seconds to add before signal (default: uses initialized value)
+            trailing_silence: Duration of silence in seconds to add after signal (default: uses initialized value)
 
         Returns:
             Audio samples as numpy array of float32 values (-1.0 to 1.0)
@@ -435,8 +449,8 @@ class PSK(Modem):
             self.sample_rate = sample_rate
             self._init_parameters()
 
-        # Call base class modulate (handles frequency and sample_rate overrides)
-        audio = super().modulate(text, frequency, sample_rate)
+        # Call base class modulate (handles frequency, sample_rate, and silence overrides)
+        audio = super().modulate(text, frequency, sample_rate, leading_silence, trailing_silence)
 
         # Restore original values
         self.preamble_symbols = original_preamble
@@ -448,7 +462,12 @@ class PSK(Modem):
 
         return audio
 
-    def estimate_duration(self, text: str, preamble_symbols: Optional[int] = None, postamble_symbols: Optional[int] = None) -> float:
+    def estimate_duration(
+        self,
+        text: str,
+        preamble_symbols: Optional[int] = None,
+        postamble_symbols: Optional[int] = None,
+    ) -> float:
         """
         Estimate transmission duration in seconds.
 
@@ -484,37 +503,118 @@ class PSK(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"PSK(mode={self.mode_name}, baud={self.baud}, "
-                f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)")
+        return (
+            f"PSK(mode={self.mode_name}, baud={self.baud}, "
+            f"freq={self.frequency}Hz, fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for common PSK modes
 
-def PSK31(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+
+def PSK31(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK31 modem (31.25 baud)."""
-    return PSK(baud=31.25, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=31.25,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )
 
 
-def PSK63(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+def PSK63(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK63 modem (62.5 baud)."""
-    return PSK(baud=62.5, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=62.5,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )
 
 
-def PSK125(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+def PSK125(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK125 modem (125 baud)."""
-    return PSK(baud=125, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=125,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )
 
 
-def PSK250(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+def PSK250(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK250 modem (250 baud)."""
-    return PSK(baud=250, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=250,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )
 
 
-def PSK500(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+def PSK500(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK500 modem (500 baud)."""
-    return PSK(baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=500,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )
 
 
-def PSK1000(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> PSK:
+def PSK1000(
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
+) -> PSK:
     """Create a PSK1000 modem (1000 baud)."""
-    return PSK(baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return PSK(
+        baud=1000,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
+    )

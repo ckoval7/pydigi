@@ -52,22 +52,22 @@ from ..core.mfsk_modulator import MFSKModulator
 # Common Contestia configurations
 # Format: (tones, bandwidth)
 CONTESTIA_MODES = {
-    'CONTESTIA-4-125': (4, 125),
-    'CONTESTIA-4-250': (4, 250),
-    'CONTESTIA-4-500': (4, 500),
-    'CONTESTIA-4-1000': (4, 1000),
-    'CONTESTIA-4-2000': (4, 2000),
-    'CONTESTIA-8-125': (8, 125),
-    'CONTESTIA-8-250': (8, 250),  # Popular mode
-    'CONTESTIA-8-500': (8, 500),
-    'CONTESTIA-8-1000': (8, 1000),
-    'CONTESTIA-8-2000': (8, 2000),
-    'CONTESTIA-16-500': (16, 500),
-    'CONTESTIA-16-1000': (16, 1000),
-    'CONTESTIA-16-2000': (16, 2000),
-    'CONTESTIA-32-1000': (32, 1000),
-    'CONTESTIA-32-2000': (32, 2000),
-    'CONTESTIA-64-2000': (64, 2000),
+    "CONTESTIA-4-125": (4, 125),
+    "CONTESTIA-4-250": (4, 250),
+    "CONTESTIA-4-500": (4, 500),
+    "CONTESTIA-4-1000": (4, 1000),
+    "CONTESTIA-4-2000": (4, 2000),
+    "CONTESTIA-8-125": (8, 125),
+    "CONTESTIA-8-250": (8, 250),  # Popular mode
+    "CONTESTIA-8-500": (8, 500),
+    "CONTESTIA-8-1000": (8, 1000),
+    "CONTESTIA-8-2000": (8, 2000),
+    "CONTESTIA-16-500": (16, 500),
+    "CONTESTIA-16-1000": (16, 1000),
+    "CONTESTIA-16-2000": (16, 2000),
+    "CONTESTIA-32-1000": (32, 1000),
+    "CONTESTIA-32-2000": (32, 2000),
+    "CONTESTIA-64-2000": (64, 2000),
 }
 
 
@@ -90,7 +90,7 @@ class Contestia(Modem):
         tx_amplitude: float = 0.8,
         reverse: bool = False,
         send_start_tones: bool = True,
-        send_stop_tones: bool = True
+        send_stop_tones: bool = True,
     ):
         """
         Initialize Contestia modem.
@@ -119,7 +119,7 @@ class Contestia(Modem):
 
         # Calculate bits per symbol
         self.bits_per_symbol = int(np.log2(tones))
-        if 2 ** self.bits_per_symbol != tones:
+        if 2**self.bits_per_symbol != tones:
             raise ValueError(f"Tones must be a power of 2, got {tones}")
 
         # Calculate symbol length
@@ -134,14 +134,14 @@ class Contestia(Modem):
         self.first_carrier = int((self.symbol_len / 16) * first_carrier_mult) + 1
 
         # Create encoder (using 'contestia' mode for 6-bit characters)
-        self.encoder = MFSKEncoder(bits_per_symbol=self.bits_per_symbol, mode='contestia')
+        self.encoder = MFSKEncoder(bits_per_symbol=self.bits_per_symbol, mode="contestia")
         self.modulator = MFSKModulator(
             symbol_len=self.symbol_len,
             first_carrier=self.first_carrier,
             bits_per_symbol=self.bits_per_symbol,
             sample_rate=sample_rate,
             use_gray_code=True,
-            reverse=reverse
+            reverse=reverse,
         )
 
         # Tone generation for preamble/postamble
@@ -264,7 +264,7 @@ class Contestia(Modem):
         # Process in chunks of bits_per_symbol
         for i in range(0, len(text_bytes), self.bits_per_symbol):
             # Get chunk of characters (exactly bits_per_symbol)
-            chunk = text_bytes[i:i + self.bits_per_symbol]
+            chunk = text_bytes[i : i + self.bits_per_symbol]
 
             # Build input block
             input_block = np.array(chunk, dtype=np.uint8)

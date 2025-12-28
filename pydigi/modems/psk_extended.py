@@ -27,7 +27,7 @@ from ..core.dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
-    normalize_audio
+    normalize_audio,
 )
 from ..modems.base import Modem
 from ..varicode.mfsk_varicode import encode_text_to_bits
@@ -61,10 +61,7 @@ class PSK63F(Modem):
     """
 
     def __init__(
-        self,
-        sample_rate: float = 8000.0,
-        frequency: float = 1000.0,
-        tx_amplitude: float = 0.8
+        self, sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
     ):
         """
         Initialize the PSK63F modem.
@@ -138,7 +135,9 @@ class PSK63F(Modem):
         for i in range(self._symbol_samples):
             # Smooth transition using raised cosine shape
             # Current phase interpolates between previous and new phase
-            current_phase = self._prev_phase + (phase - self._prev_phase) * (1.0 - self._tx_shape[i])
+            current_phase = self._prev_phase + (phase - self._prev_phase) * (
+                1.0 - self._tx_shape[i]
+            )
 
             # Generate complex exponential
             i_sample = np.cos(current_phase)
@@ -224,6 +223,7 @@ class PSK63F(Modem):
 
         # Get MFSK varicode bits for this character
         from ..varicode.mfsk_varicode import encode_char
+
         varicode = encode_char(char_code)
 
         # Encode each bit with FEC and transmit
@@ -271,10 +271,7 @@ class PSK63F(Modem):
         return i_samples, q_samples
 
     def tx_process(
-        self,
-        text: str,
-        preamble_symbols: int = 64,
-        postamble_symbols: int = 64
+        self, text: str, preamble_symbols: int = 64, postamble_symbols: int = 64
     ) -> np.ndarray:
         """
         Process text for transmission.
@@ -352,7 +349,7 @@ class PSK63F(Modem):
         frequency: Optional[float] = None,
         sample_rate: Optional[float] = None,
         preamble_symbols: int = 64,
-        postamble_symbols: int = 64
+        postamble_symbols: int = 64,
     ) -> np.ndarray:
         """
         Modulate text into PSK63F audio signal.
@@ -389,7 +386,7 @@ class PSK63F(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"PSK63F(freq={self.frequency}Hz, fs={self.sample_rate}Hz)")
+        return f"PSK63F(freq={self.frequency}Hz, fs={self.sample_rate}Hz)"
 
 
 class MultiCarrierPSK(Modem):
@@ -433,7 +430,7 @@ class MultiCarrierPSK(Modem):
         separation: float = 1.4,
         sample_rate: float = 8000.0,
         frequency: float = 1000.0,
-        tx_amplitude: float = 0.8
+        tx_amplitude: float = 0.8,
     ):
         """
         Initialize the multi-carrier PSK modem.
@@ -600,11 +597,13 @@ class MultiCarrierPSK(Modem):
                 # Quadrature modulation: I*cos(carrier) + Q*sin(carrier)
                 # From fldigi line 2274: outbuf[i] = (ival * cos(phaseacc) + qval * sin(phaseacc)) / numcarriers
                 if car == 0:
-                    output[i] = (ival * np.cos(self._carrier_phase_acc[car]) +
-                                qval * np.sin(self._carrier_phase_acc[car]))
+                    output[i] = ival * np.cos(self._carrier_phase_acc[car]) + qval * np.sin(
+                        self._carrier_phase_acc[car]
+                    )
                 else:
-                    output[i] += (ival * np.cos(self._carrier_phase_acc[car]) +
-                                 qval * np.sin(self._carrier_phase_acc[car]))
+                    output[i] += ival * np.cos(self._carrier_phase_acc[car]) + qval * np.sin(
+                        self._carrier_phase_acc[car]
+                    )
 
                 # Advance carrier phase
                 self._carrier_phase_acc[car] += delta
@@ -648,6 +647,7 @@ class MultiCarrierPSK(Modem):
         """
         # Get PSK varicode bits for this character
         from ..varicode.psk_varicode import encode_char
+
         varicode = encode_char(char_code)
 
         # Convert to bits and add two zero bits as character delimiter
@@ -668,10 +668,7 @@ class MultiCarrierPSK(Modem):
         return [0] * num_symbols
 
     def tx_process(
-        self,
-        text: str,
-        preamble_symbols: int = None,
-        postamble_symbols: int = None
+        self, text: str, preamble_symbols: int = None, postamble_symbols: int = None
     ) -> np.ndarray:
         """
         Process text for transmission.
@@ -745,7 +742,7 @@ class MultiCarrierPSK(Modem):
         frequency: Optional[float] = None,
         sample_rate: Optional[float] = None,
         preamble_symbols: int = None,
-        postamble_symbols: int = None
+        postamble_symbols: int = None,
     ) -> np.ndarray:
         """
         Modulate text into multi-carrier PSK audio signal.
@@ -782,47 +779,92 @@ class MultiCarrierPSK(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"{self.mode_name}(freq={self.frequency}Hz, "
-                f"carriers={self.num_carriers}, baud={self.baud}, "
-                f"fs={self.sample_rate}Hz)")
+        return (
+            f"{self.mode_name}(freq={self.frequency}Hz, "
+            f"carriers={self.num_carriers}, baud={self.baud}, "
+            f"fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for common multi-carrier PSK modes
 
-def PSK_12X_PSK125(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+
+def PSK_12X_PSK125(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 12X_PSK125 modem (12 carriers @ 125 baud each)."""
-    return MultiCarrierPSK(num_carriers=12, baud=125, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=12,
+        baud=125,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSK_6X_PSK250(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+def PSK_6X_PSK250(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 6X_PSK250 modem (6 carriers @ 250 baud each)."""
-    return MultiCarrierPSK(num_carriers=6, baud=250, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=6,
+        baud=250,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSK_2X_PSK500(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+def PSK_2X_PSK500(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 2X_PSK500 modem (2 carriers @ 500 baud each)."""
-    return MultiCarrierPSK(num_carriers=2, baud=500, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=2,
+        baud=500,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSK_4X_PSK500(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+def PSK_4X_PSK500(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 4X_PSK500 modem (4 carriers @ 500 baud each)."""
-    return MultiCarrierPSK(num_carriers=4, baud=500, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=4,
+        baud=500,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSK_2X_PSK800(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+def PSK_2X_PSK800(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 2X_PSK800 modem (2 carriers @ 800 baud each)."""
-    return MultiCarrierPSK(num_carriers=2, baud=800, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=2,
+        baud=800,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSK_2X_PSK1000(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSK:
+def PSK_2X_PSK1000(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSK:
     """Create a 2X_PSK1000 modem (2 carriers @ 1000 baud each)."""
-    return MultiCarrierPSK(num_carriers=2, baud=1000, sample_rate=sample_rate,
-                          frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSK(
+        num_carriers=2,
+        baud=1000,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
 class MultiCarrierPSKR(Modem):
@@ -872,7 +914,7 @@ class MultiCarrierPSKR(Modem):
         separation: float = 1.4,
         sample_rate: float = 8000.0,
         frequency: float = 1000.0,
-        tx_amplitude: float = 0.8
+        tx_amplitude: float = 0.8,
     ):
         """
         Initialize the multi-carrier PSK-R modem.
@@ -938,7 +980,9 @@ class MultiCarrierPSKR(Modem):
         # Create interleaver (2x2xdepth)
         # Size = 2 (bits per symbol for FEC output)
         # Depth = interleave_depth parameter
-        self._interleaver = Interleave(size=2, depth=self.interleave_depth, direction=INTERLEAVE_FWD)
+        self._interleaver = Interleave(
+            size=2, depth=self.interleave_depth, direction=INTERLEAVE_FWD
+        )
 
         # Calculate carrier frequencies
         sc_bw = self.sample_rate / self._symbol_samples
@@ -1017,11 +1061,13 @@ class MultiCarrierPSKR(Modem):
 
                 # Quadrature modulation: I*cos(carrier) + Q*sin(carrier)
                 if car == 0:
-                    output[i] = (ival * np.cos(self._carrier_phase_acc[car]) +
-                                qval * np.sin(self._carrier_phase_acc[car]))
+                    output[i] = ival * np.cos(self._carrier_phase_acc[car]) + qval * np.sin(
+                        self._carrier_phase_acc[car]
+                    )
                 else:
-                    output[i] += (ival * np.cos(self._carrier_phase_acc[car]) +
-                                 qval * np.sin(self._carrier_phase_acc[car]))
+                    output[i] += ival * np.cos(self._carrier_phase_acc[car]) + qval * np.sin(
+                        self._carrier_phase_acc[car]
+                    )
 
                 # Advance carrier phase
                 self._carrier_phase_acc[car] += delta
@@ -1115,6 +1161,7 @@ class MultiCarrierPSKR(Modem):
 
         # Get MFSK varicode bits for this character
         from ..varicode.mfsk_varicode import encode_char
+
         varicode = encode_char(char_code)
 
         # Encode each bit with FEC, interleave, and transmit
@@ -1207,10 +1254,7 @@ class MultiCarrierPSKR(Modem):
         return output
 
     def modulate(
-        self,
-        text: str,
-        frequency: Optional[float] = None,
-        sample_rate: Optional[float] = None
+        self, text: str, frequency: Optional[float] = None, sample_rate: Optional[float] = None
     ) -> np.ndarray:
         """
         Modulate text into multi-carrier PSK-R audio signal.
@@ -1245,130 +1289,293 @@ class MultiCarrierPSKR(Modem):
 
     def __repr__(self) -> str:
         """String representation of the modem."""
-        return (f"{self.mode_name}(freq={self.frequency}Hz, "
-                f"carriers={self.num_carriers}, baud={self.baud}, "
-                f"interleave_depth={self.interleave_depth}, "
-                f"fs={self.sample_rate}Hz)")
+        return (
+            f"{self.mode_name}(freq={self.frequency}Hz, "
+            f"carriers={self.num_carriers}, baud={self.baud}, "
+            f"interleave_depth={self.interleave_depth}, "
+            f"fs={self.sample_rate}Hz)"
+        )
 
 
 # Convenience functions for PSK-R modes
 # Interleave depths from fldigi psk.cxx
 
-def PSKR_4X_PSK63R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+
+def PSKR_4X_PSK63R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 4X_PSK63R modem (4 carriers @ 63 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=4, baud=62.5, interleave_depth=80,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=4,
+        baud=62.5,
+        interleave_depth=80,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_5X_PSK63R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_5X_PSK63R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 5X_PSK63R modem (5 carriers @ 63 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=5, baud=62.5, interleave_depth=260,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=5,
+        baud=62.5,
+        interleave_depth=260,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_10X_PSK63R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_10X_PSK63R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 10X_PSK63R modem (10 carriers @ 63 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=10, baud=62.5, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=10,
+        baud=62.5,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_20X_PSK63R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_20X_PSK63R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 20X_PSK63R modem (20 carriers @ 63 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=20, baud=62.5, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=20,
+        baud=62.5,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_32X_PSK63R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_32X_PSK63R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 32X_PSK63R modem (32 carriers @ 63 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=32, baud=62.5, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=32,
+        baud=62.5,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_4X_PSK125R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_4X_PSK125R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 4X_PSK125R modem (4 carriers @ 125 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=4, baud=125, interleave_depth=80,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=4,
+        baud=125,
+        interleave_depth=80,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_5X_PSK125R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_5X_PSK125R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 5X_PSK125R modem (5 carriers @ 125 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=5, baud=125, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=5,
+        baud=125,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_10X_PSK125R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_10X_PSK125R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 10X_PSK125R modem (10 carriers @ 125 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=10, baud=125, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=10,
+        baud=125,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_12X_PSK125R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_12X_PSK125R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 12X_PSK125R modem (12 carriers @ 125 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=12, baud=125, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=12,
+        baud=125,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_16X_PSK125R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_16X_PSK125R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 16X_PSK125R modem (16 carriers @ 125 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=16, baud=125, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=16,
+        baud=125,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_2X_PSK250R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_2X_PSK250R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 2X_PSK250R modem (2 carriers @ 250 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=2, baud=250, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=2,
+        baud=250,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_3X_PSK250R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_3X_PSK250R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 3X_PSK250R modem (3 carriers @ 250 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=3, baud=250, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=3,
+        baud=250,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_5X_PSK250R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_5X_PSK250R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 5X_PSK250R modem (5 carriers @ 250 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=5, baud=250, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=5,
+        baud=250,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_6X_PSK250R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_6X_PSK250R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 6X_PSK250R modem (6 carriers @ 250 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=6, baud=250, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=6,
+        baud=250,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_7X_PSK250R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_7X_PSK250R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 7X_PSK250R modem (7 carriers @ 250 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=7, baud=250, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=7,
+        baud=250,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_2X_PSK500R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_2X_PSK500R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 2X_PSK500R modem (2 carriers @ 500 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=2, baud=500, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=2,
+        baud=500,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_3X_PSK500R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_3X_PSK500R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 3X_PSK500R modem (3 carriers @ 500 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=3, baud=500, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=3,
+        baud=500,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_4X_PSK500R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_4X_PSK500R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 4X_PSK500R modem (4 carriers @ 500 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=4, baud=500, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=4,
+        baud=500,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_2X_PSK800R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_2X_PSK800R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 2X_PSK800R modem (2 carriers @ 800 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=2, baud=800, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=2,
+        baud=800,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )
 
 
-def PSKR_2X_PSK1000R(sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8) -> MultiCarrierPSKR:
+def PSKR_2X_PSK1000R(
+    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+) -> MultiCarrierPSKR:
     """Create a 2X_PSK1000R modem (2 carriers @ 1000 baud with PSK-R)."""
-    return MultiCarrierPSKR(num_carriers=2, baud=1000, interleave_depth=160,
-                           sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude)
+    return MultiCarrierPSKR(
+        num_carriers=2,
+        baud=1000,
+        interleave_depth=160,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+    )

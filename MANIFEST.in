@@ -14,6 +14,10 @@ include setup.py
 include requirements.txt
 include mkdocs.yml
 
+# Include fonts for WEFAX text rendering
+include pydigi/fonts/*.ttf
+include pydigi/fonts/LICENSE
+
 # Include examples
 recursive-include examples *.py
 

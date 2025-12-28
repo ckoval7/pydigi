@@ -18,7 +18,7 @@ def parity(value: int) -> int:
     Returns:
         0 if even number of 1 bits, 1 if odd number of 1 bits
     """
-    count = bin(value).count('1')
+    count = bin(value).count("1")
     return count & 1
 
 
@@ -143,4 +143,4 @@ def create_mfsk_encoder() -> ConvolutionalEncoder:
     Reference:
         fldigi/src/include/mfsk.h lines 52-56
     """
-    return ConvolutionalEncoder(k=7, poly1=0x6d, poly2=0x4f)
+    return ConvolutionalEncoder(k=7, poly1=0x6D, poly2=0x4F)

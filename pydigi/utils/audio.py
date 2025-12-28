@@ -11,10 +11,7 @@ import struct
 
 
 def save_wav(
-    filename: str,
-    audio: np.ndarray,
-    sample_rate: int = 8000,
-    bit_depth: int = 16
+    filename: str, audio: np.ndarray, sample_rate: int = 8000, bit_depth: int = 16
 ) -> None:
     """
     Save audio samples to a WAV file.
@@ -51,7 +48,7 @@ def save_wav(
         sample_width = 1
 
     # Write WAV file
-    with wave.open(filename, 'wb') as wav_file:
+    with wave.open(filename, "wb") as wav_file:
         wav_file.setnchannels(1)  # Mono
         wav_file.setsampwidth(sample_width)
         wav_file.setframerate(sample_rate)
@@ -80,7 +77,7 @@ def load_wav(filename: str) -> tuple:
         >>> audio, sr = load_wav("input.wav")
         >>> print(f"Loaded {len(audio)} samples at {sr} Hz")
     """
-    with wave.open(filename, 'rb') as wav_file:
+    with wave.open(filename, "rb") as wav_file:
         # Get WAV parameters
         n_channels = wav_file.getnchannels()
         sample_width = wav_file.getsampwidth()
@@ -109,11 +106,7 @@ def load_wav(filename: str) -> tuple:
     return audio, sample_rate
 
 
-def save_wav_soundfile(
-    filename: str,
-    audio: np.ndarray,
-    sample_rate: int = 8000
-) -> None:
+def save_wav_soundfile(filename: str, audio: np.ndarray, sample_rate: int = 8000) -> None:
     """
     Save audio using soundfile library (if available).
 
@@ -134,12 +127,10 @@ def save_wav_soundfile(
     """
     try:
         import soundfile as sf
+
         sf.write(filename, audio, sample_rate)
     except ImportError:
-        raise ImportError(
-            "soundfile library not installed. "
-            "Install with: pip install soundfile"
-        )
+        raise ImportError("soundfile library not installed. " "Install with: pip install soundfile")
 
 
 def load_wav_soundfile(filename: str) -> tuple:
@@ -160,13 +151,11 @@ def load_wav_soundfile(filename: str) -> tuple:
     """
     try:
         import soundfile as sf
+
         audio, sample_rate = sf.read(filename)
         return audio, sample_rate
     except ImportError:
-        raise ImportError(
-            "soundfile library not installed. "
-            "Install with: pip install soundfile"
-        )
+        raise ImportError("soundfile library not installed. " "Install with: pip install soundfile")
 
 
 def db_to_linear(db: float) -> float:
@@ -205,7 +194,7 @@ def rms(audio: np.ndarray) -> float:
     Returns:
         RMS value
     """
-    return np.sqrt(np.mean(audio ** 2))
+    return np.sqrt(np.mean(audio**2))
 
 
 def peak(audio: np.ndarray) -> float:

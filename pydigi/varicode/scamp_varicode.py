@@ -16,66 +16,66 @@ from typing import Optional, List, Tuple
 # SCAMP 6-bit character table (60 characters, index 0-59)
 # Matches fldigi's scamp_6bit_codesymbols array exactly
 SCAMP_CHARSET = [
-    '\x00',  # 0: NUL (reserved/unused)
-    '\x08',  # 1: Backspace
-    '\r',    # 2: Carriage return
-    ' ',     # 3: Space
-    '!',     # 4
-    '"',     # 5
-    "'",     # 6: Apostrophe (can be interpreted as acute diacritical mark)
-    '(',     # 7
-    ')',     # 8
-    '*',     # 9
-    '+',     # 10
-    ',',     # 11
-    '-',     # 12
-    '.',     # 13
-    '/',     # 14
-    '0',     # 15
-    '1',     # 16
-    '2',     # 17
-    '3',     # 18
-    '4',     # 19
-    '5',     # 20
-    '6',     # 21
-    '7',     # 22
-    '8',     # 23
-    '9',     # 24
-    ':',     # 25
-    ';',     # 26
-    '=',     # 27
-    '?',     # 28
-    '@',     # 29
-    'A',     # 30
-    'B',     # 31
-    'C',     # 32
-    'D',     # 33
-    'E',     # 34
-    'F',     # 35
-    'G',     # 36
-    'H',     # 37
-    'I',     # 38
-    'J',     # 39
-    'K',     # 40
-    'L',     # 41
-    'M',     # 42
-    'N',     # 43
-    'O',     # 44
-    'P',     # 45
-    'Q',     # 46
-    'R',     # 47
-    'S',     # 48
-    'T',     # 49
-    'U',     # 50
-    'V',     # 51
-    'W',     # 52
-    'X',     # 53
-    'Y',     # 54
-    'Z',     # 55
-    '\\',    # 56: Backslash (can be interpreted as diaeresis/umlaut)
-    '^',     # 57
-    '`',     # 58
-    '~',     # 59
+    "\x00",  # 0: NUL (reserved/unused)
+    "\x08",  # 1: Backspace
+    "\r",  # 2: Carriage return
+    " ",  # 3: Space
+    "!",  # 4
+    '"',  # 5
+    "'",  # 6: Apostrophe (can be interpreted as acute diacritical mark)
+    "(",  # 7
+    ")",  # 8
+    "*",  # 9
+    "+",  # 10
+    ",",  # 11
+    "-",  # 12
+    ".",  # 13
+    "/",  # 14
+    "0",  # 15
+    "1",  # 16
+    "2",  # 17
+    "3",  # 18
+    "4",  # 19
+    "5",  # 20
+    "6",  # 21
+    "7",  # 22
+    "8",  # 23
+    "9",  # 24
+    ":",  # 25
+    ";",  # 26
+    "=",  # 27
+    "?",  # 28
+    "@",  # 29
+    "A",  # 30
+    "B",  # 31
+    "C",  # 32
+    "D",  # 33
+    "E",  # 34
+    "F",  # 35
+    "G",  # 36
+    "H",  # 37
+    "I",  # 38
+    "J",  # 39
+    "K",  # 40
+    "L",  # 41
+    "M",  # 42
+    "N",  # 43
+    "O",  # 44
+    "P",  # 45
+    "Q",  # 46
+    "R",  # 47
+    "S",  # 48
+    "T",  # 49
+    "U",  # 50
+    "V",  # 51
+    "W",  # 52
+    "X",  # 53
+    "Y",  # 54
+    "Z",  # 55
+    "\\",  # 56: Backslash (can be interpreted as diaeresis/umlaut)
+    "^",  # 57
+    "`",  # 58
+    "~",  # 59
 ]
 
 
@@ -110,12 +110,12 @@ def char_to_code(char: str) -> Optional[int]:
     c = char
 
     # Automatic conversions (matching fldigi behavior)
-    if 'a' <= c <= 'z':
+    if "a" <= c <= "z":
         c = c.upper()
-    elif c == '\n':
-        c = '\r'
-    elif c == '\x7f':  # DEL -> backspace
-        c = '\x08'
+    elif c == "\n":
+        c = "\r"
+    elif c == "\x7f":  # DEL -> backspace
+        c = "\x08"
 
     # Search for character in table (skip index 0 which is reserved)
     for i in range(1, len(SCAMP_CHARSET)):
@@ -368,7 +368,7 @@ def codewords_to_text(codewords: List[int]) -> str:
         chars = codeword_to_chars(codeword)
         text.extend(chars)
 
-    return ''.join(text)
+    return "".join(text)
 
 
 # Special codeword markers

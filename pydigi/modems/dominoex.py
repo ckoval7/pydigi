@@ -89,9 +89,17 @@ class DominoEX(Modem):
         >>> audio = modem.modulate("CQ CQ CQ", frequency=1500, sample_rate=8000)
     """
 
-    def __init__(self, symlen: int = 1024, doublespaced: int = 2, sample_rate: int = 8000,
-                 frequency: float = 1500.0, tx_amplitude: float = 0.8,
-                 fec: bool = False, mode_micro: bool = False, mode_name: str = "DominoEX"):
+    def __init__(
+        self,
+        symlen: int = 1024,
+        doublespaced: int = 2,
+        sample_rate: int = 8000,
+        frequency: float = 1500.0,
+        tx_amplitude: float = 0.8,
+        fec: bool = False,
+        mode_micro: bool = False,
+        mode_name: str = "DominoEX",
+    ):
         """
         Initialize DominoEX modem with specified parameters.
 
@@ -267,13 +275,13 @@ class DominoEX(Modem):
         audio.append(self._send_idle(frequency))
 
         # Send CR
-        audio.append(self._send_char(ord('\r'), False, frequency))
+        audio.append(self._send_char(ord("\r"), False, frequency))
 
         if not mode_micro:
             # Send STX (0x02)
             audio.append(self._send_char(2, False, frequency))
             # Send CR
-            audio.append(self._send_char(ord('\r'), False, frequency))
+            audio.append(self._send_char(ord("\r"), False, frequency))
 
         return np.concatenate(audio) if audio else np.array([], dtype=np.float32)
 
@@ -295,13 +303,13 @@ class DominoEX(Modem):
         audio = []
 
         # Send CR
-        audio.append(self._send_char(ord('\r'), False, frequency))
+        audio.append(self._send_char(ord("\r"), False, frequency))
 
         if not mode_micro:
             # Send EOT (0x04)
             audio.append(self._send_char(4, False, frequency))
             # Send CR
-            audio.append(self._send_char(ord('\r'), False, frequency))
+            audio.append(self._send_char(ord("\r"), False, frequency))
 
         # Flush varicode decoder with 4 idle characters
         for _ in range(4):
@@ -309,8 +317,9 @@ class DominoEX(Modem):
 
         return np.concatenate(audio) if audio else np.array([], dtype=np.float32)
 
-    def modulate(self, text: str, frequency: float = None,
-                 sample_rate: float = None, mode_micro: bool = None) -> np.ndarray:
+    def modulate(
+        self, text: str, frequency: float = None, sample_rate: float = None, mode_micro: bool = None
+    ) -> np.ndarray:
         """
         Modulate text into DominoEX audio signal.
 
@@ -357,21 +366,21 @@ class DominoEX(Modem):
         """
         # Count nibbles for preamble
         preamble_nibbles = len(dominoex_varicode.encode_char(0, True))  # idle
-        preamble_nibbles += len(dominoex_varicode.encode_char(ord('\r'), False))  # CR
+        preamble_nibbles += len(dominoex_varicode.encode_char(ord("\r"), False))  # CR
 
         if not mode_micro:
             preamble_nibbles += len(dominoex_varicode.encode_char(2, False))  # STX
-            preamble_nibbles += len(dominoex_varicode.encode_char(ord('\r'), False))  # CR
+            preamble_nibbles += len(dominoex_varicode.encode_char(ord("\r"), False))  # CR
 
         # Count nibbles for data
         data_nibbles = len(dominoex_varicode.encode(text, False))
 
         # Count nibbles for postamble
-        postamble_nibbles = len(dominoex_varicode.encode_char(ord('\r'), False))  # CR
+        postamble_nibbles = len(dominoex_varicode.encode_char(ord("\r"), False))  # CR
 
         if not mode_micro:
             postamble_nibbles += len(dominoex_varicode.encode_char(4, False))  # EOT
-            postamble_nibbles += len(dominoex_varicode.encode_char(ord('\r'), False))  # CR
+            postamble_nibbles += len(dominoex_varicode.encode_char(ord("\r"), False))  # CR
 
         # 4 idle characters for flush
         postamble_nibbles += 4 * len(dominoex_varicode.encode_char(0, True))
@@ -389,6 +398,7 @@ class DominoEX(Modem):
 #
 # Convenience functions for standard DominoEX modes
 #
+
 
 def DominoEX_Micro(text, frequency=1500.0, sample_rate=8000):
     """DominoEX Micro - Ultra-slow weak signal mode (2.0 baud)."""

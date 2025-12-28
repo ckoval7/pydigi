@@ -11,11 +11,7 @@ induced phase shifts and requires no carrier tracking.
 Reference: fldigi/src/throb/throb.cxx
 """
 
-from pydigi import (
-    Throb1, Throb2, Throb4,
-    ThrobX1, ThrobX2, ThrobX4,
-    save_wav
-)
+from pydigi import Throb1, Throb2, Throb4, ThrobX1, ThrobX2, ThrobX4, save_wav
 
 
 def example1_basic_throb():
@@ -232,16 +228,16 @@ def example10_all_modes():
         duration = modem.estimate_duration(text)
 
         # Estimate bandwidth
-        if 'X' in mode_name:
-            if '4' in mode_name:
+        if "X" in mode_name:
+            if "4" in mode_name:
                 bw = 156  # ThrobX4 wide
             else:
-                bw = 78   # ThrobX1/2 narrow
+                bw = 78  # ThrobX1/2 narrow
         else:
-            if '4' in mode_name:
+            if "4" in mode_name:
                 bw = 128  # Throb4 wide
             else:
-                bw = 64   # Throb1/2 narrow
+                bw = 64  # Throb1/2 narrow
 
         filename = f"throb_all_{mode_name.lower()}.wav"
         save_wav(filename, audio, 8000)

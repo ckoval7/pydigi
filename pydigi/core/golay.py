@@ -13,20 +13,23 @@ from typing import Tuple
 
 
 # Golay generator matrix - converts 12 data bits to 12 parity bits
-GOLAY_MATRIX = np.array([
-    0xdc5,  # 0b 1101 1100 0101
-    0xb8b,  # 0b 1011 1000 1011
-    0x717,  # 0b 0111 0001 0111
-    0xe2d,  # 0b 1110 0010 1101
-    0xc5b,  # 0b 1100 0101 1011
-    0x8b7,  # 0b 1000 1011 0111
-    0x16f,  # 0b 0001 0110 1111
-    0x2dd,  # 0b 0010 1101 1101
-    0x5d9,  # 0b 0101 1011 1001
-    0xb71,  # 0b 1011 0111 0001
-    0x6e3,  # 0b 0110 1110 0011
-    0xffe   # 0b 1111 1111 1110
-], dtype=np.uint16)
+GOLAY_MATRIX = np.array(
+    [
+        0xDC5,  # 0b 1101 1100 0101
+        0xB8B,  # 0b 1011 1000 1011
+        0x717,  # 0b 0111 0001 0111
+        0xE2D,  # 0b 1110 0010 1101
+        0xC5B,  # 0b 1100 0101 1011
+        0x8B7,  # 0b 1000 1011 0111
+        0x16F,  # 0b 0001 0110 1111
+        0x2DD,  # 0b 0010 1101 1101
+        0x5D9,  # 0b 0101 1011 1001
+        0xB71,  # 0b 1011 0111 0001
+        0x6E3,  # 0b 0110 1110 0011
+        0xFFE,  # 0b 1111 1111 1110
+    ],
+    dtype=np.uint16,
+)
 
 
 def hamming_weight_16(n: int) -> int:
@@ -42,7 +45,7 @@ def hamming_weight_16(n: int) -> int:
     count = 0
     n = n & 0xFFFF
     while n:
-        n &= (n - 1)
+        n &= n - 1
         count += 1
     return count
 
@@ -60,7 +63,7 @@ def hamming_weight_30(n: int) -> int:
     count = 0
     n = n & 0x3FFFFFFF
     while n:
-        n &= (n - 1)
+        n &= n - 1
         count += 1
     return count
 
@@ -209,7 +212,7 @@ def add_reversal_bits(codeword: int) -> int:
         # temp format: [b3 b2 b1 b0]
         # output format: [b3 b2 b1 ~b3 b0]
         reversal_bit = ((temp & 0x08) ^ 0x08) << 1
-        outword |= (temp | reversal_bit)
+        outword |= temp | reversal_bit
 
     return outword & 0x3FFFFFFF
 
@@ -252,14 +255,14 @@ def remove_reversal_bits(frame: int) -> int:
 
 
 # SCAMP special frame codewords (30-bit values with reversal bits)
-SCAMP_SOLID_CODEWORD = 0x3FFFFFFF          # All 1s - FSK preamble
-SCAMP_DOTTED_CODEWORD = 0x2AAAAAAA        # Alternating pattern - OOK preamble
-SCAMP_INIT_CODEWORD = 0x3FFFFFD5          # Initialize codeword
-SCAMP_SYNC_CODEWORD = 0x3ED19D1E          # Synchronization codeword
-SCAMP_BLANK_CODEWORD = 0x00000000         # Blank/null codeword
+SCAMP_SOLID_CODEWORD = 0x3FFFFFFF  # All 1s - FSK preamble
+SCAMP_DOTTED_CODEWORD = 0x2AAAAAAA  # Alternating pattern - OOK preamble
+SCAMP_INIT_CODEWORD = 0x3FFFFFD5  # Initialize codeword
+SCAMP_SYNC_CODEWORD = 0x3ED19D1E  # Synchronization codeword
+SCAMP_BLANK_CODEWORD = 0x00000000  # Blank/null codeword
 
 # Special codes (12-bit values before Golay encoding)
-SCAMP_RES_CODE_END_TRANSMISSION = 0x03C   # End of transmission marker
+SCAMP_RES_CODE_END_TRANSMISSION = 0x03C  # End of transmission marker
 
 # End of transmission frame
 # NOTE: Must use fldigi's exact value even though it has different parity.

@@ -21,8 +21,15 @@ class MFSKModulator:
     Reference: fldigi/src/include/jalocha/pj_mfsk.h lines 57-238
     """
 
-    def __init__(self, symbol_len=512, first_carrier=32, bits_per_symbol=5,
-                 sample_rate=8000.0, use_gray_code=True, reverse=False):
+    def __init__(
+        self,
+        symbol_len=512,
+        first_carrier=32,
+        bits_per_symbol=5,
+        sample_rate=8000.0,
+        use_gray_code=True,
+        reverse=False,
+    ):
         """
         Initialize the MFSK modulator.
 

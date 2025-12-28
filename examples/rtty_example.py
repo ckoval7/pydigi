@@ -13,7 +13,7 @@ import sys
 import os
 
 # Add parent directory to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pydigi import RTTY, save_wav
 
@@ -120,7 +120,7 @@ def example_ustty():
     # Create US-TTY modem
     rtty = RTTY(baud=45.45, shift=170, use_ita2=False)
 
-    text = "US-TTY: $123.45 \"HELLO\" (TEST)"
+    text = 'US-TTY: $123.45 "HELLO" (TEST)'
     print(f"Text: {text}")
     print(f"Settings: {rtty}")
 
@@ -193,5 +193,5 @@ def main():
     print("=" * 60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

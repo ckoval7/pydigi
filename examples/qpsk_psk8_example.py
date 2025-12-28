@@ -10,7 +10,8 @@ Demonstrates:
 """
 
 import sys
-sys.path.insert(0, '/home/corey/pydigi')
+
+sys.path.insert(0, "/home/corey/pydigi")
 
 from pydigi import QPSK31, QPSK63, QPSK125, PSK8_125, PSK8_250, PSK8_500, save_wav
 

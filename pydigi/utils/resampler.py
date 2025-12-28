@@ -12,10 +12,7 @@ from typing import Union, Tuple, Optional, Any
 
 
 def resample(
-    audio: np.ndarray,
-    original_rate: float,
-    target_rate: float,
-    method: str = 'polyphase'
+    audio: np.ndarray, original_rate: float, target_rate: float, method: str = "polyphase"
 ) -> np.ndarray:
     """
     Resample audio from one sample rate to another.
@@ -47,7 +44,7 @@ def resample(
     if original_rate == target_rate:
         return audio
 
-    if method == 'polyphase':
+    if method == "polyphase":
         # Check if we have an integer ratio
         up, down = _compute_rational_ratio(original_rate, target_rate)
 
@@ -55,7 +52,7 @@ def resample(
         # scipy.signal.resample_poly is very fast for integer ratios
         return signal.resample_poly(audio, up, down)
 
-    elif method == 'fft':
+    elif method == "fft":
         # FFT-based resampling for arbitrary ratios
         num_samples = int(len(audio) * target_rate / original_rate)
         return signal.resample(audio, num_samples)
@@ -83,14 +80,10 @@ def resample_to_48k(audio: np.ndarray, original_rate: float = 8000) -> np.ndarra
         >>> audio = mt63.modulate("CQ CQ DE W1ABC")
         >>> audio_48k = resample_to_48k(audio)  # 8000 -> 48000 Hz
     """
-    return resample(audio, original_rate, 48000, method='polyphase')
+    return resample(audio, original_rate, 48000, method="polyphase")
 
 
-def resample_from_modem(
-    audio: np.ndarray,
-    modem: Any,
-    target_rate: float
-) -> np.ndarray:
+def resample_from_modem(audio: np.ndarray, modem: Any, target_rate: float) -> np.ndarray:
     """
     Resample audio from a modem's native sample rate to a target rate.
 
@@ -113,17 +106,13 @@ def resample_from_modem(
         >>> audio = psk31.modulate("TEST")
         >>> audio_44k = resample_from_modem(audio, psk31, 44100)
     """
-    if not hasattr(modem, 'sample_rate'):
+    if not hasattr(modem, "sample_rate"):
         raise ValueError("Modem must have a 'sample_rate' attribute")
 
     return resample(audio, modem.sample_rate, target_rate)
 
 
-def compute_resampled_length(
-    original_length: int,
-    original_rate: float,
-    target_rate: float
-) -> int:
+def compute_resampled_length(original_length: int, original_rate: float, target_rate: float) -> int:
     """
     Calculate the length of resampled audio without actually resampling.
 
@@ -146,9 +135,7 @@ def compute_resampled_length(
 
 
 def _compute_rational_ratio(
-    original_rate: float,
-    target_rate: float,
-    max_denominator: int = 1000
+    original_rate: float, target_rate: float, max_denominator: int = 1000
 ) -> Tuple[int, int]:
     """
     Compute rational approximation of sample rate ratio.
@@ -214,40 +201,40 @@ def get_resampling_info(original_rate: float, target_rate: float) -> dict:
     error = abs(exact_ratio - ratio) / ratio
 
     if error < 1e-10:
-        quality = 'perfect'
+        quality = "perfect"
     elif error < 1e-6:
-        quality = 'excellent'
+        quality = "excellent"
     elif error < 1e-3:
-        quality = 'good'
+        quality = "good"
     else:
-        quality = 'approximate'
+        quality = "approximate"
 
     # Recommend method
     if is_integer or (up * down < 1000):
-        recommended_method = 'polyphase'
+        recommended_method = "polyphase"
     else:
-        recommended_method = 'fft'
+        recommended_method = "fft"
 
     return {
-        'ratio': ratio,
-        'up': up,
-        'down': down,
-        'is_integer_ratio': is_integer,
-        'recommended_method': recommended_method,
-        'quality': quality,
-        'original_rate': original_rate,
-        'target_rate': target_rate
+        "ratio": ratio,
+        "up": up,
+        "down": down,
+        "is_integer_ratio": is_integer,
+        "recommended_method": recommended_method,
+        "quality": quality,
+        "original_rate": original_rate,
+        "target_rate": target_rate,
     }
 
 
 # Common resampling presets
 COMMON_CONVERSIONS = {
-    '8k_to_48k': (8000, 48000),    # MT63/SCAMP to high-quality audio
-    '8k_to_44k': (8000, 44100),    # MT63/SCAMP to CD quality
-    '8k_to_16k': (8000, 16000),    # MT63/SCAMP to wideband
-    '11k_to_48k': (11025, 48000),  # Common upsampling
-    '44k_to_48k': (44100, 48000),  # CD to professional
-    '48k_to_8k': (48000, 8000),    # High-quality to MT63/SCAMP
+    "8k_to_48k": (8000, 48000),  # MT63/SCAMP to high-quality audio
+    "8k_to_44k": (8000, 44100),  # MT63/SCAMP to CD quality
+    "8k_to_16k": (8000, 16000),  # MT63/SCAMP to wideband
+    "11k_to_48k": (11025, 48000),  # Common upsampling
+    "44k_to_48k": (44100, 48000),  # CD to professional
+    "48k_to_8k": (48000, 8000),  # High-quality to MT63/SCAMP
 }
 
 
@@ -276,7 +263,7 @@ def resample_preset(audio: np.ndarray, preset: str) -> np.ndarray:
         >>> audio_48k = resample_preset(audio, '8k_to_48k')
     """
     if preset not in COMMON_CONVERSIONS:
-        available = ', '.join(COMMON_CONVERSIONS.keys())
+        available = ", ".join(COMMON_CONVERSIONS.keys())
         raise ValueError(f"Unknown preset '{preset}'. Available: {available}")
 
     original_rate, target_rate = COMMON_CONVERSIONS[preset]

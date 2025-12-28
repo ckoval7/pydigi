@@ -48,9 +48,9 @@ class FSQ(Modem):
 
     # FSQ constants
     FSQ_SAMPLE_RATE = 12000  # Fixed sample rate for FSQ
-    FSQ_NUM_TONES = 33       # Number of tones
-    FSQ_TONE_SPACING = 3.0   # Tone spacing in Hz
-    FSQ_SYMLEN = 4096        # Symbol length constant for frequency calculation (not variable symlen!)
+    FSQ_NUM_TONES = 33  # Number of tones
+    FSQ_TONE_SPACING = 3.0  # Tone spacing in Hz
+    FSQ_SYMLEN = 4096  # Symbol length constant for frequency calculation (not variable symlen!)
 
     # Valid baud rates for FSQ and their corresponding symbol lengths
     # Reference: fldigi/src/fsq/fsq.cxx lines 326-336
@@ -64,9 +64,9 @@ class FSQ(Modem):
     }
 
     # Special sequences (reference: fldigi/src/fsq/fsq.cxx lines 72-78)
-    FSQBOL = " \n"      # Beginning of line
-    FSQEOL = "\n "      # End of line
-    FSQEOT = "  \b  "   # End of transmission
+    FSQBOL = " \n"  # Beginning of line
+    FSQEOL = "\n "  # End of line
+    FSQEOT = "  \b  "  # End of transmission
 
     def __init__(self, baud_rate: float = 3.0, callsign: str = "PYDIGI"):
         """
@@ -82,15 +82,12 @@ class FSQ(Modem):
         """
         if baud_rate not in self.VALID_BAUD_RATES:
             raise ValueError(
-                f"Invalid baud rate {baud_rate}. "
-                f"Must be one of {self.VALID_BAUD_RATES}"
+                f"Invalid baud rate {baud_rate}. " f"Must be one of {self.VALID_BAUD_RATES}"
             )
 
         # Initialize base class with FSQ-specific parameters
         super().__init__(
-            mode_name=f"FSQ-{baud_rate}",
-            sample_rate=self.FSQ_SAMPLE_RATE,
-            frequency=1500.0
+            mode_name=f"FSQ-{baud_rate}", sample_rate=self.FSQ_SAMPLE_RATE, frequency=1500.0
         )
 
         self.baud_rate = baud_rate
@@ -111,13 +108,16 @@ class FSQ(Modem):
         # This ensures tone frequencies stay constant across all baud rates
         # Reference: fldigi/src/fsq/fsq.cxx lines 301-305
         import math
-        basetone = math.ceil(1.0 * (self.frequency - self._bandwidth / 2) * self.FSQ_SYMLEN / self.sample_rate)
+
+        basetone = math.ceil(
+            1.0 * (self.frequency - self._bandwidth / 2) * self.FSQ_SYMLEN / self.sample_rate
+        )
         incr = basetone % int(self.tone_spacing)
         self.basetone = basetone - incr
 
         # Transmit state
-        self.txphase = 0.0      # Transmit phase accumulator
-        self.prevtone = 0       # Previous tone (for incremental keying)
+        self.txphase = 0.0  # Transmit phase accumulator
+        self.prevtone = 0  # Previous tone (for incremental keying)
 
     def _send_tone(self, tone: int, output: np.ndarray, offset: int) -> int:
         """
@@ -267,10 +267,7 @@ class FSQ(Modem):
         self._tx_initialized = True
 
     def _tx_process_internal(
-        self,
-        text: str,
-        add_preamble: bool = True,
-        add_postamble: bool = True
+        self, text: str, add_preamble: bool = True, add_postamble: bool = True
     ) -> np.ndarray:
         """
         Generate FSQ transmission for the given text.
@@ -348,7 +345,7 @@ class FSQ(Modem):
         frequency: float = 1500.0,
         sample_rate: Optional[int] = None,
         add_preamble: bool = True,
-        add_postamble: bool = True
+        add_postamble: bool = True,
     ) -> np.ndarray:
         """
         Modulate text to FSQ audio signal.
@@ -378,7 +375,10 @@ class FSQ(Modem):
             # Recalculate basetone for new frequency
             # Reference: fldigi/src/fsq/fsq.cxx lines 301-305
             import math
-            basetone = math.ceil(1.0 * (self.frequency - self._bandwidth / 2) * self.FSQ_SYMLEN / self.sample_rate)
+
+            basetone = math.ceil(
+                1.0 * (self.frequency - self._bandwidth / 2) * self.FSQ_SYMLEN / self.sample_rate
+            )
             incr = basetone % int(self.tone_spacing)
             self.basetone = basetone - incr
 
@@ -406,10 +406,7 @@ class FSQ(Modem):
         return output
 
     def estimate_duration(
-        self,
-        text: str,
-        add_preamble: bool = True,
-        add_postamble: bool = True
+        self, text: str, add_preamble: bool = True, add_postamble: bool = True
     ) -> float:
         """
         Estimate transmission duration in seconds.
@@ -440,6 +437,7 @@ class FSQ(Modem):
 
 
 # Convenience functions for different FSQ speeds
+
 
 def FSQ_2() -> FSQ:
     """Create FSQ modem at 2.0 baud."""

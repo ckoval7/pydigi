@@ -24,26 +24,110 @@ FIGURES = 0x200  # Bit flag indicating figures mode
 # Letters table (shared by both ITA-2 and US-TTY)
 # Index 0-31 maps to Baudot code 0x00-0x1F
 BAUDOT_LETTERS = [
-    '\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
-    '\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
-    'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
-    'O', 'B', 'G', ' ', 'M', 'X', 'V', ' '
+    "\0",
+    "E",
+    "\n",
+    "A",
+    " ",
+    "S",
+    "I",
+    "U",
+    "\r",
+    "D",
+    "R",
+    "J",
+    "N",
+    "F",
+    "C",
+    "K",
+    "T",
+    "Z",
+    "L",
+    "W",
+    "H",
+    "Y",
+    "P",
+    "Q",
+    "O",
+    "B",
+    "G",
+    " ",
+    "M",
+    "X",
+    "V",
+    " ",
 ]
 
 # US-TTY figures table
 USTTY_FIGURES = [
-    '\0', '3', '\n', '-', ' ', '\a', '8', '7',
-    '\r', '$', '4', '\'', ',', '!', ':', '(',
-    '5', '"', ')', '2', '#', '6', '0', '1',
-    '9', '?', '&', ' ', '.', '/', ';', ' '
+    "\0",
+    "3",
+    "\n",
+    "-",
+    " ",
+    "\a",
+    "8",
+    "7",
+    "\r",
+    "$",
+    "4",
+    "'",
+    ",",
+    "!",
+    ":",
+    "(",
+    "5",
+    '"',
+    ")",
+    "2",
+    "#",
+    "6",
+    "0",
+    "1",
+    "9",
+    "?",
+    "&",
+    " ",
+    ".",
+    "/",
+    ";",
+    " ",
 ]
 
 # ITA-2 figures table
 ITA2_FIGURES = [
-    '\0', '3', '\n', '-', ' ', '\'', '8', '7',
-    '\r', ' ', '4', '\a', ',', '!', ':', '(',
-    '5', '+', ')', '2', '#', '6', '0', '1',
-    '9', '?', '&', ' ', '.', '/', '=', ' '
+    "\0",
+    "3",
+    "\n",
+    "-",
+    " ",
+    "'",
+    "8",
+    "7",
+    "\r",
+    " ",
+    "4",
+    "\a",
+    ",",
+    "!",
+    ":",
+    "(",
+    "5",
+    "+",
+    ")",
+    "2",
+    "#",
+    "6",
+    "0",
+    "1",
+    "9",
+    "?",
+    "&",
+    " ",
+    ".",
+    "/",
+    "=",
+    " ",
 ]
 
 # Special Baudot codes
@@ -76,22 +160,22 @@ class BaudotEncoder:
 
         # Map letters
         for i, char in enumerate(BAUDOT_LETTERS):
-            if char and char not in ['\0', ' ']:
+            if char and char not in ["\0", " "]:
                 self.char_to_baudot[char] = (LETTERS, i)
 
         # Map figures
         for i, char in enumerate(self.figures_table):
-            if char and char not in ['\0', ' ', '\n', '\r']:
+            if char and char not in ["\0", " ", "\n", "\r"]:
                 # Only map if not already in letters or if it's unique to figures
                 if char not in self.char_to_baudot:
                     self.char_to_baudot[char] = (FIGURES, i)
 
         # Special handling for space (available in both modes)
-        self.char_to_baudot[' '] = (LETTERS | FIGURES, 4)
+        self.char_to_baudot[" "] = (LETTERS | FIGURES, 4)
 
         # Newline and carriage return (available in both modes)
-        self.char_to_baudot['\n'] = (LETTERS | FIGURES, 2)
-        self.char_to_baudot['\r'] = (LETTERS | FIGURES, 8)
+        self.char_to_baudot["\n"] = (LETTERS | FIGURES, 2)
+        self.char_to_baudot["\r"] = (LETTERS | FIGURES, 8)
 
     def encode_char(self, char: str) -> List[Tuple[int, int]]:
         """
@@ -220,7 +304,7 @@ def decode_baudot(codes: List[int], use_ita2: bool = True) -> str:
             else:
                 char = figures_table[code & 0x1F]
 
-            if char and char not in ['\0']:
+            if char and char not in ["\0"]:
                 text.append(char)
 
-    return ''.join(text)
+    return "".join(text)

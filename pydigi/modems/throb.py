@@ -42,7 +42,7 @@ from ..varicode.throb_varicode import (
     encode_throbx,
     get_tone_pair,
     THROB_CHARSET,
-    THROBX_CHARSET
+    THROBX_CHARSET,
 )
 
 
@@ -59,24 +59,36 @@ class Throb(Modem):
     # Reference: throb.cxx lines 941-944
     THROB_TONE_FREQS_NAR = np.array([-32, -24, -16, -8, 0, 8, 16, 24, 32])
     THROB_TONE_FREQS_WID = np.array([-64, -48, -32, -16, 0, 16, 32, 48, 64])
-    THROBX_TONE_FREQS_NAR = np.array([-39.0625, -31.25, -23.4375, -15.625, -7.8125,
-                                       0, 7.8125, 15.625, 23.4375, 31.25, 39.0625])
-    THROBX_TONE_FREQS_WID = np.array([-78.125, -62.5, -46.875, -31.25, -15.625,
-                                       0, 15.625, 31.25, 46.875, 62.5, 78.125])
+    THROBX_TONE_FREQS_NAR = np.array(
+        [-39.0625, -31.25, -23.4375, -15.625, -7.8125, 0, 7.8125, 15.625, 23.4375, 31.25, 39.0625]
+    )
+    THROBX_TONE_FREQS_WID = np.array(
+        [-78.125, -62.5, -46.875, -31.25, -15.625, 0, 15.625, 31.25, 46.875, 62.5, 78.125]
+    )
 
     # Symbol lengths (samples at 8000 Hz)
     # Reference: throb.h lines 42-44
-    SYMLEN_1 = 8192   # ~1.024 seconds per symbol (~1 baud)
-    SYMLEN_2 = 4096   # ~0.512 seconds per symbol (~2 baud)
-    SYMLEN_4 = 2048   # ~0.256 seconds per symbol (~4 baud)
+    SYMLEN_1 = 8192  # ~1.024 seconds per symbol (~1 baud)
+    SYMLEN_2 = 4096  # ~0.512 seconds per symbol (~2 baud)
+    SYMLEN_4 = 2048  # ~0.256 seconds per symbol (~4 baud)
 
     # Sample rate (fixed for Throb)
     # Reference: throb.h line 34
     THROB_SAMPLE_RATE = 8000
 
-    def __init__(self, mode: str = 'throb1', symlen: int = None, tone_freqs: np.ndarray = None, num_tones: int = 9,
-                 num_chars: int = 45, is_throbx: bool = False, use_full_pulse: bool = False,
-                 sample_rate: int = 8000, frequency: float = 1500, tx_amplitude: float = 0.8):
+    def __init__(
+        self,
+        mode: str = "throb1",
+        symlen: int = None,
+        tone_freqs: np.ndarray = None,
+        num_tones: int = 9,
+        num_chars: int = 45,
+        is_throbx: bool = False,
+        use_full_pulse: bool = False,
+        sample_rate: int = 8000,
+        frequency: float = 1500,
+        tx_amplitude: float = 0.8,
+    ):
         """
         Initialize Throb modem.
 
@@ -105,8 +117,10 @@ class Throb(Modem):
 
         # Warn if sample rate is not 8000 Hz
         if sample_rate != self.THROB_SAMPLE_RATE:
-            print(f"Warning: Throb requires {self.THROB_SAMPLE_RATE} Hz sample rate. "
-                  f"Overriding to {self.THROB_SAMPLE_RATE} Hz.")
+            print(
+                f"Warning: Throb requires {self.THROB_SAMPLE_RATE} Hz sample rate. "
+                f"Overriding to {self.THROB_SAMPLE_RATE} Hz."
+            )
             self.sample_rate = self.THROB_SAMPLE_RATE
 
         # Set symbol length
@@ -124,8 +138,8 @@ class Throb(Modem):
         # Idle and space symbols
         # Reference: throb.cxx lines 102-129
         if is_throbx:
-            self.idlesym = 0      # Initially
-            self.spacesym = 1     # Initially
+            self.idlesym = 0  # Initially
+            self.spacesym = 1  # Initially
             self.idle_alternates = True  # ThrobX alternates idle/space
         else:
             self.idlesym = 0
@@ -141,11 +155,11 @@ class Throb(Modem):
 
     def _get_default_symlen(self):
         """Get default symbol length based on mode."""
-        if '1' in self.mode_name:
+        if "1" in self.mode_name:
             return self.SYMLEN_1
-        elif '2' in self.mode_name:
+        elif "2" in self.mode_name:
             return self.SYMLEN_2
-        elif '4' in self.mode_name:
+        elif "4" in self.mode_name:
             return self.SYMLEN_4
         else:
             return self.SYMLEN_4  # Default
@@ -153,12 +167,12 @@ class Throb(Modem):
     def _get_default_tone_freqs(self):
         """Get default tone frequencies based on mode."""
         if self.is_throbx:
-            if '4' in self.mode_name:
+            if "4" in self.mode_name:
                 return self.THROBX_TONE_FREQS_WID
             else:
                 return self.THROBX_TONE_FREQS_NAR
         else:
-            if '4' in self.mode_name:
+            if "4" in self.mode_name:
                 return self.THROB_TONE_FREQS_WID
             else:
                 return self.THROB_TONE_FREQS_NAR
@@ -178,7 +192,7 @@ class Throb(Modem):
             pulse[i] = 0.5 * (1 - np.cos(x))
 
         # Flat portion (20% to 80%)
-        pulse[rise_len:length * 4 // 5] = 1.0
+        pulse[rise_len : length * 4 // 5] = 1.0
 
         # Falling edge (80% to 100%)
         fall_start = length * 4 // 5
@@ -204,7 +218,7 @@ class Throb(Modem):
 
     def _make_pulse_shape(self):
         """Generate pulse shape based on mode settings."""
-        if self.use_full_pulse or '4' in self.mode_name:
+        if self.use_full_pulse or "4" in self.mode_name:
             return self._make_full_pulse(self.symlen)
         else:
             return self._make_semi_pulse(self.symlen)
@@ -358,7 +372,8 @@ class Throb(Modem):
 # Convenience functions for each Throb mode
 # Reference: fldigi/src/throb/throb.cxx constructor lines 141-219
 
-def Throb1() -> 'Throb':
+
+def Throb1() -> "Throb":
     """Create Throb1 modem instance.
 
     Throb1 is the slowest Throb mode, optimized for weak signal conditions.
@@ -381,13 +396,18 @@ def Throb1() -> 'Throb':
     Reference:
         fldigi/src/throb/throb.cxx lines 142-153
     """
-    return Throb(mode='throb1', symlen=Throb.SYMLEN_1,
-                 tone_freqs=Throb.THROB_TONE_FREQS_NAR,
-                 num_tones=9, num_chars=45, is_throbx=False,
-                 use_full_pulse=False)
+    return Throb(
+        mode="throb1",
+        symlen=Throb.SYMLEN_1,
+        tone_freqs=Throb.THROB_TONE_FREQS_NAR,
+        num_tones=9,
+        num_chars=45,
+        is_throbx=False,
+        use_full_pulse=False,
+    )
 
 
-def Throb2() -> 'Throb':
+def Throb2() -> "Throb":
     """
     Throb2 mode: 2 baud, 9 tones, narrow spacing (8 Hz).
 
@@ -399,13 +419,18 @@ def Throb2() -> 'Throb':
 
     Reference: fldigi/src/throb/throb.cxx lines 155-166
     """
-    return Throb(mode='throb2', symlen=Throb.SYMLEN_2,
-                 tone_freqs=Throb.THROB_TONE_FREQS_NAR,
-                 num_tones=9, num_chars=45, is_throbx=False,
-                 use_full_pulse=False)
+    return Throb(
+        mode="throb2",
+        symlen=Throb.SYMLEN_2,
+        tone_freqs=Throb.THROB_TONE_FREQS_NAR,
+        num_tones=9,
+        num_chars=45,
+        is_throbx=False,
+        use_full_pulse=False,
+    )
 
 
-def Throb4() -> 'Throb':
+def Throb4() -> "Throb":
     """
     Throb4 mode: 4 baud, 9 tones, wide spacing (16 Hz).
 
@@ -417,13 +442,18 @@ def Throb4() -> 'Throb':
 
     Reference: fldigi/src/throb/throb.cxx lines 168-180
     """
-    return Throb(mode='throb4', symlen=Throb.SYMLEN_4,
-                 tone_freqs=Throb.THROB_TONE_FREQS_WID,
-                 num_tones=9, num_chars=45, is_throbx=False,
-                 use_full_pulse=True)
+    return Throb(
+        mode="throb4",
+        symlen=Throb.SYMLEN_4,
+        tone_freqs=Throb.THROB_TONE_FREQS_WID,
+        num_tones=9,
+        num_chars=45,
+        is_throbx=False,
+        use_full_pulse=True,
+    )
 
 
-def ThrobX1() -> 'Throb':
+def ThrobX1() -> "Throb":
     """
     ThrobX1 mode: 1 baud, 11 tones, narrow spacing (7.8125 Hz).
 
@@ -436,13 +466,18 @@ def ThrobX1() -> 'Throb':
 
     Reference: fldigi/src/throb/throb.cxx lines 182-193
     """
-    return Throb(mode='throbx1', symlen=Throb.SYMLEN_1,
-                 tone_freqs=Throb.THROBX_TONE_FREQS_NAR,
-                 num_tones=11, num_chars=55, is_throbx=True,
-                 use_full_pulse=False)
+    return Throb(
+        mode="throbx1",
+        symlen=Throb.SYMLEN_1,
+        tone_freqs=Throb.THROBX_TONE_FREQS_NAR,
+        num_tones=11,
+        num_chars=55,
+        is_throbx=True,
+        use_full_pulse=False,
+    )
 
 
-def ThrobX2() -> 'Throb':
+def ThrobX2() -> "Throb":
     """
     ThrobX2 mode: 2 baud, 11 tones, narrow spacing (7.8125 Hz).
 
@@ -455,13 +490,18 @@ def ThrobX2() -> 'Throb':
 
     Reference: fldigi/src/throb/throb.cxx lines 195-206
     """
-    return Throb(mode='throbx2', symlen=Throb.SYMLEN_2,
-                 tone_freqs=Throb.THROBX_TONE_FREQS_NAR,
-                 num_tones=11, num_chars=55, is_throbx=True,
-                 use_full_pulse=False)
+    return Throb(
+        mode="throbx2",
+        symlen=Throb.SYMLEN_2,
+        tone_freqs=Throb.THROBX_TONE_FREQS_NAR,
+        num_tones=11,
+        num_chars=55,
+        is_throbx=True,
+        use_full_pulse=False,
+    )
 
 
-def ThrobX4() -> 'Throb':
+def ThrobX4() -> "Throb":
     """
     ThrobX4 mode: 4 baud, 11 tones, wide spacing (15.625 Hz).
 
@@ -475,7 +515,12 @@ def ThrobX4() -> 'Throb':
 
     Reference: fldigi/src/throb/throb.cxx lines 208-219
     """
-    return Throb(mode='throbx4', symlen=Throb.SYMLEN_4,
-                 tone_freqs=Throb.THROBX_TONE_FREQS_WID,
-                 num_tones=11, num_chars=55, is_throbx=True,
-                 use_full_pulse=True)
+    return Throb(
+        mode="throbx4",
+        symlen=Throb.SYMLEN_4,
+        tone_freqs=Throb.THROBX_TONE_FREQS_WID,
+        num_tones=11,
+        num_chars=55,
+        is_throbx=True,
+        use_full_pulse=True,
+    )

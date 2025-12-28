@@ -15,12 +15,20 @@ sample rates, and interleaving depths for various propagation conditions.
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pydigi import (
-    MFSK4, MFSK11, MFSK22, MFSK31, MFSK64L, MFSK128L,
-    MFSK16, MFSK64, MFSK128,  # Include base modes for comparison
-    save_wav
+    MFSK4,
+    MFSK11,
+    MFSK22,
+    MFSK31,
+    MFSK64L,
+    MFSK128L,
+    MFSK16,
+    MFSK64,
+    MFSK128,  # Include base modes for comparison
+    save_wav,
 )
 
 
@@ -173,8 +181,7 @@ def example_7_mode_comparison():
     ]
 
     print(f"\nText: '{text}'")
-    print(f"{'Mode':<12} {'Duration':>10} {'Samples':>10} {'Baud':>10} "
-          f"{'Tones':>6} {'SR':>6}")
+    print(f"{'Mode':<12} {'Duration':>10} {'Samples':>10} {'Baud':>10} " f"{'Tones':>6} {'SR':>6}")
     print("-" * 70)
 
     for name, modem in modes:
@@ -183,9 +190,11 @@ def example_7_mode_comparison():
         save_wav(filename, audio, modem.sample_rate)
 
         duration = len(audio) / modem.sample_rate
-        print(f"{name:<12} {duration:>9.2f}s {len(audio):>10d} "
-              f"{modem.baud_rate:>9.4f} {modem.numtones:>6d} "
-              f"{modem.sample_rate:>6d}")
+        print(
+            f"{name:<12} {duration:>9.2f}s {len(audio):>10d} "
+            f"{modem.baud_rate:>9.4f} {modem.numtones:>6d} "
+            f"{modem.sample_rate:>6d}"
+        )
 
 
 def example_8_interleave_comparison():
@@ -205,14 +214,18 @@ def example_8_interleave_comparison():
         # Normal mode
         audio1 = modem1.modulate(text, frequency=1000)
         duration1 = len(audio1) / modem1.sample_rate
-        print(f"  {name1:9s}: depth={modem1.depth:>3d}, preamble={modem1.default_preamble:>4d}, "
-              f"duration={duration1:>7.2f}s")
+        print(
+            f"  {name1:9s}: depth={modem1.depth:>3d}, preamble={modem1.default_preamble:>4d}, "
+            f"duration={duration1:>7.2f}s"
+        )
 
         # Long mode
         audio2 = modem2.modulate(text, frequency=1000)
         duration2 = len(audio2) / modem2.sample_rate
-        print(f"  {name2:9s}: depth={modem2.depth:>3d}, preamble={modem2.default_preamble:>4d}, "
-              f"duration={duration2:>7.2f}s")
+        print(
+            f"  {name2:9s}: depth={modem2.depth:>3d}, preamble={modem2.default_preamble:>4d}, "
+            f"duration={duration2:>7.2f}s"
+        )
 
         print(f"  Ratio: {duration2/duration1:.2f}x longer (for multipath resistance)")
 

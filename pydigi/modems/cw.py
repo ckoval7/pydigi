@@ -16,45 +16,68 @@ from ..modems.base import Modem
 # In timing_pattern: 0.33 = dit (1 unit), 1.0 = dah (3 units)
 MORSE_TABLE: Dict[str, str] = {
     # Letters
-    'A': '.-',    'B': '-...',  'C': '-.-.',  'D': '-..',
-    'E': '.',     'F': '..-.',  'G': '--.',   'H': '....',
-    'I': '..',    'J': '.---',  'K': '-.-',   'L': '.-..',
-    'M': '--',    'N': '-.',    'O': '---',   'P': '.--.',
-    'Q': '--.-',  'R': '.-.',   'S': '...',   'T': '-',
-    'U': '..-',   'V': '...-',  'W': '.--',   'X': '-..-',
-    'Y': '-.--',  'Z': '--..',
-
+    "A": ".-",
+    "B": "-...",
+    "C": "-.-.",
+    "D": "-..",
+    "E": ".",
+    "F": "..-.",
+    "G": "--.",
+    "H": "....",
+    "I": "..",
+    "J": ".---",
+    "K": "-.-",
+    "L": ".-..",
+    "M": "--",
+    "N": "-.",
+    "O": "---",
+    "P": ".--.",
+    "Q": "--.-",
+    "R": ".-.",
+    "S": "...",
+    "T": "-",
+    "U": "..-",
+    "V": "...-",
+    "W": ".--",
+    "X": "-..-",
+    "Y": "-.--",
+    "Z": "--..",
     # Numbers
-    '0': '-----', '1': '.----', '2': '..---', '3': '...--',
-    '4': '....-', '5': '.....', '6': '-....', '7': '--...',
-    '8': '---..', '9': '----.',
-
+    "0": "-----",
+    "1": ".----",
+    "2": "..---",
+    "3": "...--",
+    "4": "....-",
+    "5": ".....",
+    "6": "-....",
+    "7": "--...",
+    "8": "---..",
+    "9": "----.",
     # Punctuation
-    '.': '.-.-.-',  # Period
-    ',': '--..--',  # Comma
-    '?': '..--..',  # Question mark
-    "'": '.----.',  # Apostrophe
-    '!': '-.-.--',  # Exclamation mark
-    '/': '-..-.',   # Slash
-    '(': '-.--.',   # Left parenthesis
-    ')': '-.--.-',  # Right parenthesis
-    '&': '.-...',   # Ampersand
-    ':': '---...',  # Colon
-    ';': '-.-.-.',  # Semicolon
-    '=': '-...-',   # Equal sign
-    '+': '.-.-.',   # Plus sign
-    '-': '-....-',  # Hyphen
-    '_': '..--.-',  # Underscore
-    '"': '.-..-.',  # Quote
-    '$': '...-..-', # Dollar sign
-    '@': '.--.-.',  # At sign
-
+    ".": ".-.-.-",  # Period
+    ",": "--..--",  # Comma
+    "?": "..--..",  # Question mark
+    "'": ".----.",  # Apostrophe
+    "!": "-.-.--",  # Exclamation mark
+    "/": "-..-.",  # Slash
+    "(": "-.--.",  # Left parenthesis
+    ")": "-.--.-",  # Right parenthesis
+    "&": ".-...",  # Ampersand
+    ":": "---...",  # Colon
+    ";": "-.-.-.",  # Semicolon
+    "=": "-...-",  # Equal sign
+    "+": ".-.-.",  # Plus sign
+    "-": "-....-",  # Hyphen
+    "_": "..--.-",  # Underscore
+    '"': ".-..-.",  # Quote
+    "$": "...-..-",  # Dollar sign
+    "@": ".--.-.",  # At sign
     # Prosigns (special combinations)
-    '<AR>': '.-.-.',   # End of message
-    '<SK>': '...-.-',  # End of contact
-    '<BT>': '-...-',   # Break
-    '<KN>': '-.--.',   # Invitation to specific station
-    '<AS>': '.-...',   # Wait
+    "<AR>": ".-.-.",  # End of message
+    "<SK>": "...-.-",  # End of contact
+    "<BT>": "-...-",  # Break
+    "<KN>": "-.--.",  # Invitation to specific station
+    "<AS>": ".-...",  # Wait
 }
 
 
@@ -93,7 +116,7 @@ class CW(Modem):
         wpm: float = 20.0,
         rise_time: float = 4.0,
         sample_rate: float = 8000.0,
-        frequency: float = 800.0
+        frequency: float = 800.0,
     ):
         """
         Initialize the CW modem.
@@ -188,11 +211,15 @@ class CW(Modem):
         if self.rise_samples > 0:
             # Rising edge
             if self.rise_samples < duration_samples:
-                tone[:self.rise_samples] *= self._generate_edge_shape(self.rise_samples, rising=True)
+                tone[: self.rise_samples] *= self._generate_edge_shape(
+                    self.rise_samples, rising=True
+                )
 
             # Falling edge
             if self.rise_samples < duration_samples:
-                tone[-self.rise_samples:] *= self._generate_edge_shape(self.rise_samples, rising=False)
+                tone[-self.rise_samples :] *= self._generate_edge_shape(
+                    self.rise_samples, rising=False
+                )
 
         return tone
 
@@ -227,10 +254,10 @@ class CW(Modem):
         audio_segments = []
 
         for i, symbol in enumerate(pattern):
-            if symbol == '.':
+            if symbol == ".":
                 # Dit
                 audio_segments.append(self._generate_element(self.dit_samples))
-            elif symbol == '-':
+            elif symbol == "-":
                 # Dah
                 audio_segments.append(self._generate_element(self.dah_samples))
             else:
@@ -272,10 +299,10 @@ class CW(Modem):
             char = text[i]
 
             # Handle prosigns (enclosed in < >)
-            if char == '<':
-                end = text.find('>', i)
+            if char == "<":
+                end = text.find(">", i)
                 if end != -1:
-                    prosign = text[i:end+1]
+                    prosign = text[i : end + 1]
                     pattern = self._encode_character(prosign)
                     if pattern:
                         audio_segments.append(self._generate_morse_pattern(pattern))
@@ -284,7 +311,7 @@ class CW(Modem):
                     continue
 
             # Handle spaces (word gaps)
-            if char == ' ':
+            if char == " ":
                 audio_segments.append(np.zeros(self.word_gap_samples))
                 i += 1
                 continue
@@ -330,15 +357,17 @@ class CW(Modem):
             return 0.0
 
         # Count dits and dahs
-        n_dits = pattern.count('.')
-        n_dahs = pattern.count('-')
+        n_dits = pattern.count(".")
+        n_dahs = pattern.count("-")
         n_elements = len(pattern)
 
         # Total time: dits + dahs + inter-element gaps + inter-char gap
-        duration = (n_dits * self.dit_time +
-                   n_dahs * self.dah_time +
-                   (n_elements - 1) * self.dit_time +  # Inter-element gaps
-                   3 * self.dit_time)  # Inter-char gap
+        duration = (
+            n_dits * self.dit_time
+            + n_dahs * self.dah_time
+            + (n_elements - 1) * self.dit_time  # Inter-element gaps
+            + 3 * self.dit_time
+        )  # Inter-char gap
 
         return duration
 
@@ -355,7 +384,7 @@ class CW(Modem):
         total_time = 0.0
 
         for char in text:
-            if char == ' ':
+            if char == " ":
                 total_time += 7 * self.dit_time  # Word gap
             else:
                 total_time += self.get_character_duration(char)

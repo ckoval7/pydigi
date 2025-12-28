@@ -15,12 +15,15 @@ Reference: See MT63_ANALYSIS.md, MT63_QUICK_REFERENCE.md, MT63_IMPLEMENTATION_RO
 
 import numpy as np
 from ..core.mt63_data import (
-    SYMBOL_LEN, SYMBOL_SEPAR, DATA_CARR_SEPAR, DATA_CARRIERS,
-    SHORT_INTLV_PATT, LONG_INTLV_PATT, SYMBOL_SHAPE
+    SYMBOL_LEN,
+    SYMBOL_SEPAR,
+    DATA_CARR_SEPAR,
+    DATA_CARRIERS,
+    SHORT_INTLV_PATT,
+    LONG_INTLV_PATT,
+    SYMBOL_SHAPE,
 )
-from ..core.mt63_filters import (
-    PolyphaseInterpolator, OverlapAddWindow
-)
+from ..core.mt63_filters import PolyphaseInterpolator, OverlapAddWindow
 
 
 def walsh_inverse_transform(data: np.ndarray) -> np.ndarray:
@@ -51,7 +54,7 @@ def walsh_inverse_transform(data: np.ndarray) -> np.ndarray:
             for ptr2 in range(ptr, ptr + step):
                 bit1 = data[ptr2]
                 bit2 = data[ptr2 + step]
-                data[ptr2] = bit1 - bit2        # First half: difference
+                data[ptr2] = bit1 - bit2  # First half: difference
                 data[ptr2 + step] = bit1 + bit2  # Second half: sum
             ptr += 2 * step
         step //= 2
@@ -81,7 +84,7 @@ def walsh_transform(data: np.ndarray) -> np.ndarray:
             for ptr2 in range(ptr, ptr + step):
                 bit1 = data[ptr2]
                 bit2 = data[ptr2 + step]
-                data[ptr2] = bit1 + bit2        # First half: sum
+                data[ptr2] = bit1 + bit2  # First half: sum
                 data[ptr2 + step] = bit2 - bit1  # Second half: difference
             ptr += 2 * step
         step *= 2
@@ -301,7 +304,7 @@ class MT63Modulator:
         self.overlap_window = OverlapAddWindow(
             window_len=self.window_len,
             slide_dist=self.symbol_separ // 2,  # 100 samples
-            window_shape=SYMBOL_SHAPE
+            window_shape=SYMBOL_SHAPE,
         )
 
         # Polyphase interpolator for I/Q to real conversion
@@ -315,15 +318,13 @@ class MT63Modulator:
             filter_len=self.alias_filter_len,
             rate=self.interpolate_ratio,
             low_omega=omega_low,
-            high_omega=omega_high
+            high_omega=omega_high,
         )
 
         # Create encoder instance
         pattern = LONG_INTLV_PATT if interleave_len == 64 else SHORT_INTLV_PATT
         self.encoder = MT63Encoder(
-            carriers=DATA_CARRIERS,
-            interleave=interleave_len,
-            pattern=pattern
+            carriers=DATA_CARRIERS, interleave=interleave_len, pattern=pattern
         )
 
     def _compute_bit_reverse_table(self, size):
@@ -502,7 +503,7 @@ class MT63Modulator:
         From MT63_ANALYSIS.md lines 212-220
         """
         mask = self.fft_size - 1
-        left = self.fft_size // 4        # 128 = +90°
+        left = self.fft_size // 4  # 128 = +90°
         right = 3 * (self.fft_size // 4)  # 384 = -90°
 
         for i in range(DATA_CARRIERS):
@@ -515,7 +516,13 @@ class MT63Modulator:
         return self._process_tx_vect()
 
 
-def mt63_modulate(text: str, mode: str = "MT63-1000L", freq: float = 1000, sample_rate: int = 8000, use_twotone_preamble: bool = True) -> np.ndarray:
+def mt63_modulate(
+    text: str,
+    mode: str = "MT63-1000L",
+    freq: float = 1000,
+    sample_rate: int = 8000,
+    use_twotone_preamble: bool = True,
+) -> np.ndarray:
     """
     Generate MT63 modulated audio.
 
@@ -587,12 +594,12 @@ def mt63_modulate(text: str, mode: str = "MT63-1000L", freq: float = 1000, sampl
 
         # Apply soft start (40 samples)
         for i in range(min(40, len(tones))):
-            tones[i] *= (1.0 - np.exp(-i / 40.0))
+            tones[i] *= 1.0 - np.exp(-i / 40.0)
 
         # Apply soft stop (40 samples)
         for i in range(min(40, len(tones))):
             idx = len(tones) - 1 - i
-            tones[idx] *= (1.0 - np.exp(-i / 40.0))
+            tones[idx] *= 1.0 - np.exp(-i / 40.0)
 
         audio_samples.append(tones)
         max_val = max(max_val, np.max(np.abs(tones)))

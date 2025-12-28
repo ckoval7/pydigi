@@ -36,23 +36,23 @@ class Hell(Modem):
 
     # Mode definitions: (column_rate, modulation_type, fsk_bandwidth)
     MODE_PARAMS = {
-        'FELDHELL': (17.5, 'AM', None),
-        'SLOWHELL': (2.1875, 'AM', None),
-        'HELLX5': (87.5, 'AM', None),
-        'HELLX9': (157.5, 'AM', None),
-        'FSKH245': (17.5, 'FSK', 122.5),
-        'FSKH105': (17.5, 'FSK', 55.0),
-        'HELL80': (35.0, 'FSK', 300.0),
+        "FELDHELL": (17.5, "AM", None),
+        "SLOWHELL": (2.1875, "AM", None),
+        "HELLX5": (87.5, "AM", None),
+        "HELLX9": (157.5, "AM", None),
+        "FSKH245": (17.5, "FSK", 122.5),
+        "FSKH105": (17.5, "FSK", 55.0),
+        "HELL80": (35.0, "FSK", 300.0),
     }
 
     def __init__(
         self,
-        mode: str = 'FELDHELL',
+        mode: str = "FELDHELL",
         sample_rate: float = 8000.0,
         frequency: float = 1000.0,
         tx_amplitude: float = 0.8,
         pulse_shaping: int = 0,
-        column_width: int = 1
+        column_width: int = 1,
     ):
         """
         Initialize Hell modem.
@@ -67,7 +67,9 @@ class Hell(Modem):
         """
         mode = mode.upper()
         if mode not in self.MODE_PARAMS:
-            raise ValueError(f"Unknown Hell mode: {mode}. Valid modes: {list(self.MODE_PARAMS.keys())}")
+            raise ValueError(
+                f"Unknown Hell mode: {mode}. Valid modes: {list(self.MODE_PARAMS.keys())}"
+            )
 
         super().__init__(mode_name=mode, sample_rate=sample_rate, frequency=frequency)
 
@@ -86,7 +88,7 @@ class Hell(Modem):
         self.upsample_inc = self.pixel_rate / sample_rate
 
         # Calculate bandwidth
-        if self.modulation_type == 'AM':
+        if self.modulation_type == "AM":
             self._bandwidth = self.pixel_rate
         else:  # FSK
             self._bandwidth = self.fsk_bandwidth
@@ -108,7 +110,7 @@ class Hell(Modem):
         self.prev_symbol = 0
 
         # Initialize pulse shaping waveforms for AM modes
-        if self.modulation_type == 'AM':
+        if self.modulation_type == "AM":
             self._init_key_waveform()
 
     def _init_key_waveform(self) -> None:
@@ -179,7 +181,7 @@ class Hell(Modem):
         out_idx = 0
 
         # For FSK modes, shift frequency based on symbol
-        if self.modulation_type == 'FSK':
+        if self.modulation_type == "FSK":
             shift = self._bandwidth / 2.0
             if curr_symbol:
                 tone -= shift
@@ -190,10 +192,10 @@ class Hell(Modem):
         # NOTE: txcounter is persistent across all symbol calls to maintain timing accuracy
         while True:
             # Determine amplitude
-            if self.modulation_type == 'FSK':
+            if self.modulation_type == "FSK":
                 # FSK: constant amplitude, frequency carries data
                 amp = 1.0
-            elif self.modulation_type == 'AM' and (self.pulse_shaping in [0, 1, 2]):
+            elif self.modulation_type == "AM" and (self.pulse_shaping in [0, 1, 2]):
                 # AM with shaping: apply shaped transitions
                 if self.prev_symbol == 0 and curr_symbol == 1:
                     # Rising edge
@@ -256,7 +258,7 @@ class Hell(Modem):
         audio = np.append(audio, self._send_null_column())
 
         # Handle space specially: send 3 null columns
-        if char == ' ':
+        if char == " ":
             audio = np.append(audio, self._send_null_column())
             audio = np.append(audio, self._send_null_column())
             audio = np.append(audio, self._send_null_column())
@@ -303,13 +305,13 @@ class Hell(Modem):
 
         # Send preamble: 3 dots
         for _ in range(3):
-            audio = np.append(audio, self._tx_char('.'))
+            audio = np.append(audio, self._tx_char("."))
 
         # Send each character
         for char in text:
             # Convert newlines and carriage returns to spaces
-            if char in '\r\n':
-                char = ' '
+            if char in "\r\n":
+                char = " "
 
             # Only send characters we have in the font
             if char in FELD_7X7_14:
@@ -317,8 +319,8 @@ class Hell(Modem):
 
         # Send postamble: 3 dots + space
         for _ in range(3):
-            audio = np.append(audio, self._tx_char('.'))
-        audio = np.append(audio, self._tx_char(' '))
+            audio = np.append(audio, self._tx_char("."))
+        audio = np.append(audio, self._tx_char(" "))
 
         # Scale by tx_amplitude
         audio = audio * self.tx_amplitude
@@ -328,36 +330,37 @@ class Hell(Modem):
 
 # Convenience functions for creating specific Hell modes
 
+
 def FeldHell(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create FeldHell modem (original Hellschreiber, 17.5 col/sec, AM)."""
-    return Hell('FELDHELL', sample_rate, frequency, **kwargs)
+    return Hell("FELDHELL", sample_rate, frequency, **kwargs)
 
 
 def SlowHell(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create SlowHell modem (slow version, 2.1875 col/sec, AM)."""
-    return Hell('SLOWHELL', sample_rate, frequency, **kwargs)
+    return Hell("SLOWHELL", sample_rate, frequency, **kwargs)
 
 
 def HellX5(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create HellX5 modem (5x faster, 87.5 col/sec, AM)."""
-    return Hell('HELLX5', sample_rate, frequency, **kwargs)
+    return Hell("HELLX5", sample_rate, frequency, **kwargs)
 
 
 def HellX9(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create HellX9 modem (9x faster, 157.5 col/sec, AM)."""
-    return Hell('HELLX9', sample_rate, frequency, **kwargs)
+    return Hell("HELLX9", sample_rate, frequency, **kwargs)
 
 
 def FSKHell245(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create FSKHell245 modem (245 baud FSK, 17.5 col/sec)."""
-    return Hell('FSKH245', sample_rate, frequency, **kwargs)
+    return Hell("FSKH245", sample_rate, frequency, **kwargs)
 
 
 def FSKHell105(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create FSKHell105 modem (105 baud FSK, 17.5 col/sec)."""
-    return Hell('FSKH105', sample_rate, frequency, **kwargs)
+    return Hell("FSKH105", sample_rate, frequency, **kwargs)
 
 
 def Hell80(sample_rate: float = 8000.0, frequency: float = 1000.0, **kwargs) -> Hell:
     """Create Hell80 modem (80 column mode, 35 col/sec, FSK)."""
-    return Hell('HELL80', sample_rate, frequency, **kwargs)
+    return Hell("HELL80", sample_rate, frequency, **kwargs)

@@ -63,7 +63,9 @@ class Modem(ABC):
         self,
         mode_name: str,
         sample_rate: float = 8000.0,
-        frequency: float = 1000.0
+        frequency: float = 1000.0,
+        leading_silence: float = 0.0,
+        trailing_silence: float = 0.0,
     ):
         """
         Initialize the base modem.
@@ -72,11 +74,15 @@ class Modem(ABC):
             mode_name: Name of the modem mode
             sample_rate: Sample rate in Hz (default: 8000)
             frequency: Center frequency in Hz (default: 1000)
+            leading_silence: Duration of silence in seconds to add before signal (default: 0.0)
+            trailing_silence: Duration of silence in seconds to add after signal (default: 0.0)
         """
         self.mode_name = mode_name
         self.sample_rate = sample_rate
         self._frequency = frequency
         self._bandwidth = 0.0  # To be set by derived classes
+        self.leading_silence = leading_silence
+        self.trailing_silence = trailing_silence
 
         # Output buffer
         self.output_buffer = np.zeros(OUTBUFSIZE, dtype=np.float64)
@@ -135,7 +141,9 @@ class Modem(ABC):
         self,
         text: str,
         frequency: Optional[float] = None,
-        sample_rate: Optional[float] = None
+        sample_rate: Optional[float] = None,
+        leading_silence: Optional[float] = None,
+        trailing_silence: Optional[float] = None,
     ) -> np.ndarray:
         """
         High-level API: Modulate text to audio samples.
@@ -146,6 +154,10 @@ class Modem(ABC):
             text: Text string to transmit
             frequency: Frequency in Hz (default: use modem's current frequency)
             sample_rate: Sample rate in Hz (default: use modem's current sample rate)
+            leading_silence: Duration of silence in seconds to add before signal
+                           (default: use modem's leading_silence setting)
+            trailing_silence: Duration of silence in seconds to add after signal
+                            (default: use modem's trailing_silence setting)
 
         Returns:
             Array of float audio samples in range [-1.0, 1.0]
@@ -154,6 +166,8 @@ class Modem(ABC):
             >>> modem = CW()
             >>> audio = modem.modulate("HELLO", frequency=800, sample_rate=8000)
             >>> # audio is now a numpy array that can be saved to WAV or used with GNU Radio
+            >>> # Add 0.5 seconds of silence before and after
+            >>> audio = modem.modulate("HELLO", leading_silence=0.5, trailing_silence=0.5)
         """
         # Store original values
         original_freq = self.frequency
@@ -165,9 +179,26 @@ class Modem(ABC):
         if sample_rate is not None:
             self.sample_rate = sample_rate
 
+        # Determine silence durations
+        lead_silence = leading_silence if leading_silence is not None else self.leading_silence
+        trail_silence = trailing_silence if trailing_silence is not None else self.trailing_silence
+
         # Initialize and process
         self.tx_init()
         audio = self.tx_process(text)
+
+        # Add silence padding if requested
+        if lead_silence > 0 or trail_silence > 0:
+            lead_samples = int(lead_silence * self.sample_rate)
+            trail_samples = int(trail_silence * self.sample_rate)
+
+            if lead_samples > 0 or trail_samples > 0:
+                # Create silence buffers
+                leading_zeros = np.zeros(lead_samples, dtype=audio.dtype)
+                trailing_zeros = np.zeros(trail_samples, dtype=audio.dtype)
+
+                # Concatenate: leading silence + signal + trailing silence
+                audio = np.concatenate([leading_zeros, audio, trailing_zeros])
 
         # Restore original values
         self.frequency = original_freq
@@ -193,14 +224,18 @@ class Modem(ABC):
 
     def __str__(self) -> str:
         """String representation of the modem."""
-        return (f"{self.mode_name} Modem "
-                f"(freq={self.frequency:.1f} Hz, "
-                f"sr={self.sample_rate:.0f} Hz, "
-                f"bw={self.bandwidth:.1f} Hz)")
+        return (
+            f"{self.mode_name} Modem "
+            f"(freq={self.frequency:.1f} Hz, "
+            f"sr={self.sample_rate:.0f} Hz, "
+            f"bw={self.bandwidth:.1f} Hz)"
+        )
 
     def __repr__(self) -> str:
         """Detailed representation of the modem."""
-        return (f"{self.__class__.__name__}("
-                f"mode_name='{self.mode_name}', "
-                f"sample_rate={self.sample_rate}, "
-                f"frequency={self.frequency})")
+        return (
+            f"{self.__class__.__name__}("
+            f"mode_name='{self.mode_name}', "
+            f"sample_rate={self.sample_rate}, "
+            f"frequency={self.frequency})"
+        )

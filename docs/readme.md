@@ -98,7 +98,7 @@ save_wav("output_psk31.wav", audio_psk, 8000)
 
 ## Project Status
 
-PyDigi implements modulation (TX) for 140+ modem variants across 19 mode families. All modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
+PyDigi implements modulation (TX) for 151+ modem variants across 22 mode families. All modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
 
 ## Architecture
 

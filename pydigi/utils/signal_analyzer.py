@@ -23,6 +23,7 @@ import wave
 @dataclass
 class SignalMetrics:
     """Container for signal analysis metrics."""
+
     # Time domain
     duration: float = 0.0
     num_samples: int = 0
@@ -116,14 +117,14 @@ class SignalAnalyzer:
         """Analyze frequency spectrum."""
         # Compute FFT
         fft = np.fft.rfft(self.signal)
-        freqs = np.fft.rfftfreq(len(self.signal), 1/self.sample_rate)
+        freqs = np.fft.rfftfreq(len(self.signal), 1 / self.sample_rate)
         magnitude = np.abs(fft)
-        power = magnitude ** 2
+        power = magnitude**2
 
         # Store for plotting
-        metrics.extra['freqs'] = freqs
-        metrics.extra['magnitude'] = magnitude
-        metrics.extra['power'] = power
+        metrics.extra["freqs"] = freqs
+        metrics.extra["magnitude"] = magnitude
+        metrics.extra["power"] = power
 
         # Find peak frequency
         peak_idx = np.argmax(magnitude)
@@ -152,21 +153,23 @@ class SignalAnalyzer:
         # Compute analytic signal using Hilbert transform
         try:
             from scipy.signal import hilbert
+
             analytic = hilbert(self.signal)
             instantaneous_phase = np.unwrap(np.angle(analytic))
 
-            metrics.extra['instantaneous_phase'] = instantaneous_phase
+            metrics.extra["instantaneous_phase"] = instantaneous_phase
             metrics.phase_std = np.std(np.diff(instantaneous_phase))
 
             # Count significant phase transitions (> 90 degrees)
             phase_diff = np.diff(instantaneous_phase)
-            metrics.phase_transitions = np.sum(np.abs(phase_diff) > np.pi/2)
+            metrics.phase_transitions = np.sum(np.abs(phase_diff) > np.pi / 2)
         except ImportError:
             # scipy not available, skip phase analysis
             pass
 
-    def _detect_periodicity(self, metrics: SignalMetrics,
-                           search_range: Tuple[int, int] = (50, 2000)):
+    def _detect_periodicity(
+        self, metrics: SignalMetrics, search_range: Tuple[int, int] = (50, 2000)
+    ):
         """Detect signal periodicity using autocorrelation.
 
         Args:
@@ -175,14 +178,14 @@ class SignalAnalyzer:
         """
         # Use autocorrelation to find periodicity
         signal_norm = self.signal - np.mean(self.signal)
-        autocorr = np.correlate(signal_norm, signal_norm, mode='full')
-        autocorr = autocorr[len(autocorr)//2:]  # Keep only positive lags
+        autocorr = np.correlate(signal_norm, signal_norm, mode="full")
+        autocorr = autocorr[len(autocorr) // 2 :]  # Keep only positive lags
 
         # Normalize
         if autocorr[0] > 0:
             autocorr = autocorr / autocorr[0]
 
-        metrics.extra['autocorr'] = autocorr
+        metrics.extra["autocorr"] = autocorr
 
         # Search for peak in expected range
         min_period, max_period = search_range
@@ -217,19 +220,24 @@ class SignalAnalyzer:
             window = self.signal[start:end]
 
             window_metrics = {
-                'window_idx': i,
-                'start_time': start / self.sample_rate,
-                'end_time': end / self.sample_rate,
-                'rms': np.sqrt(np.mean(window**2)),
-                'peak': np.max(np.abs(window)),
-                'mean': np.mean(window),
+                "window_idx": i,
+                "start_time": start / self.sample_rate,
+                "end_time": end / self.sample_rate,
+                "rms": np.sqrt(np.mean(window**2)),
+                "peak": np.max(np.abs(window)),
+                "mean": np.mean(window),
             }
             windows.append(window_metrics)
 
         return windows
 
-    def compare(self, signal1: np.ndarray, signal2: np.ndarray,
-                label1: str = "Signal 1", label2: str = "Signal 2") -> Dict:
+    def compare(
+        self,
+        signal1: np.ndarray,
+        signal2: np.ndarray,
+        label1: str = "Signal 1",
+        label2: str = "Signal 2",
+    ) -> Dict:
         """Compare two signals and compute difference metrics.
 
         Args:
@@ -252,28 +260,30 @@ class SignalAnalyzer:
 
         # Compute comparison metrics
         comparison = {
-            'label1': label1,
-            'label2': label2,
-            'metrics1': metrics1,
-            'metrics2': metrics2,
+            "label1": label1,
+            "label2": label2,
+            "metrics1": metrics1,
+            "metrics2": metrics2,
         }
 
         # RMS difference
-        comparison['rms_ratio'] = metrics1.rms / (metrics2.rms + 1e-10)
-        comparison['rms_diff_db'] = 20 * np.log10(comparison['rms_ratio'] + 1e-10)
+        comparison["rms_ratio"] = metrics1.rms / (metrics2.rms + 1e-10)
+        comparison["rms_diff_db"] = 20 * np.log10(comparison["rms_ratio"] + 1e-10)
 
         # Peak difference
-        comparison['peak_ratio'] = metrics1.peak_amplitude / (metrics2.peak_amplitude + 1e-10)
-        comparison['peak_diff_db'] = 20 * np.log10(comparison['peak_ratio'] + 1e-10)
+        comparison["peak_ratio"] = metrics1.peak_amplitude / (metrics2.peak_amplitude + 1e-10)
+        comparison["peak_diff_db"] = 20 * np.log10(comparison["peak_ratio"] + 1e-10)
 
         # Frequency error
-        comparison['freq_error_hz'] = metrics1.peak_freq - metrics2.peak_freq
-        comparison['freq_error_pct'] = 100 * comparison['freq_error_hz'] / (metrics2.peak_freq + 1e-10)
+        comparison["freq_error_hz"] = metrics1.peak_freq - metrics2.peak_freq
+        comparison["freq_error_pct"] = (
+            100 * comparison["freq_error_hz"] / (metrics2.peak_freq + 1e-10)
+        )
 
         # Period comparison
         if metrics1.detected_period and metrics2.detected_period:
-            comparison['period_diff'] = metrics1.detected_period - metrics2.detected_period
-            comparison['period_match'] = abs(comparison['period_diff']) < 10
+            comparison["period_diff"] = metrics1.detected_period - metrics2.detected_period
+            comparison["period_match"] = abs(comparison["period_diff"]) < 10
 
         # Signal correlation (if same length)
         min_len = min(len(signal1), len(signal2))
@@ -281,10 +291,10 @@ class SignalAnalyzer:
             s1_norm = signal1[:min_len] - np.mean(signal1[:min_len])
             s2_norm = signal2[:min_len] - np.mean(signal2[:min_len])
 
-            correlation = np.correlate(s1_norm, s2_norm, mode='valid')[0]
+            correlation = np.correlate(s1_norm, s2_norm, mode="valid")[0]
             norm1 = np.sqrt(np.sum(s1_norm**2))
             norm2 = np.sqrt(np.sum(s2_norm**2))
-            comparison['correlation'] = correlation / (norm1 * norm2 + 1e-10)
+            comparison["correlation"] = correlation / (norm1 * norm2 + 1e-10)
 
         return comparison
 
@@ -298,7 +308,7 @@ class SignalAnalyzer:
             Audio signal as float array normalized to [-1, 1]
         """
         filepath = Path(filepath)
-        with wave.open(str(filepath), 'rb') as wf:
+        with wave.open(str(filepath), "rb") as wf:
             sample_rate = wf.getframerate()
             num_frames = wf.getnframes()
             audio_bytes = wf.readframes(num_frames)
@@ -311,7 +321,9 @@ class SignalAnalyzer:
                 raise ValueError(f"Unsupported sample width: {wf.getsampwidth()}")
 
             if sample_rate != self.sample_rate:
-                print(f"Warning: WAV file sample rate ({sample_rate}) differs from analyzer ({self.sample_rate})")
+                print(
+                    f"Warning: WAV file sample rate ({sample_rate}) differs from analyzer ({self.sample_rate})"
+                )
                 self.sample_rate = sample_rate
 
             return audio
@@ -339,7 +351,9 @@ class SignalAnalyzer:
         print(f"Sample Rate:     {metrics.sample_rate} Hz")
         print(f"Peak Amplitude:  {metrics.peak_amplitude:.6f}")
         print(f"RMS:             {metrics.rms:.6f}")
-        print(f"Crest Factor:    {metrics.crest_factor:.2f} ({20*np.log10(metrics.crest_factor):.1f} dB)")
+        print(
+            f"Crest Factor:    {metrics.crest_factor:.2f} ({20*np.log10(metrics.crest_factor):.1f} dB)"
+        )
         print(f"DC Offset:       {metrics.dc_offset:.6f}")
 
         print("\nFREQUENCY DOMAIN")
@@ -349,7 +363,7 @@ class SignalAnalyzer:
         print(f"Bandwidth (-3dB):   {metrics.bandwidth_3db:.2f} Hz")
         print(f"Bandwidth (10%):    {metrics.bandwidth_10pct:.2f} Hz")
 
-        if 'instantaneous_phase' in metrics.extra:
+        if "instantaneous_phase" in metrics.extra:
             print("\nPHASE ANALYSIS")
             print("-" * 70)
             print(f"Phase Std Dev:      {metrics.phase_std:.4f} rad")
@@ -358,7 +372,9 @@ class SignalAnalyzer:
         if metrics.detected_period:
             print("\nPERIODICITY")
             print("-" * 70)
-            print(f"Detected Period:    {metrics.detected_period} samples ({metrics.detected_period/metrics.sample_rate*1000:.2f} ms)")
+            print(
+                f"Detected Period:    {metrics.detected_period} samples ({metrics.detected_period/metrics.sample_rate*1000:.2f} ms)"
+            )
             print(f"Periodicity Strength: {metrics.periodicity_strength:.3f}")
 
         print("=" * 70)
@@ -377,19 +393,23 @@ class SignalAnalyzer:
         print("\nAMPLITUDE")
         print("-" * 70)
         print(f"RMS Ratio:    {comparison['rms_ratio']:.4f} ({comparison['rms_diff_db']:+.2f} dB)")
-        print(f"Peak Ratio:   {comparison['peak_ratio']:.4f} ({comparison['peak_diff_db']:+.2f} dB)")
+        print(
+            f"Peak Ratio:   {comparison['peak_ratio']:.4f} ({comparison['peak_diff_db']:+.2f} dB)"
+        )
 
         print("\nFREQUENCY")
         print("-" * 70)
-        print(f"Peak Freq Error:  {comparison['freq_error_hz']:+.2f} Hz ({comparison['freq_error_pct']:+.2f}%)")
+        print(
+            f"Peak Freq Error:  {comparison['freq_error_hz']:+.2f} Hz ({comparison['freq_error_pct']:+.2f}%)"
+        )
 
-        if 'period_diff' in comparison:
+        if "period_diff" in comparison:
             print("\nPERIODICITY")
             print("-" * 70)
             print(f"Period Difference: {comparison['period_diff']} samples")
             print(f"Periods Match:     {'YES' if comparison['period_match'] else 'NO'}")
 
-        if 'correlation' in comparison:
+        if "correlation" in comparison:
             print("\nCORRELATION")
             print("-" * 70)
             print(f"Normalized Correlation: {comparison['correlation']:.4f}")
@@ -409,8 +429,9 @@ class SignalAnalyzer:
 
         try:
             import matplotlib
+
             if not show:
-                matplotlib.use('Agg')
+                matplotlib.use("Agg")
             import matplotlib.pyplot as plt
         except ImportError:
             print("Matplotlib not available for plotting")
@@ -423,24 +444,29 @@ class SignalAnalyzer:
         ax1 = fig.add_subplot(gs[0, :])
         t = np.arange(len(self.signal)) / self.sample_rate
         ax1.plot(t, self.signal, linewidth=0.5, alpha=0.8)
-        ax1.set_xlabel('Time (s)')
-        ax1.set_ylabel('Amplitude')
-        ax1.set_title('Time Domain Waveform')
+        ax1.set_xlabel("Time (s)")
+        ax1.set_ylabel("Amplitude")
+        ax1.set_title("Time Domain Waveform")
         ax1.grid(True, alpha=0.3)
-        ax1.axhline(0, color='k', linewidth=0.5)
+        ax1.axhline(0, color="k", linewidth=0.5)
 
         # Spectrum
         ax2 = fig.add_subplot(gs[1, 0])
-        freqs = self.metrics.extra.get('freqs', [])
-        magnitude = self.metrics.extra.get('magnitude', [])
+        freqs = self.metrics.extra.get("freqs", [])
+        magnitude = self.metrics.extra.get("magnitude", [])
         if len(freqs) > 0:
             magnitude_db = 20 * np.log10(magnitude + 1e-10)
             ax2.plot(freqs, magnitude_db, linewidth=0.8)
-            ax2.axvline(self.metrics.peak_freq, color='r', linestyle='--',
-                       label=f'Peak: {self.metrics.peak_freq:.1f} Hz', linewidth=1.5)
-            ax2.set_xlabel('Frequency (Hz)')
-            ax2.set_ylabel('Magnitude (dB)')
-            ax2.set_title('Frequency Spectrum')
+            ax2.axvline(
+                self.metrics.peak_freq,
+                color="r",
+                linestyle="--",
+                label=f"Peak: {self.metrics.peak_freq:.1f} Hz",
+                linewidth=1.5,
+            )
+            ax2.set_xlabel("Frequency (Hz)")
+            ax2.set_ylabel("Magnitude (dB)")
+            ax2.set_title("Frequency Spectrum")
             ax2.grid(True, alpha=0.3)
             ax2.legend()
             ax2.set_xlim(0, self.sample_rate / 2)
@@ -450,26 +476,32 @@ class SignalAnalyzer:
         # Use shorter duration for spectrogram if signal is very long
         spec_duration = min(2.0, self.metrics.duration)
         spec_samples = int(spec_duration * self.sample_rate)
-        ax3.specgram(self.signal[:spec_samples], NFFT=512, Fs=self.sample_rate,
-                     cmap='viridis', scale='dB')
-        ax3.set_xlabel('Time (s)')
-        ax3.set_ylabel('Frequency (Hz)')
-        ax3.set_title(f'Spectrogram (first {spec_duration:.1f}s)')
-        ax3.set_ylim(0, min(3000, self.sample_rate/2))
+        ax3.specgram(
+            self.signal[:spec_samples], NFFT=512, Fs=self.sample_rate, cmap="viridis", scale="dB"
+        )
+        ax3.set_xlabel("Time (s)")
+        ax3.set_ylabel("Frequency (Hz)")
+        ax3.set_title(f"Spectrogram (first {spec_duration:.1f}s)")
+        ax3.set_ylim(0, min(3000, self.sample_rate / 2))
 
         # Autocorrelation (periodicity)
         ax4 = fig.add_subplot(gs[2, 0])
-        autocorr = self.metrics.extra.get('autocorr', [])
+        autocorr = self.metrics.extra.get("autocorr", [])
         if len(autocorr) > 0:
             # Plot first 2000 lags
             lags = np.arange(min(2000, len(autocorr)))
-            ax4.plot(lags, autocorr[:len(lags)], linewidth=0.8)
+            ax4.plot(lags, autocorr[: len(lags)], linewidth=0.8)
             if self.metrics.detected_period:
-                ax4.axvline(self.metrics.detected_period, color='r', linestyle='--',
-                           label=f'Period: {self.metrics.detected_period} samples', linewidth=1.5)
-            ax4.set_xlabel('Lag (samples)')
-            ax4.set_ylabel('Autocorrelation')
-            ax4.set_title('Autocorrelation (Periodicity Detection)')
+                ax4.axvline(
+                    self.metrics.detected_period,
+                    color="r",
+                    linestyle="--",
+                    label=f"Period: {self.metrics.detected_period} samples",
+                    linewidth=1.5,
+                )
+            ax4.set_xlabel("Lag (samples)")
+            ax4.set_ylabel("Autocorrelation")
+            ax4.set_title("Autocorrelation (Periodicity Detection)")
             ax4.grid(True, alpha=0.3)
             if self.metrics.detected_period:
                 ax4.legend()
@@ -477,16 +509,16 @@ class SignalAnalyzer:
         # RMS over time
         ax5 = fig.add_subplot(gs[2, 1])
         windows = self.analyze_windows(window_duration=0.1)
-        times = [w['start_time'] for w in windows]
-        rms_values = [w['rms'] for w in windows]
-        ax5.plot(times, rms_values, linewidth=1.5, marker='o', markersize=3)
-        ax5.set_xlabel('Time (s)')
-        ax5.set_ylabel('RMS')
-        ax5.set_title('RMS over Time (100ms windows)')
+        times = [w["start_time"] for w in windows]
+        rms_values = [w["rms"] for w in windows]
+        ax5.plot(times, rms_values, linewidth=1.5, marker="o", markersize=3)
+        ax5.set_xlabel("Time (s)")
+        ax5.set_ylabel("RMS")
+        ax5.set_title("RMS over Time (100ms windows)")
         ax5.grid(True, alpha=0.3)
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            plt.savefig(save_path, dpi=150, bbox_inches="tight")
             print(f"Plot saved to {save_path}")
 
         if show:
@@ -494,8 +526,9 @@ class SignalAnalyzer:
         else:
             plt.close()
 
-    def plot_comparison(self, save_path: Optional[str] = None, show: bool = False,
-                       duration: float = 1.0):
+    def plot_comparison(
+        self, save_path: Optional[str] = None, show: bool = False, duration: float = 1.0
+    ):
         """Generate comparison visualization.
 
         Args:
@@ -509,8 +542,9 @@ class SignalAnalyzer:
 
         try:
             import matplotlib
+
             if not show:
-                matplotlib.use('Agg')
+                matplotlib.use("Agg")
             import matplotlib.pyplot as plt
         except ImportError:
             print("Matplotlib not available for plotting")
@@ -522,64 +556,73 @@ class SignalAnalyzer:
         t = np.arange(min(samples, len(self.signal))) / self.sample_rate
 
         # Time domain comparison
-        axes[0, 0].plot(t, self.signal[:len(t)], alpha=0.7, label='Signal 1', linewidth=0.8)
-        axes[0, 0].set_title('Signal 1 - Time Domain')
-        axes[0, 0].set_xlabel('Time (s)')
-        axes[0, 0].set_ylabel('Amplitude')
+        axes[0, 0].plot(t, self.signal[: len(t)], alpha=0.7, label="Signal 1", linewidth=0.8)
+        axes[0, 0].set_title("Signal 1 - Time Domain")
+        axes[0, 0].set_xlabel("Time (s)")
+        axes[0, 0].set_ylabel("Amplitude")
         axes[0, 0].grid(True, alpha=0.3)
         axes[0, 0].legend()
 
         t2 = np.arange(min(samples, len(self.comparison_signal))) / self.sample_rate
-        axes[0, 1].plot(t2, self.comparison_signal[:len(t2)], alpha=0.7,
-                       label='Signal 2', color='orange', linewidth=0.8)
-        axes[0, 1].set_title('Signal 2 - Time Domain')
-        axes[0, 1].set_xlabel('Time (s)')
-        axes[0, 1].set_ylabel('Amplitude')
+        axes[0, 1].plot(
+            t2,
+            self.comparison_signal[: len(t2)],
+            alpha=0.7,
+            label="Signal 2",
+            color="orange",
+            linewidth=0.8,
+        )
+        axes[0, 1].set_title("Signal 2 - Time Domain")
+        axes[0, 1].set_xlabel("Time (s)")
+        axes[0, 1].set_ylabel("Amplitude")
         axes[0, 1].grid(True, alpha=0.3)
         axes[0, 1].legend()
 
         # Spectrum comparison
-        freqs1 = self.metrics.extra.get('freqs', [])
-        mag1 = self.metrics.extra.get('magnitude', [])
-        freqs2 = self.comparison_metrics.extra.get('freqs', [])
-        mag2 = self.comparison_metrics.extra.get('magnitude', [])
+        freqs1 = self.metrics.extra.get("freqs", [])
+        mag1 = self.metrics.extra.get("magnitude", [])
+        freqs2 = self.comparison_metrics.extra.get("freqs", [])
+        mag2 = self.comparison_metrics.extra.get("magnitude", [])
 
         if len(freqs1) > 0 and len(freqs2) > 0:
-            axes[1, 0].plot(freqs1, 20*np.log10(mag1 + 1e-10), label='Signal 1', linewidth=0.8)
-            axes[1, 0].plot(freqs2, 20*np.log10(mag2 + 1e-10), label='Signal 2',
-                           alpha=0.7, linewidth=0.8)
-            axes[1, 0].set_title('Spectrum Overlay')
-            axes[1, 0].set_xlabel('Frequency (Hz)')
-            axes[1, 0].set_ylabel('Magnitude (dB)')
+            axes[1, 0].plot(freqs1, 20 * np.log10(mag1 + 1e-10), label="Signal 1", linewidth=0.8)
+            axes[1, 0].plot(
+                freqs2, 20 * np.log10(mag2 + 1e-10), label="Signal 2", alpha=0.7, linewidth=0.8
+            )
+            axes[1, 0].set_title("Spectrum Overlay")
+            axes[1, 0].set_xlabel("Frequency (Hz)")
+            axes[1, 0].set_ylabel("Magnitude (dB)")
             axes[1, 0].grid(True, alpha=0.3)
             axes[1, 0].legend()
             axes[1, 0].set_xlim(0, self.sample_rate / 2)
 
             # Spectrum difference
             if len(mag1) == len(mag2):
-                diff_db = 20*np.log10(mag1 + 1e-10) - 20*np.log10(mag2 + 1e-10)
-                axes[1, 1].plot(freqs1, diff_db, linewidth=0.8, color='red')
-                axes[1, 1].axhline(0, color='k', linestyle='--', linewidth=0.5)
-                axes[1, 1].set_title('Spectrum Difference (Signal1 - Signal2)')
-                axes[1, 1].set_xlabel('Frequency (Hz)')
-                axes[1, 1].set_ylabel('Difference (dB)')
+                diff_db = 20 * np.log10(mag1 + 1e-10) - 20 * np.log10(mag2 + 1e-10)
+                axes[1, 1].plot(freqs1, diff_db, linewidth=0.8, color="red")
+                axes[1, 1].axhline(0, color="k", linestyle="--", linewidth=0.5)
+                axes[1, 1].set_title("Spectrum Difference (Signal1 - Signal2)")
+                axes[1, 1].set_xlabel("Frequency (Hz)")
+                axes[1, 1].set_ylabel("Difference (dB)")
                 axes[1, 1].grid(True, alpha=0.3)
                 axes[1, 1].set_xlim(0, self.sample_rate / 2)
 
         # Spectrograms
         spec_samples = min(int(2.0 * self.sample_rate), len(self.signal))
-        axes[2, 0].specgram(self.signal[:spec_samples], NFFT=512,
-                           Fs=self.sample_rate, cmap='viridis')
-        axes[2, 0].set_title('Signal 1 - Spectrogram')
-        axes[2, 0].set_ylabel('Frequency (Hz)')
-        axes[2, 0].set_ylim(0, min(3000, self.sample_rate/2))
+        axes[2, 0].specgram(
+            self.signal[:spec_samples], NFFT=512, Fs=self.sample_rate, cmap="viridis"
+        )
+        axes[2, 0].set_title("Signal 1 - Spectrogram")
+        axes[2, 0].set_ylabel("Frequency (Hz)")
+        axes[2, 0].set_ylim(0, min(3000, self.sample_rate / 2))
 
         spec_samples2 = min(int(2.0 * self.sample_rate), len(self.comparison_signal))
-        axes[2, 1].specgram(self.comparison_signal[:spec_samples2], NFFT=512,
-                           Fs=self.sample_rate, cmap='viridis')
-        axes[2, 1].set_title('Signal 2 - Spectrogram')
-        axes[2, 1].set_ylabel('Frequency (Hz)')
-        axes[2, 1].set_ylim(0, min(3000, self.sample_rate/2))
+        axes[2, 1].specgram(
+            self.comparison_signal[:spec_samples2], NFFT=512, Fs=self.sample_rate, cmap="viridis"
+        )
+        axes[2, 1].set_title("Signal 2 - Spectrogram")
+        axes[2, 1].set_ylabel("Frequency (Hz)")
+        axes[2, 1].set_ylim(0, min(3000, self.sample_rate / 2))
 
         # RMS comparison
         windows1 = self.analyze_windows(window_duration=0.1)
@@ -590,33 +633,33 @@ class SignalAnalyzer:
         windows2 = self.analyze_windows(window_duration=0.1)
         self.signal = temp_signal
 
-        times1 = [w['start_time'] for w in windows1]
-        rms1 = [w['rms'] for w in windows1]
-        times2 = [w['start_time'] for w in windows2]
-        rms2 = [w['rms'] for w in windows2]
+        times1 = [w["start_time"] for w in windows1]
+        rms1 = [w["rms"] for w in windows1]
+        times2 = [w["start_time"] for w in windows2]
+        rms2 = [w["rms"] for w in windows2]
 
-        axes[3, 0].plot(times1, rms1, label='Signal 1', marker='o', markersize=3)
-        axes[3, 0].plot(times2, rms2, label='Signal 2', marker='s', markersize=3, alpha=0.7)
-        axes[3, 0].set_title('RMS Comparison (100ms windows)')
-        axes[3, 0].set_xlabel('Time (s)')
-        axes[3, 0].set_ylabel('RMS')
+        axes[3, 0].plot(times1, rms1, label="Signal 1", marker="o", markersize=3)
+        axes[3, 0].plot(times2, rms2, label="Signal 2", marker="s", markersize=3, alpha=0.7)
+        axes[3, 0].set_title("RMS Comparison (100ms windows)")
+        axes[3, 0].set_xlabel("Time (s)")
+        axes[3, 0].set_ylabel("RMS")
         axes[3, 0].grid(True, alpha=0.3)
         axes[3, 0].legend()
 
         # RMS ratio over time
         min_windows = min(len(rms1), len(rms2))
         ratio = [rms1[i] / (rms2[i] + 1e-10) for i in range(min_windows)]
-        axes[3, 1].plot(times1[:min_windows], ratio, linewidth=1.5, color='purple')
-        axes[3, 1].axhline(1.0, color='k', linestyle='--', linewidth=0.5)
-        axes[3, 1].set_title('RMS Ratio (Signal1 / Signal2)')
-        axes[3, 1].set_xlabel('Time (s)')
-        axes[3, 1].set_ylabel('Ratio')
+        axes[3, 1].plot(times1[:min_windows], ratio, linewidth=1.5, color="purple")
+        axes[3, 1].axhline(1.0, color="k", linestyle="--", linewidth=0.5)
+        axes[3, 1].set_title("RMS Ratio (Signal1 / Signal2)")
+        axes[3, 1].set_xlabel("Time (s)")
+        axes[3, 1].set_ylabel("Ratio")
         axes[3, 1].grid(True, alpha=0.3)
 
         plt.tight_layout()
 
         if save_path:
-            plt.savefig(save_path, dpi=150, bbox_inches='tight')
+            plt.savefig(save_path, dpi=150, bbox_inches="tight")
             print(f"Comparison plot saved to {save_path}")
 
         if show:
@@ -626,8 +669,12 @@ class SignalAnalyzer:
 
 
 # Convenience functions for quick analysis
-def quick_analyze(signal: np.ndarray, sample_rate: int = 8000,
-                 plot: bool = True, plot_path: str = 'signal_analysis.png') -> SignalMetrics:
+def quick_analyze(
+    signal: np.ndarray,
+    sample_rate: int = 8000,
+    plot: bool = True,
+    plot_path: str = "signal_analysis.png",
+) -> SignalMetrics:
     """Quick analysis of a signal with optional plotting.
 
     Args:
@@ -649,10 +696,15 @@ def quick_analyze(signal: np.ndarray, sample_rate: int = 8000,
     return metrics
 
 
-def quick_compare(signal1: np.ndarray, signal2: np.ndarray,
-                 label1: str = "Our Signal", label2: str = "Reference",
-                 sample_rate: int = 8000, plot: bool = True,
-                 plot_path: str = 'signal_comparison.png') -> Dict:
+def quick_compare(
+    signal1: np.ndarray,
+    signal2: np.ndarray,
+    label1: str = "Our Signal",
+    label2: str = "Reference",
+    sample_rate: int = 8000,
+    plot: bool = True,
+    plot_path: str = "signal_comparison.png",
+) -> Dict:
     """Quick comparison of two signals with optional plotting.
 
     Args:
@@ -677,8 +729,12 @@ def quick_compare(signal1: np.ndarray, signal2: np.ndarray,
     return comparison
 
 
-def compare_with_fldigi(our_signal: np.ndarray, fldigi_wav_path: str,
-                       sample_rate: int = 8000, plot_path: str = 'fldigi_comparison.png'):
+def compare_with_fldigi(
+    our_signal: np.ndarray,
+    fldigi_wav_path: str,
+    sample_rate: int = 8000,
+    plot_path: str = "fldigi_comparison.png",
+):
     """Compare our generated signal with fldigi WAV file.
 
     Args:
@@ -690,8 +746,7 @@ def compare_with_fldigi(our_signal: np.ndarray, fldigi_wav_path: str,
     analyzer = SignalAnalyzer(sample_rate)
     fldigi_signal = analyzer.load_wav(fldigi_wav_path)
 
-    comparison = analyzer.compare(our_signal, fldigi_signal,
-                                  "PyDigi", "fldigi")
+    comparison = analyzer.compare(our_signal, fldigi_signal, "PyDigi", "fldigi")
     analyzer.print_comparison(comparison)
     analyzer.plot_comparison(save_path=plot_path)
 
