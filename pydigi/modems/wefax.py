@@ -42,6 +42,18 @@ class WEFAX(Modem):
     margins using the bundled DejaVu Sans Mono font (15pt default). Multi-page text is
     automatically paginated and transmitted with APT STOP tone separators between pages.
 
+    Markdown support (optional):
+    Enable text_markdown=True to render formatted text with:
+    - Headers (# ## ### #### ##### ######) - different sizes, bold
+    - Bold text (**text**)
+    - Italic text (*text*)
+    - Bold+Italic (***text***)
+    - Inline code (`code`) - gray background
+    - Code blocks (```language...```) - gray background
+    - Lists (ordered and unordered)
+    - Blockquotes (> text)
+    - Horizontal rules (---)
+
     Default text rendering settings:
     - Font: DejaVu Sans Mono, 15pt
     - Page size: Letter (8.5" x 11")
@@ -82,6 +94,7 @@ class WEFAX(Modem):
         text_font_size: Optional[int] = None,
         text_margins: tuple = (1.0, 1.0, 1.0, 1.0),
         text_font_path: Optional[str] = None,
+        text_markdown: bool = False,
     ):
         """
         Initialize WEFAX modem.
@@ -99,6 +112,7 @@ class WEFAX(Modem):
             text_font_size: Font size in points for text rendering (default: auto-calculated)
             text_margins: Text margins in inches (top, right, bottom, left) (default: 1" all sides)
             text_font_path: Path to custom TTF font file (default: use bundled DejaVu Sans Mono)
+            text_markdown: Enable markdown formatting for text (bold, italic, headers, etc.) (default: False)
         """
         mode = mode.upper()
         if mode not in self.MODE_PARAMS:
@@ -131,6 +145,7 @@ class WEFAX(Modem):
         self.text_font_size = text_font_size
         self.text_margins = text_margins
         self.text_font_path = text_font_path
+        self.text_markdown = text_markdown
 
         # Calculate bandwidth (full FM bandwidth)
         self._bandwidth = 2.0 * (fm_deviation + self.default_lpm * self.image_width / 60.0)
@@ -329,6 +344,7 @@ class WEFAX(Modem):
         Transmit one image scanline.
 
         Converts pixel values to frequencies and generates FM-modulated audio.
+        Uses nearest-neighbor resampling (matches fldigi implementation).
 
         Args:
             scanline: Image row as 1D numpy array of pixel values (0-255)
@@ -344,7 +360,7 @@ class WEFAX(Modem):
         ratio = img_width / samples_per_line
 
         for i in range(samples_per_line):
-            # Map audio sample index to image pixel index
+            # Map audio sample index to image pixel index (nearest-neighbor)
             pixel_idx = int(i * ratio)
             if pixel_idx >= img_width:
                 pixel_idx = img_width - 1
@@ -707,6 +723,7 @@ class WEFAX(Modem):
             font_size=self.text_font_size,
             margins=self.text_margins,
             font_path=self.text_font_path,
+            markdown=self.text_markdown,
         )
 
         # Warn if many pages

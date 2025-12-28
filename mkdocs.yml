@@ -54,6 +54,8 @@ nav:
   - User Guide:
     - Basic Usage: examples/basic.md
     - Advanced Usage: examples/advanced.md
+    - NAVTEX Guide: examples/navtex.md
+    - WEFAX Guide: examples/wefax.md
     - GNU Radio Integration: examples/gnuradio.md
   - API Reference:
     - Overview: api/overview.md
@@ -61,6 +63,7 @@ nav:
       - Base Classes: api/reference/base.md
       - CW (Morse): api/reference/cw.md
       - RTTY: api/reference/rtty.md
+      - NAVTEX & SITOR-B: api/reference/navtex.md
       - PSK Modes: api/reference/psk.md
       - QPSK Modes: api/reference/qpsk.md
       - 8PSK Modes: api/reference/8psk.md
@@ -73,6 +76,7 @@ nav:
       - FSQ: api/reference/fsq.md
       - MT63: api/reference/mt63.md
       - IFKP: api/reference/ifkp.md
+      - WEFAX: api/reference/wefax.md
     - Core DSP: api/reference/dsp.md
     - Audio Utilities: api/reference/audio.md
     - Varicode & Encoding: api/reference/varicode.md

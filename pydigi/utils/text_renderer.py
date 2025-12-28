@@ -323,6 +323,7 @@ def render_text_for_wefax(
     font_size: Optional[int] = None,
     margins: Tuple[float, float, float, float] = (1.0, 1.0, 1.0, 1.0),
     font_path: Optional[str] = None,
+    markdown: bool = False,
 ) -> List[np.ndarray]:
     """
     Render text as grayscale images for WEFAX transmission.
@@ -342,6 +343,7 @@ def render_text_for_wefax(
         font_size: Font size in points (auto-calculated if None)
         margins: Margins in inches (top, right, bottom, left), default: 1" all sides
         font_path: Optional path to custom TTF font file
+        markdown: If True, render text as markdown with formatting support (default: False)
 
     Returns:
         List of grayscale page images as numpy arrays (H x W, uint8, 0-255)
@@ -357,7 +359,23 @@ def render_text_for_wefax(
         >>> pages = render_text_for_wefax(text, "WEFAX_576", 1809)
         >>> print(f"Rendered {len(pages)} page(s)")
         >>> print(f"Page 1 shape: {pages[0].shape}")  # (1056, 1809) for letter size
+
+        >>> # Markdown rendering
+        >>> markdown_text = "# Weather Report\\n**Wind**: 15kt\\n*Temp*: 20°C"
+        >>> pages = render_text_for_wefax(markdown_text, "WEFAX_576", 1809, markdown=True)
     """
+    # Use markdown renderer if requested
+    if markdown:
+        from .markdown_renderer import render_markdown_for_wefax
+
+        return render_markdown_for_wefax(
+            text,
+            mode,
+            image_width,
+            font_size,
+            margins,
+        )
+
     # Calculate page dimensions (uses 96 LPI for vertical)
     horizontal_dpi = _calculate_horizontal_dpi(image_width)
     page_width, page_height, printable_width, printable_height = _calculate_page_dimensions(

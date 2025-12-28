@@ -70,6 +70,7 @@ docs = [
 ]
 image = [
     "Pillow>=8.0.0",
+    "markdown2>=2.4.0",
 ]
 
 [project.urls]

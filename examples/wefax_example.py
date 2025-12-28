@@ -367,6 +367,128 @@ Image width: 904 pixels
     print()
 
 
+def example_8_markdown_transmission():
+    """
+    Example 8: Transmit markdown-formatted text
+
+    Shows how to use markdown formatting for rich text rendering.
+    Requires Pillow to be installed.
+    """
+    print("Example 8: WEFAX Markdown Transmission")
+    print("-" * 50)
+
+    try:
+        # Create WEFAX modem with markdown enabled
+        wefax = WEFAX576(text_markdown=True)
+
+        # Markdown text with various formatting
+        markdown_text = """# Weather Report
+## Marine Forecast for Region 7
+
+### Current Conditions
+**Date**: December 27, 2025
+**Time**: 20:00 UTC
+**Location**: North Atlantic
+
+---
+
+### Wind Conditions
+- **Current Speed**: 15 knots
+- **Direction**: Northeast (045°)
+- **Gusts**: Up to 22 knots
+
+### Temperature
+- Air: *20°C* (68°F)
+- Sea: *18°C* (64°F)
+- Dewpoint: *15°C* (59°F)
+
+### Pressure
+Current pressure: `1013.2 hPa`
+
+> **Warning**: Pressure falling rapidly.
+> Storm system approaching from west.
+
+---
+
+### Extended Forecast
+
+#### Tomorrow (Dec 28)
+1. Morning: Rain expected, winds 20-25kt
+2. Afternoon: Clearing, winds decreasing
+3. Evening: Partly cloudy, calm
+
+#### Day After (Dec 29)
+- Clear skies
+- Light winds (5-10kt)
+- Temperature rising
+
+### Code Example
+```python
+# Sample weather data
+conditions = {
+    "wind": "15kt NE",
+    "temp": "20C",
+    "pressure": "1013 hPa"
+}
+```
+
+---
+
+### Safety Notice
+***MARINERS ADVISED TO MONITOR CONDITIONS***
+
+For updates, contact marine weather service.
+
+*End of Report*
+"""
+
+        print("Transmitting markdown weather report...")
+        audio = wefax.modulate(markdown_text)
+        save_wav("wefax_markdown.wav", audio, wefax.sample_rate)
+
+        duration = len(audio) / wefax.sample_rate
+        print(f"  Duration: {duration:.1f} seconds")
+        print(f"  Saved to: wefax_markdown.wav")
+        print()
+
+        # Short markdown example
+        print("Transmitting short markdown document...")
+        short_markdown = """# Quick Reference
+
+## Text Styles
+- **Bold text** for emphasis
+- *Italic text* for foreign words
+- ***Bold and italic*** for strong emphasis
+- `inline code` for technical terms
+
+## Lists
+1. First item
+2. Second item
+3. Third item
+
+> Important note in blockquote
+
+---
+
+End of document.
+"""
+
+        wefax_short = WEFAX576(text_markdown=True)
+        audio_short = wefax_short.modulate(short_markdown)
+        save_wav("wefax_markdown_short.wav", audio_short, wefax_short.sample_rate)
+
+        duration_short = len(audio_short) / wefax_short.sample_rate
+        print(f"  Duration: {duration_short:.1f} seconds")
+        print(f"  Saved to: wefax_markdown_short.wav")
+        print()
+
+    except ImportError as e:
+        print("Pillow (PIL) not installed. Skipping markdown examples.")
+        print(f"Error: {e}")
+        print("Install with: pip install 'pydigi[image]'")
+        print()
+
+
 def main():
     """Run all WEFAX examples."""
     print("=" * 50)
@@ -382,6 +504,7 @@ def main():
     example_5_custom_lpm()
     example_6_partial_transmission()
     example_7_text_transmission()
+    example_8_markdown_transmission()
 
     print("=" * 50)
     print("All examples completed!")
@@ -396,6 +519,8 @@ def main():
     print()
     print("Note: Text transmissions use the bundled DejaVu Sans Mono font")
     print("for consistent cross-platform rendering.")
+    print("Markdown transmissions use DejaVu Sans Mono variants (Bold, Oblique)")
+    print("for rich text formatting.")
     print()
 
 
