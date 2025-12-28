@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fldigi Op Mode Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-button {
+            background: #4a4a4a;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .menu-button:hover {
+            background: #5a5a5a;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .dropdown.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            position: relative;
+            color: #333;
+        }
+
+        .menu-item:hover {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .menu-item.has-submenu::after {
+            content: '▶';
+            position: absolute;
+            right: 10px;
+            font-size: 10px;
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            min-width: 180px;
+        }
+
+        .menu-item:hover > .submenu {
+            display: block;
+        }
+
+        .divider {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .selected {
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <button class="menu-button" onclick="toggleMenu()">Op Mode</button>
+        <div class="dropdown" id="menu">
+            <div class="menu-item" onclick="select('CW')">CW</div>
+
+            <div class="menu-item has-submenu">Contestia
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('Contestia 4/125')">Contestia 4/125</div>
+                    <div class="menu-item" onclick="select('Contestia 4/250')">Contestia 4/250</div>
+                    <div class="menu-item" onclick="select('Contestia 4/500')">Contestia 4/500</div>
+                    <div class="menu-item" onclick="select('Contestia 4/1000')">Contestia 4/1000</div>
+                    <div class="menu-item" onclick="select('Contestia 4/2000')">Contestia 4/2000</div>
+                    <div class="menu-item" onclick="select('Contestia 8/125')">Contestia 8/125</div>
+                    <div class="menu-item" onclick="select('Contestia 8/250')">Contestia 8/250</div>
+                    <div class="menu-item" onclick="select('Contestia 8/500')">Contestia 8/500</div>
+                    <div class="menu-item" onclick="select('Contestia 8/1000')">Contestia 8/1000</div>
+                    <div class="menu-item" onclick="select('Contestia 8/2000')">Contestia 8/2000</div>
+                    <div class="menu-item" onclick="select('Contestia 16/250')">Contestia 16/250</div>
+                    <div class="menu-item" onclick="select('Contestia 16/500')">Contestia 16/500</div>
+                    <div class="menu-item" onclick="select('Contestia 16/1000')">Contestia 16/1000</div>
+                    <div class="menu-item" onclick="select('Contestia 16/2000')">Contestia 16/2000</div>
+                    <div class="menu-item" onclick="select('Contestia 32/1000')">Contestia 32/1000</div>
+                    <div class="menu-item" onclick="select('Contestia 32/2000')">Contestia 32/2000</div>
+                    <div class="menu-item" onclick="select('Contestia 64/500')">Contestia 64/500</div>
+                    <div class="menu-item" onclick="select('Contestia 64/1000')">Contestia 64/1000</div>
+                    <div class="menu-item" onclick="select('Contestia 64/2000')">Contestia 64/2000</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">DominoEX
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('DominoEX Micro')">DominoEX Micro</div>
+                    <div class="menu-item" onclick="select('DominoEX 4')">DominoEX 4</div>
+                    <div class="menu-item" onclick="select('DominoEX 5')">DominoEX 5</div>
+                    <div class="menu-item" onclick="select('DominoEX 8')">DominoEX 8</div>
+                    <div class="menu-item" onclick="select('DominoEX 11')">DominoEX 11</div>
+                    <div class="menu-item divider" onclick="select('DominoEX 16')">DominoEX 16</div>
+                    <div class="menu-item" onclick="select('DominoEX 22')">DominoEX 22</div>
+                    <div class="menu-item" onclick="select('DominoEX 44')">DominoEX 44</div>
+                    <div class="menu-item" onclick="select('DominoEX 88')">DominoEX 88</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">FSQ
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('FSQ-6')">FSQ-6</div>
+                    <div class="menu-item" onclick="select('FSQ-4.5')">FSQ-4.5</div>
+                    <div class="menu-item" onclick="select('FSQ-3')">FSQ-3</div>
+                    <div class="menu-item" onclick="select('FSQ-2')">FSQ-2</div>
+                    <div class="menu-item" onclick="select('FSQ-1.5')">FSQ-1.5</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">Hell
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('Feld Hell')">Feld Hell</div>
+                    <div class="menu-item" onclick="select('Slow Hell')">Slow Hell</div>
+                    <div class="menu-item" onclick="select('Hell x5')">Hell x5</div>
+                    <div class="menu-item" onclick="select('Hell x9')">Hell x9</div>
+                    <div class="menu-item" onclick="select('FSK Hell-245')">FSK Hell-245</div>
+                    <div class="menu-item" onclick="select('FSK Hell-105')">FSK Hell-105</div>
+                    <div class="menu-item" onclick="select('Hell 80')">Hell 80</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">IFKP
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('IFKP 0.5')">IFKP 0.5</div>
+                    <div class="menu-item" onclick="select('IFKP 1.0')">IFKP 1.0</div>
+                    <div class="menu-item" onclick="select('IFKP 2.0')">IFKP 2.0</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">MFSK
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('MFSK-4')">MFSK-4</div>
+                    <div class="menu-item" onclick="select('MFSK-8')">MFSK-8</div>
+                    <div class="menu-item" onclick="select('MFSK-11')">MFSK-11</div>
+                    <div class="menu-item" onclick="select('MFSK-16')">MFSK-16</div>
+                    <div class="menu-item divider" onclick="select('MFSK-22')">MFSK-22</div>
+                    <div class="menu-item" onclick="select('MFSK-31')">MFSK-31</div>
+                    <div class="menu-item" onclick="select('MFSK-32')">MFSK-32</div>
+                    <div class="menu-item" onclick="select('MFSK-64')">MFSK-64</div>
+                    <div class="menu-item" onclick="select('MFSK-128')">MFSK-128</div>
+                    <div class="menu-item" onclick="select('MFSK-64L')">MFSK-64L</div>
+                    <div class="menu-item" onclick="select('MFSK-128L')">MFSK-128L</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">MT63
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('MT63-500S')">MT63-500S</div>
+                    <div class="menu-item" onclick="select('MT63-500L')">MT63-500L</div>
+                    <div class="menu-item" onclick="select('MT63-1000S')">MT63-1000S</div>
+                    <div class="menu-item" onclick="select('MT63-1000L')">MT63-1000L</div>
+                    <div class="menu-item" onclick="select('MT63-2000S')">MT63-2000S</div>
+                    <div class="menu-item" onclick="select('MT63-2000L')">MT63-2000L</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">Olivia
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('Olivia 4/125')">Olivia 4/125</div>
+                    <div class="menu-item" onclick="select('Olivia 4/250')">Olivia 4/250</div>
+                    <div class="menu-item" onclick="select('Olivia 4/500')">Olivia 4/500</div>
+                    <div class="menu-item" onclick="select('Olivia 4/1000')">Olivia 4/1000</div>
+                    <div class="menu-item" onclick="select('Olivia 4/2000')">Olivia 4/2000</div>
+                    <div class="menu-item" onclick="select('Olivia 8/125')">Olivia 8/125</div>
+                    <div class="menu-item" onclick="select('Olivia 8/250')">Olivia 8/250</div>
+                    <div class="menu-item" onclick="select('Olivia 8/500')">Olivia 8/500</div>
+                    <div class="menu-item" onclick="select('Olivia 8/1000')">Olivia 8/1000</div>
+                    <div class="menu-item" onclick="select('Olivia 8/2000')">Olivia 8/2000</div>
+                    <div class="menu-item" onclick="select('Olivia 16/500')">Olivia 16/500</div>
+                    <div class="menu-item" onclick="select('Olivia 16/1000')">Olivia 16/1000</div>
+                    <div class="menu-item" onclick="select('Olivia 16/2000')">Olivia 16/2000</div>
+                    <div class="menu-item" onclick="select('Olivia 32/1000')">Olivia 32/1000</div>
+                    <div class="menu-item" onclick="select('Olivia 32/2000')">Olivia 32/2000</div>
+                    <div class="menu-item" onclick="select('Olivia 64/500')">Olivia 64/500</div>
+                    <div class="menu-item" onclick="select('Olivia 64/1000')">Olivia 64/1000</div>
+                    <div class="menu-item" onclick="select('Olivia 64/2000')">Olivia 64/2000</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">PSK
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('PSK31')">PSK31</div>
+                    <div class="menu-item" onclick="select('PSK63')">PSK63</div>
+                    <div class="menu-item" onclick="select('PSK63F')">PSK63F</div>
+                    <div class="menu-item" onclick="select('PSK125')">PSK125</div>
+                    <div class="menu-item" onclick="select('PSK250')">PSK250</div>
+                    <div class="menu-item" onclick="select('PSK500')">PSK500</div>
+                    <div class="menu-item" onclick="select('PSK1000')">PSK1000</div>
+                    <div class="menu-item has-submenu">MultiCarrier
+                        <div class="submenu">
+                            <div class="menu-item" onclick="select('12x PSK125')">12x PSK125</div>
+                            <div class="menu-item" onclick="select('6x PSK250')">6x PSK250</div>
+                            <div class="menu-item" onclick="select('2x PSK500')">2x PSK500</div>
+                            <div class="menu-item" onclick="select('4x PSK500')">4x PSK500</div>
+                            <div class="menu-item" onclick="select('2x PSK800')">2x PSK800</div>
+                            <div class="menu-item" onclick="select('2x PSK1000')">2x PSK1000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">QPSK
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('QPSK31')">QPSK31</div>
+                    <div class="menu-item" onclick="select('QPSK63')">QPSK63</div>
+                    <div class="menu-item" onclick="select('QPSK125')">QPSK125</div>
+                    <div class="menu-item" onclick="select('QPSK250')">QPSK250</div>
+                    <div class="menu-item" onclick="select('QPSK500')">QPSK500</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">8PSK
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('8PSK125')">8PSK125</div>
+                    <div class="menu-item" onclick="select('8PSK250')">8PSK250</div>
+                    <div class="menu-item" onclick="select('8PSK500')">8PSK500</div>
+                    <div class="menu-item" onclick="select('8PSK1000')">8PSK1000</div>
+                    <div class="menu-item" onclick="select('8PSK125FL')">8PSK125FL</div>
+                    <div class="menu-item" onclick="select('8PSK125F')">8PSK125F</div>
+                    <div class="menu-item" onclick="select('8PSK250FL')">8PSK250FL</div>
+                    <div class="menu-item" onclick="select('8PSK250F')">8PSK250F</div>
+                    <div class="menu-item" onclick="select('8PSK500F')">8PSK500F</div>
+                    <div class="menu-item" onclick="select('8PSK1000F')">8PSK1000F</div>
+                    <div class="menu-item" onclick="select('8PSK1200F')">8PSK1200F</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">PSKR
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('PSK125R')">PSK125R</div>
+                    <div class="menu-item" onclick="select('PSK250R')">PSK250R</div>
+                    <div class="menu-item" onclick="select('PSK500R')">PSK500R</div>
+                    <div class="menu-item" onclick="select('PSK1000R')">PSK1000R</div>
+                    <div class="menu-item has-submenu">MultiCarrier
+                        <div class="submenu">
+                            <div class="menu-item" onclick="select('4x PSK63R')">4x PSK63R</div>
+                            <div class="menu-item" onclick="select('5x PSK63R')">5x PSK63R</div>
+                            <div class="menu-item" onclick="select('10x PSK63R')">10x PSK63R</div>
+                            <div class="menu-item" onclick="select('20x PSK63R')">20x PSK63R</div>
+                            <div class="menu-item divider" onclick="select('32x PSK63R')">32x PSK63R</div>
+                            <div class="menu-item" onclick="select('4x PSK125R')">4x PSK125R</div>
+                            <div class="menu-item" onclick="select('5x PSK125R')">5x PSK125R</div>
+                            <div class="menu-item" onclick="select('10x PSK125R')">10x PSK125R</div>
+                            <div class="menu-item" onclick="select('12x PSK125R')">12x PSK125R</div>
+                            <div class="menu-item divider" onclick="select('16x PSK125R')">16x PSK125R</div>
+                            <div class="menu-item" onclick="select('2x PSK250R')">2x PSK250R</div>
+                            <div class="menu-item" onclick="select('3x PSK250R')">3x PSK250R</div>
+                            <div class="menu-item" onclick="select('5x PSK250R')">5x PSK250R</div>
+                            <div class="menu-item" onclick="select('6x PSK250R')">6x PSK250R</div>
+                            <div class="menu-item divider" onclick="select('7x PSK250R')">7x PSK250R</div>
+                            <div class="menu-item" onclick="select('2x PSK500R')">2x PSK500R</div>
+                            <div class="menu-item" onclick="select('3x PSK500R')">3x PSK500R</div>
+                            <div class="menu-item divider" onclick="select('4x PSK500R')">4x PSK500R</div>
+                            <div class="menu-item divider" onclick="select('2x PSK800R')">2x PSK800R</div>
+                            <div class="menu-item" onclick="select('2x PSK1000R')">2x PSK1000R</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">RTTY
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('RTTY-45')">RTTY-45</div>
+                    <div class="menu-item" onclick="select('RTTY-50')">RTTY-50</div>
+                    <div class="menu-item" onclick="select('RTTY-75N')">RTTY-75N</div>
+                    <div class="menu-item" onclick="select('RTTY-75W')">RTTY-75W</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">THOR
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('THOR Micro')">THOR Micro</div>
+                    <div class="menu-item" onclick="select('THOR4')">THOR4</div>
+                    <div class="menu-item" onclick="select('THOR5')">THOR5</div>
+                    <div class="menu-item" onclick="select('THOR8')">THOR8</div>
+                    <div class="menu-item" onclick="select('THOR11')">THOR11</div>
+                    <div class="menu-item divider" onclick="select('THOR16')">THOR16</div>
+                    <div class="menu-item" onclick="select('THOR22')">THOR22</div>
+                    <div class="menu-item" onclick="select('THOR25')">THOR25</div>
+                    <div class="menu-item" onclick="select('THOR32')">THOR32</div>
+                    <div class="menu-item" onclick="select('THOR44')">THOR44</div>
+                    <div class="menu-item" onclick="select('THOR56')">THOR56</div>
+                    <div class="menu-item" onclick="select('THOR25x4')">THOR25x4</div>
+                    <div class="menu-item" onclick="select('THOR50x1')">THOR50x1</div>
+                    <div class="menu-item" onclick="select('THOR50x2')">THOR50x2</div>
+                    <div class="menu-item" onclick="select('THOR100')">THOR100</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">SCAMP
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('SCAMP FSK')">SCAMP FSK</div>
+                    <div class="menu-item" onclick="select('SCAMP OOK')">SCAMP OOK</div>
+                    <div class="menu-item" onclick="select('SC FSK Fast')">SC FSK Fast</div>
+                    <div class="menu-item" onclick="select('SC FSK Slow')">SC FSK Slow</div>
+                    <div class="menu-item" onclick="select('SC OOK Slow')">SC OOK Slow</div>
+                    <div class="menu-item" onclick="select('SC FSK VSlow')">SC FSK VSlow</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">Throb
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('Throb1')">Throb1</div>
+                    <div class="menu-item" onclick="select('Throb2')">Throb2</div>
+                    <div class="menu-item" onclick="select('Throb4')">Throb4</div>
+                    <div class="menu-item" onclick="select('ThrobX1')">ThrobX1</div>
+                    <div class="menu-item" onclick="select('ThrobX2')">ThrobX2</div>
+                    <div class="menu-item" onclick="select('ThrobX4')">ThrobX4</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu">WEFAX
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('WEFAX-576')">WEFAX-576</div>
+                    <div class="menu-item" onclick="select('WEFAX-288')">WEFAX-288</div>
+                </div>
+            </div>
+
+            <div class="menu-item has-submenu divider">Navtex/SitorB
+                <div class="submenu">
+                    <div class="menu-item" onclick="select('NAVTEX')">NAVTEX</div>
+                    <div class="menu-item" onclick="select('SITORB')">SITORB</div>
+                </div>
+            </div>
+
+            <div class="menu-item" onclick="select('WWV')">WWV</div>
+            <div class="menu-item" onclick="select('Analysis')">Analysis</div>
+            <div class="menu-item divider" onclick="select('FMT')">FMT</div>
+            <div class="menu-item" onclick="select('Null')">Null</div>
+            <div class="menu-item" onclick="select('SSB')">SSB</div>
+        </div>
+    </div>
+
+    <div class="selected">
+        Selected: <strong id="mode">None</strong>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('show');
+        }
+
+        function select(mode) {
+            document.getElementById('mode').textContent = mode;
+            document.getElementById('menu').classList.remove('show');
+            console.log('Selected:', mode);
+        }
+
+        // Close menu when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-button')) {
+                document.getElementById('menu').classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
