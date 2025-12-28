@@ -45,7 +45,7 @@ def example_1_test_pattern():
     print()
 
     # You can also use modulate("") for backwards compatibility
-    print("Note: modulate(\"\") also generates test pattern for backwards compatibility")
+    print('Note: modulate("") also generates test pattern for backwards compatibility')
     print()
 
 
@@ -102,7 +102,7 @@ def example_3_image_file():
         # Create a sample image with text and patterns
         width = 1809
         height = 300
-        img = Image.new('L', (width, height), color=128)  # Gray background
+        img = Image.new("L", (width, height), color=128)  # Gray background
 
         # Add some patterns
         pixels = img.load()
@@ -266,7 +266,7 @@ def example_6_partial_transmission():
     center_x = width // 2
     for y in range(height):
         for x in range(width):
-            distance = np.sqrt((x - center_x)**2 + (y - center_y)**2)
+            distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
             circle_pattern[y, x] = int((np.sin(distance / 20) + 1) * 127.5)
 
     wefax = WEFAX576()
@@ -287,7 +287,7 @@ def example_6_partial_transmission():
         include_apt_start=False,
         include_phasing=False,
         include_apt_stop=False,
-        include_black=False
+        include_black=False,
     )
     duration_image = len(audio_image_only) / wefax.sample_rate
     print(f"  Duration: {duration_image:.1f} seconds")
@@ -330,10 +330,12 @@ Winds increasing to 25kt"""
 
     # Long text (multi-page)
     print("Transmitting long weather bulletin (multi-page)...")
-    long_text = "WEATHER BULLETIN\n\n" + "\n".join([
-        f"Hour {i:02d}: Temperature {20+i%10}°C, Wind {10+i%15}kt, Pressure {1010+i%20} hPa"
-        for i in range(100)
-    ])
+    long_text = "WEATHER BULLETIN\n\n" + "\n".join(
+        [
+            f"Hour {i:02d}: Temperature {20+i%10}°C, Wind {10+i%15}kt, Pressure {1010+i%20} hPa"
+            for i in range(100)
+        ]
+    )
 
     audio_long = wefax.modulate(long_text)
     save_wav("wefax_text_long.wav", audio_long, wefax.sample_rate)

@@ -29,8 +29,8 @@ def _get_bundled_font_path() -> str:
     Returns:
         Absolute path to the bundled font file
     """
-    fonts_dir = os.path.join(os.path.dirname(__file__), '..', 'fonts')
-    font_path = os.path.join(fonts_dir, 'DejaVuSansMono.ttf')
+    fonts_dir = os.path.join(os.path.dirname(__file__), "..", "fonts")
+    font_path = os.path.join(fonts_dir, "DejaVuSansMono.ttf")
     return os.path.abspath(font_path)
 
 
@@ -50,7 +50,9 @@ def _calculate_horizontal_dpi(image_width: int) -> int:
     return int(image_width / LETTER_WIDTH_INCHES)
 
 
-def _calculate_page_dimensions(image_width: int, margins: Tuple[float, float, float, float]) -> Tuple[int, int, int, int]:
+def _calculate_page_dimensions(
+    image_width: int, margins: Tuple[float, float, float, float]
+) -> Tuple[int, int, int, int]:
     """
     Calculate page and printable area dimensions.
 
@@ -187,18 +189,18 @@ def _wrap_text(text: str, font, max_width: int) -> List[str]:
         )
 
     # Create a temporary image for text measurement
-    temp_img = Image.new('L', (1, 1), color=255)
+    temp_img = Image.new("L", (1, 1), color=255)
     draw = ImageDraw.Draw(temp_img)
 
     lines = []
 
     # Split by existing newlines first
-    paragraphs = text.split('\n')
+    paragraphs = text.split("\n")
 
     for paragraph in paragraphs:
         if not paragraph:
             # Empty line - preserve it
-            lines.append('')
+            lines.append("")
             continue
 
         # Wrap this paragraph
@@ -207,7 +209,7 @@ def _wrap_text(text: str, font, max_width: int) -> List[str]:
 
         for word in words:
             # Try adding this word to current line
-            test_line = ' '.join(current_line + [word])
+            test_line = " ".join(current_line + [word])
 
             # Measure the width
             try:
@@ -224,7 +226,7 @@ def _wrap_text(text: str, font, max_width: int) -> List[str]:
             else:
                 # Doesn't fit - finish current line and start new one
                 if current_line:
-                    lines.append(' '.join(current_line))
+                    lines.append(" ".join(current_line))
                     current_line = [word]
                 else:
                     # Single word is too long - add it anyway
@@ -232,15 +234,21 @@ def _wrap_text(text: str, font, max_width: int) -> List[str]:
 
         # Add remaining words
         if current_line:
-            lines.append(' '.join(current_line))
+            lines.append(" ".join(current_line))
 
     return lines
 
 
-def _render_page(lines: List[str], page_width: int, page_height: int,
-                 printable_width: int, printable_height: int,
-                 margins: Tuple[float, float, float, float],
-                 font, dpi: int) -> Tuple[np.ndarray, int]:
+def _render_page(
+    lines: List[str],
+    page_width: int,
+    page_height: int,
+    printable_width: int,
+    printable_height: int,
+    margins: Tuple[float, float, float, float],
+    font,
+    dpi: int,
+) -> Tuple[np.ndarray, int]:
     """
     Render lines of text onto a single page.
 
@@ -266,7 +274,7 @@ def _render_page(lines: List[str], page_width: int, page_height: int,
         )
 
     # Create white background
-    img = Image.new('L', (page_width, page_height), color=255)
+    img = Image.new("L", (page_width, page_height), color=255)
     draw = ImageDraw.Draw(img)
 
     # Calculate margins in pixels
@@ -388,9 +396,7 @@ def render_text_for_wefax(
 
         # Safety check - if no lines rendered, break to avoid infinite loop
         if lines_rendered == 0:
-            warnings.warn(
-                "Could not fit any more text on page. Some text may be truncated."
-            )
+            warnings.warn("Could not fit any more text on page. Some text may be truncated.")
             break
 
     return pages

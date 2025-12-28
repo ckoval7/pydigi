@@ -25,108 +25,108 @@ LETTERS = 0  # Letters mode
 FIGURES = 1  # Figures mode
 
 # Special CCIR-476 codes (7-bit values with 4 bits set)
-CODE_LTRS = 0x5A    # Letters shift (binary: 1011010)
-CODE_FIGS = 0x36    # Figures shift (binary: 0110110)
-CODE_ALPHA = 0x0F   # Alpha character marker (binary: 0001111)
-CODE_BETA = 0x33    # Beta character marker (binary: 0110011)
-CODE_REP = 0x66     # Repeat/redundancy marker (binary: 1100110)
+CODE_LTRS = 0x5A  # Letters shift (binary: 1011010)
+CODE_FIGS = 0x36  # Figures shift (binary: 0110110)
+CODE_ALPHA = 0x0F  # Alpha character marker (binary: 0001111)
+CODE_BETA = 0x33  # Beta character marker (binary: 0110011)
+CODE_REP = 0x66  # Repeat/redundancy marker (binary: 1100110)
 CODE_CHAR32 = 0x6A  # Space character code (binary: 1101010)
 
 # Letters table - CCIR-476 code to letter character
 # Only codes with exactly 4 bits set are valid
 CODE_TO_LTRS = {
     # Code  Char  Binary
-    0x47: 'A',   # 1000111
-    0x72: 'B',   # 1110010
-    0x1D: 'C',   # 0011101
-    0x53: 'D',   # 1010011
-    0x56: 'E',   # 1010110
-    0x1B: 'F',   # 0011011
-    0x35: 'G',   # 0110101
-    0x69: 'H',   # 1101001
-    0x4D: 'I',   # 1001101
-    0x17: 'J',   # 0010111
-    0x1E: 'K',   # 0011110
-    0x65: 'L',   # 1100101
-    0x39: 'M',   # 0111001
-    0x59: 'N',   # 1011001
-    0x71: 'O',   # 1110001
-    0x2D: 'P',   # 0101101
-    0x2E: 'Q',   # 0101110
-    0x55: 'R',   # 1010101
-    0x4B: 'S',   # 1001011
-    0x74: 'T',   # 1110100
-    0x4E: 'U',   # 1001110
-    0x3C: 'V',   # 0111100
-    0x27: 'W',   # 0100111
-    0x3A: 'X',   # 0111010
-    0x2B: 'Y',   # 0101011
-    0x63: 'Z',   # 1100011
-    0x6C: '\n',  # Line feed (binary: 1101100)
-    0x78: '\r',  # Carriage return (binary: 1111000)
-    0x5C: ' ',   # Space (binary: 1011100)
+    0x47: "A",  # 1000111
+    0x72: "B",  # 1110010
+    0x1D: "C",  # 0011101
+    0x53: "D",  # 1010011
+    0x56: "E",  # 1010110
+    0x1B: "F",  # 0011011
+    0x35: "G",  # 0110101
+    0x69: "H",  # 1101001
+    0x4D: "I",  # 1001101
+    0x17: "J",  # 0010111
+    0x1E: "K",  # 0011110
+    0x65: "L",  # 1100101
+    0x39: "M",  # 0111001
+    0x59: "N",  # 1011001
+    0x71: "O",  # 1110001
+    0x2D: "P",  # 0101101
+    0x2E: "Q",  # 0101110
+    0x55: "R",  # 1010101
+    0x4B: "S",  # 1001011
+    0x74: "T",  # 1110100
+    0x4E: "U",  # 1001110
+    0x3C: "V",  # 0111100
+    0x27: "W",  # 0100111
+    0x3A: "X",  # 0111010
+    0x2B: "Y",  # 0101011
+    0x63: "Z",  # 1100011
+    0x6C: "\n",  # Line feed (binary: 1101100)
+    0x78: "\r",  # Carriage return (binary: 1111000)
+    0x5C: " ",  # Space (binary: 1011100)
 }
 
 # US-TTY figures table
 USTTY_CODE_TO_FIGS = {
-    0x2E: '1',   # Q in letters
-    0x27: '2',   # W in letters
-    0x56: '3',   # E in letters
-    0x55: '4',   # R in letters
-    0x74: '5',   # T in letters
-    0x2B: '6',   # Y in letters
-    0x4E: '7',   # U in letters
-    0x4D: '8',   # I in letters
-    0x71: '9',   # O in letters
-    0x2D: '0',   # P in letters
-    0x17: "'",   # J in letters (apostrophe)
-    0x1B: '!',   # F in letters (exclamation)
-    0x1D: ':',   # C in letters (colon)
-    0x1E: '(',   # K in letters (open paren)
-    0x47: '-',   # A in letters (dash/minus)
-    0x4B: '\a',  # S in letters (bell)
-    0x63: '"',   # Z in letters (quote)
-    0x65: ')',   # L in letters (close paren)
-    0x69: '#',   # H in letters (hash/pound)
-    0x39: '.',   # M in letters (period)
-    0x3A: '/',   # X in letters (slash)
-    0x3C: ';',   # V in letters (semicolon)
-    0x35: '&',   # G in letters (ampersand)
-    0x59: ',',   # N in letters (comma)
-    0x6C: '\n',  # Line feed (same in both)
-    0x78: '\r',  # Carriage return (same in both)
-    0x5C: ' ',   # Space (same in both)
+    0x2E: "1",  # Q in letters
+    0x27: "2",  # W in letters
+    0x56: "3",  # E in letters
+    0x55: "4",  # R in letters
+    0x74: "5",  # T in letters
+    0x2B: "6",  # Y in letters
+    0x4E: "7",  # U in letters
+    0x4D: "8",  # I in letters
+    0x71: "9",  # O in letters
+    0x2D: "0",  # P in letters
+    0x17: "'",  # J in letters (apostrophe)
+    0x1B: "!",  # F in letters (exclamation)
+    0x1D: ":",  # C in letters (colon)
+    0x1E: "(",  # K in letters (open paren)
+    0x47: "-",  # A in letters (dash/minus)
+    0x4B: "\a",  # S in letters (bell)
+    0x63: '"',  # Z in letters (quote)
+    0x65: ")",  # L in letters (close paren)
+    0x69: "#",  # H in letters (hash/pound)
+    0x39: ".",  # M in letters (period)
+    0x3A: "/",  # X in letters (slash)
+    0x3C: ";",  # V in letters (semicolon)
+    0x35: "&",  # G in letters (ampersand)
+    0x59: ",",  # N in letters (comma)
+    0x6C: "\n",  # Line feed (same in both)
+    0x78: "\r",  # Carriage return (same in both)
+    0x5C: " ",  # Space (same in both)
 }
 
 # ITA-2 figures table (different from US-TTY)
 ITA2_CODE_TO_FIGS = {
-    0x2E: '1',   # Q in letters
-    0x27: '2',   # W in letters
-    0x56: '3',   # E in letters
-    0x55: '4',   # R in letters
-    0x74: '5',   # T in letters
-    0x2B: '6',   # Y in letters
-    0x4E: '7',   # U in letters
-    0x4D: '8',   # I in letters
-    0x71: '9',   # O in letters
-    0x2D: '0',   # P in letters
-    0x17: "'",   # J in letters (apostrophe)
-    0x1B: '!',   # F in letters (exclamation)
-    0x1D: ':',   # C in letters (colon)
-    0x1E: '(',   # K in letters (open paren)
-    0x47: '-',   # A in letters (dash/minus)
-    0x4B: "'",   # S in letters (apostrophe in ITA-2)
-    0x63: '+',   # Z in letters (plus in ITA-2)
-    0x65: ')',   # L in letters (close paren)
-    0x69: '#',   # H in letters (hash/pound)
-    0x39: '.',   # M in letters (period)
-    0x3A: '/',   # X in letters (slash)
-    0x3C: '=',   # V in letters (equals in ITA-2)
-    0x35: '&',   # G in letters (ampersand)
-    0x59: ',',   # N in letters (comma)
-    0x6C: '\n',  # Line feed (same in both)
-    0x78: '\r',  # Carriage return (same in both)
-    0x5C: ' ',   # Space (same in both)
+    0x2E: "1",  # Q in letters
+    0x27: "2",  # W in letters
+    0x56: "3",  # E in letters
+    0x55: "4",  # R in letters
+    0x74: "5",  # T in letters
+    0x2B: "6",  # Y in letters
+    0x4E: "7",  # U in letters
+    0x4D: "8",  # I in letters
+    0x71: "9",  # O in letters
+    0x2D: "0",  # P in letters
+    0x17: "'",  # J in letters (apostrophe)
+    0x1B: "!",  # F in letters (exclamation)
+    0x1D: ":",  # C in letters (colon)
+    0x1E: "(",  # K in letters (open paren)
+    0x47: "-",  # A in letters (dash/minus)
+    0x4B: "'",  # S in letters (apostrophe in ITA-2)
+    0x63: "+",  # Z in letters (plus in ITA-2)
+    0x65: ")",  # L in letters (close paren)
+    0x69: "#",  # H in letters (hash/pound)
+    0x39: ".",  # M in letters (period)
+    0x3A: "/",  # X in letters (slash)
+    0x3C: "=",  # V in letters (equals in ITA-2)
+    0x35: "&",  # G in letters (ampersand)
+    0x59: ",",  # N in letters (comma)
+    0x6C: "\n",  # Line feed (same in both)
+    0x78: "\r",  # Carriage return (same in both)
+    0x5C: " ",  # Space (same in both)
 }
 
 
@@ -183,12 +183,12 @@ class CCIR476Encoder:
 
         # Map letters
         for code, char in CODE_TO_LTRS.items():
-            if char and char not in ['\0', '_']:
+            if char and char not in ["\0", "_"]:
                 self.ltrs_to_code[char] = code
 
         # Map figures
         for code, char in self.code_to_figs.items():
-            if char and char not in ['\0', '_']:
+            if char and char not in ["\0", "_"]:
                 self.figs_to_code[char] = code
 
     def encode_char(self, char: str) -> List[int]:
@@ -321,10 +321,10 @@ def decode_ccir476(codes: List[int], use_ita2: bool = True) -> str:
             else:
                 char = code_to_figs.get(code, None)
 
-            if char and char not in ['\0', '_']:
+            if char and char not in ["\0", "_"]:
                 text.append(char)
 
-    return ''.join(text)
+    return "".join(text)
 
 
 def create_fec_interleaved(codes: List[int]) -> List[int]:

@@ -305,7 +305,7 @@ class NAVTEX(Modem):
         normalized_cutoff = max(0.01, min(normalized_cutoff, 0.95))
 
         # 5th order Butterworth lowpass filter
-        b, a = signal.butter(5, normalized_cutoff, btype='low')
+        b, a = signal.butter(5, normalized_cutoff, btype="low")
 
         # Apply zero-phase filtering to avoid group delay
         filtered = signal.filtfilt(b, a, baseband)

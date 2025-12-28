@@ -404,18 +404,10 @@ class WEFAX(Modem):
             if len(img.shape) == 3:
                 if img.shape[2] == 3:  # RGB
                     # Convert RGB to grayscale: 0.299*R + 0.587*G + 0.114*B
-                    img = (
-                        0.299 * img[:, :, 0]
-                        + 0.587 * img[:, :, 1]
-                        + 0.114 * img[:, :, 2]
-                    )
+                    img = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
                 elif img.shape[2] == 4:  # RGBA
                     # Convert RGBA to grayscale (ignore alpha)
-                    img = (
-                        0.299 * img[:, :, 0]
-                        + 0.587 * img[:, :, 1]
-                        + 0.114 * img[:, :, 2]
-                    )
+                    img = 0.299 * img[:, :, 0] + 0.587 * img[:, :, 1] + 0.114 * img[:, :, 2]
                 elif img.shape[2] == 1:  # Already grayscale with channel dim
                     img = img[:, :, 0]
 
@@ -485,9 +477,7 @@ class WEFAX(Modem):
             from PIL import Image
 
             pil_img = Image.fromarray(image, mode="L")
-            pil_img = pil_img.resize(
-                (target_width, target_height), Image.Resampling.LANCZOS
-            )
+            pil_img = pil_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
             return np.array(pil_img, dtype=np.uint8)
 
         except ImportError:
@@ -517,9 +507,7 @@ class WEFAX(Modem):
             raise ValueError("Image must be a numpy array")
 
         if len(image.shape) != 2:
-            raise ValueError(
-                f"Image must be 2D (height, width), got shape {image.shape}"
-            )
+            raise ValueError(f"Image must be 2D (height, width), got shape {image.shape}")
 
         if image.shape[0] == 0 or image.shape[1] == 0:
             raise ValueError("Image has zero height or width")
@@ -558,9 +546,7 @@ class WEFAX(Modem):
 
         return pattern
 
-    def transmit_test_pattern(
-        self, width: Optional[int] = None, height: int = 200
-    ) -> np.ndarray:
+    def transmit_test_pattern(self, width: Optional[int] = None, height: int = 200) -> np.ndarray:
         """
         Generate and transmit black/white bar test pattern.
 
@@ -641,9 +627,7 @@ class WEFAX(Modem):
 
         # 1. APT START tone
         if include_apt_start:
-            apt_start = self._generate_apt_tone(
-                self.apt_start_freq, self.apt_start_duration
-            )
+            apt_start = self._generate_apt_tone(self.apt_start_freq, self.apt_start_duration)
             audio_parts.append(apt_start)
 
         # 2. PHASING pattern
@@ -660,9 +644,7 @@ class WEFAX(Modem):
 
         # 4. APT STOP tone
         if include_apt_stop:
-            apt_stop = self._generate_apt_tone(
-                self.apt_stop_freq, self.apt_stop_duration
-            )
+            apt_stop = self._generate_apt_tone(self.apt_stop_freq, self.apt_stop_duration)
             audio_parts.append(apt_stop)
 
         # 5. BLACK signal
@@ -731,9 +713,7 @@ class WEFAX(Modem):
         if len(images) > 50:
             import warnings
 
-            warnings.warn(
-                f"Text spans {len(images)} pages, transmission will be very long"
-            )
+            warnings.warn(f"Text spans {len(images)} pages, transmission will be very long")
 
         # Transmit each page and concatenate audio
         audio_parts = []
@@ -753,9 +733,7 @@ class WEFAX(Modem):
 # Convenience functions for creating specific WEFAX modes
 
 
-def WEFAX576(
-    sample_rate: float = 11025.0, carrier: float = 1900.0, **kwargs
-) -> WEFAX:
+def WEFAX576(sample_rate: float = 11025.0, carrier: float = 1900.0, **kwargs) -> WEFAX:
     """
     Create WEFAX_576 modem.
 
@@ -772,9 +750,7 @@ def WEFAX576(
     return WEFAX("WEFAX_576", sample_rate, carrier, **kwargs)
 
 
-def WEFAX288(
-    sample_rate: float = 11025.0, carrier: float = 1900.0, **kwargs
-) -> WEFAX:
+def WEFAX288(sample_rate: float = 11025.0, carrier: float = 1900.0, **kwargs) -> WEFAX:
     """
     Create WEFAX_288 modem.
 
