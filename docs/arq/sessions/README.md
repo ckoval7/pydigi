@@ -15,8 +15,8 @@ Step-by-step guides for implementing FLARQ ARQ protocol support in pydigi.
 | 7 | [Text Transmission](session_07_text_transmission.md) | 3-4h | HIGH | ✅ Complete |
 | 8 | [Reception & Reassembly](session_08_reception_reassembly.md) | 3-4h | HIGH | ✅ Complete |
 | 9 | [ABORT Handling](session_09_abort_handling.md) | 2-3h | MEDIUM | ✅ Complete |
-| 10 | Main Loop & Timing | 3-4h | HIGH | Not Started |
-| 11 | Base64 & File Transfer | 2-3h | MEDIUM | Not Started |
+| 10 | Main Loop & Timing | 3-4h | HIGH | ✅ Complete |
+| 11 | [Base64 & File Transfer](session_11_base64_file_transfer.md) | 2-3h | MEDIUM | ✅ Complete |
 | 12 | Integration Testing | 2-3h | HIGH | Not Started |
 | 13 | Documentation & Polish | 1-2h | MEDIUM | Not Started |
 | 14 | Interoperability Testing | 2-3h | LOW (Optional) | Not Started |

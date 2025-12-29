@@ -6,6 +6,7 @@ from .blocks import BlockTracker
 from .config import ARQConfig
 from .state_machine import ARQStateMachine, LinkState
 from .protocol import ARQProtocol, ARQStatistics
+from .base64_codec import Base64Codec
 from .exceptions import (
     ARQError,
     ARQFrameError,
@@ -25,6 +26,7 @@ __all__ = [
     'LinkState',
     'ARQProtocol',
     'ARQStatistics',
+    'Base64Codec',
     'ARQError',
     'ARQFrameError',
     'ARQCRCError',

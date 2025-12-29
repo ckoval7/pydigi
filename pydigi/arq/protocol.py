@@ -1,6 +1,7 @@
 """Main ARQ protocol implementation for FLARQ."""
 
 import time
+import os
 from typing import Optional, Callable, List
 from dataclasses import dataclass
 
@@ -18,6 +19,7 @@ from .exceptions import (
     ARQTimeoutError,
     ARQStateError,
 )
+from .base64_codec import Base64Codec
 
 
 @dataclass
@@ -58,6 +60,7 @@ class ARQProtocol:
         self._rx_text_callback: Optional[Callable[[str], None]] = None
         self._tx_text_callback: Optional[Callable[[str], None]] = None
         self._status_callback: Optional[Callable[[str], None]] = None
+        self._rx_file_callback: Optional[Callable[[str, bytes], None]] = None
 
         # Block tracking
         self._tx_tracker = BlockTracker()
@@ -98,6 +101,17 @@ class ARQProtocol:
         self._ur_good_header = 0
         self._ur_end_header = 0
 
+        # File transfer state
+        self._rx_file_active = False  # Currently receiving a file
+        self._rx_file_name = ""  # Name of file being received
+        self._rx_file_data = ""  # Accumulated file data (base64)
+        self._rx_file_size = 0  # Expected file size
+        self._rx_file_encoding = ""  # Encoding type (BASE64)
+        self._rx_text_buffer = ""  # Buffer for handling markers split across blocks
+
+        # Base64 codec for file transfers
+        self._b64_codec = Base64Codec(crlf=True)
+
     def set_send_callback(self, callback: Callable[[bytes], None]) -> None:
         """Set callback for sending frames.
 
@@ -129,6 +143,14 @@ class ARQProtocol:
             callback: Function that receives status messages
         """
         self._status_callback = callback
+
+    def set_rx_file_callback(self, callback: Callable[[str, bytes], None]) -> None:
+        """Set callback for received files.
+
+        Args:
+            callback: Function that receives filename and file data (bytes)
+        """
+        self._rx_file_callback = callback
 
     def _set_id_timer(self, minutes: Optional[int] = None) -> None:
         """Set or reset the ID timer for keepalive frames.
@@ -700,9 +722,8 @@ class ARQProtocol:
             # Update GoodHeader
             self._rx_tracker.good_header = block['block_num']
 
-            # Call RX callback
-            if self._rx_text_callback:
-                self._rx_text_callback(block['text'])
+            # Process text (check for file transfer markers)
+            self._process_received_text(block['text'])
 
         # Update missing blocks list
         self._update_missing_blocks()
@@ -718,6 +739,148 @@ class ARQProtocol:
         blocks will be calculated when we send a STATUS frame.
         """
         pass
+
+    def _process_received_text(self, text: str) -> None:
+        """Process received text for file transfer markers.
+
+        Detects file transfer markers and handles file reassembly.
+        Handles markers that may be split across block boundaries.
+        If no file transfer is active, calls the text callback.
+
+        Args:
+            text: Received text chunk
+
+        Reference: fldigi/src/flarq-src/flarq.cxx (processArqText)
+        """
+        # Add text to buffer to handle markers split across blocks
+        # Buffer is only used for marker detection, not data accumulation
+        old_buffer_len = len(self._rx_text_buffer)
+        self._rx_text_buffer += text
+        buffered_text = self._rx_text_buffer
+
+        # Check for file transfer start markers
+        if "ARQ:FILE::" in buffered_text:
+            # Extract filename
+            start_idx = buffered_text.find("ARQ:FILE::") + len("ARQ:FILE::")
+            end_idx = buffered_text.find("\n", start_idx)
+            if end_idx != -1:
+                self._rx_file_name = buffered_text[start_idx:end_idx]
+                self._rx_file_active = True
+                self._rx_file_data = ""
+                self._emit_status(f"Receiving file: {self._rx_file_name}")
+
+        if "ARQ:ENCODING::BASE64" in buffered_text:
+            self._rx_file_encoding = "BASE64"
+
+        if "ARQ:SIZE::" in buffered_text:
+            # Extract size
+            start_idx = buffered_text.find("ARQ:SIZE::") + len("ARQ:SIZE::")
+            end_idx = buffered_text.find("\n", start_idx)
+            if end_idx != -1:
+                try:
+                    self._rx_file_size = int(buffered_text[start_idx:end_idx])
+                except ValueError:
+                    pass
+
+        # Check for data start marker (STX)
+        if "ARQ::STX" in buffered_text:
+            # Data starts after this marker
+            stx_idx = buffered_text.find("ARQ::STX")
+            data_start = stx_idx + len("ARQ::STX\n")
+
+            # Check if there's also an ETX in this chunk
+            etx_idx = buffered_text.find("ARQ::ETX", data_start)
+            if etx_idx != -1:
+                # Complete file in one chunk (rare)
+                self._rx_file_data += buffered_text[data_start:etx_idx]
+                self._complete_file_reception()
+            else:
+                # Partial data - add only the new data after STX from current text chunk
+                # Find where STX is in the current text chunk
+                stx_in_text = text.find("ARQ::STX")
+                if stx_in_text != -1:
+                    # STX is in current chunk, add data after it
+                    self._rx_file_data += text[stx_in_text + len("ARQ::STX\n"):]
+                else:
+                    # STX was in a previous chunk, add all current text
+                    # unless it's a header line
+                    if text and not text.startswith("ARQ::") and not any(m in text for m in ["ARQ:FILE::", "ARQ:ENCODING::", "ARQ:SIZE::"]):
+                        self._rx_file_data += text
+        elif "ARQ::ETX" in buffered_text:
+            # End of file transfer
+            etx_in_text = text.find("ARQ::ETX")
+            if self._rx_file_active:
+                if etx_in_text != -1:
+                    # ETX is in current chunk - add data before it
+                    self._rx_file_data += text[:etx_in_text]
+                else:
+                    # ETX marker is split across blocks
+                    # Need to remove the partial "ARQ::ETX" that was in previous buffer
+                    # Find where "ARQ::ETX" starts in buffered_text
+                    etx_start_in_buffer = buffered_text.find("ARQ::ETX")
+                    # If marker starts before the current text, remove the partial marker
+                    if etx_start_in_buffer < old_buffer_len:
+                        # Some or all of the marker was in the old buffer
+                        chars_from_old_buffer = old_buffer_len - etx_start_in_buffer
+                        # Remove those characters from file data
+                        self._rx_file_data = self._rx_file_data[:-chars_from_old_buffer]
+                self._complete_file_reception()
+        elif self._rx_file_active:
+            # Accumulate file data (between STX and ETX)
+            # Only accumulate if we're not on a header line
+            if text and not text.startswith("ARQ::") and not any(m in text for m in ["ARQ:FILE::", "ARQ:ENCODING::", "ARQ:SIZE::"]):
+                self._rx_file_data += text
+
+        # Keep only last 30 chars in buffer for marker detection across boundaries
+        # Max marker "ARQ:ENCODING::BASE64\n" is 22 chars, so 30 is safe
+        if len(self._rx_text_buffer) > 30:
+            self._rx_text_buffer = self._rx_text_buffer[-30:]
+
+        # If not receiving a file, call text callback (use original text, not buffered)
+        if not self._rx_file_active and self._rx_text_callback:
+            # Don't pass file transfer markers to text callback
+            if not any(marker in text for marker in ["ARQ:FILE::", "ARQ:ENCODING::", "ARQ:SIZE::", "ARQ::STX", "ARQ::ETX"]):
+                self._rx_text_callback(text)
+
+    def _complete_file_reception(self) -> None:
+        """Complete file reception and decode.
+
+        Decodes the Base64 file data and calls the file callback.
+        """
+        if not self._rx_file_name:
+            self._emit_status("File reception error: no filename")
+            self._rx_file_active = False
+            return
+
+        try:
+            # Decode Base64 data
+            file_data = self._b64_codec.decode(self._rx_file_data)
+
+            # Verify size if provided
+            if self._rx_file_size > 0:
+                if len(self._rx_file_data) != self._rx_file_size:
+                    self._emit_status(
+                        f"File size mismatch: expected {self._rx_file_size}, got {len(self._rx_file_data)}"
+                    )
+
+            # Call file callback
+            if self._rx_file_callback:
+                self._rx_file_callback(self._rx_file_name, file_data)
+
+            self._emit_status(
+                f"File received: {self._rx_file_name} ({len(file_data)} bytes)"
+            )
+
+        except Exception as e:
+            self._emit_status(f"File decode error: {e}")
+
+        # Reset file transfer state
+        self._rx_file_active = False
+        self._rx_file_name = ""
+        self._rx_file_data = ""
+        self._rx_file_size = 0
+        self._rx_file_encoding = ""
+        self._rx_text_buffer = ""
 
     def _get_missing_blocks(self) -> list:
         """Get list of missing blocks between GoodHeader and EndHeader.
@@ -941,6 +1104,60 @@ class ARQProtocol:
             offset += buffer_length
 
         self._emit_status(f"Queued {blocks_added} blocks for transmission")
+
+    def send_file(self, file_path: str, description: Optional[str] = None) -> None:
+        """Send a file over ARQ link.
+
+        Reads the file, encodes it in Base64, and queues it for transmission
+        with proper file transfer markers matching fldigi's format.
+
+        Args:
+            file_path: Path to file to send
+            description: Optional description (not used, for compatibility)
+
+        Raises:
+            ARQConnectionError: If not connected
+            FileNotFoundError: If file doesn't exist
+            IOError: If file cannot be read
+
+        Reference: fldigi/src/flarq-src/flarq.cxx (sendBinaryFile, sendImageFile)
+        """
+        if not self.state.is_connected():
+            raise ARQConnectionError("Cannot send file: not connected")
+
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        # Read file
+        with open(file_path, 'rb') as f:
+            file_data = f.read()
+
+        # Get filename without path
+        filename = os.path.basename(file_path)
+
+        # Encode to Base64
+        b64_data = self._b64_codec.encode(file_data)
+        b64_size = len(b64_data)
+
+        # Build file transfer message matching fldigi format
+        # ARQ:FILE::<filename>\n
+        # ARQ:ENCODING::BASE64\n
+        # ARQ:SIZE::<size>\n
+        # ARQ::STX\n
+        # <base64 data>
+        # ARQ::ETX\n
+
+        message = f"ARQ:FILE::{filename}\n"
+        message += "ARQ:ENCODING::BASE64\n"
+        message += f"ARQ:SIZE::{b64_size}\n"
+        message += "ARQ::STX\n"
+        message += b64_data
+        message += "ARQ::ETX\n"
+
+        # Send using normal text transmission
+        self.send_text(message)
+
+        self._emit_status(f"Queued file '{filename}' for transmission ({len(file_data)} bytes)")
 
     def _send_blocks(self) -> None:
         """Send queued data blocks.
