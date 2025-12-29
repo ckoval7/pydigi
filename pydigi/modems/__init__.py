@@ -3,6 +3,7 @@
 from .cw import CW
 from .rtty import RTTY
 from .psk import PSK, PSK31, PSK63, PSK125, PSK250, PSK500
+from .psk_decoder import PSKDecoder
 from .qpsk import QPSK, QPSK31, QPSK63, QPSK125, QPSK250, QPSK500
 from .psk8 import EightPSK, EightPSK_125, EightPSK_250, EightPSK_500, EightPSK_1000
 from .psk8_fec import (
@@ -82,6 +83,7 @@ __all__ = [
     "PSK125",
     "PSK250",
     "PSK500",
+    "PSKDecoder",
     "QPSK",
     "QPSK31",
     "QPSK63",

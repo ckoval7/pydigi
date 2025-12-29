@@ -57,6 +57,10 @@ nav:
     - NAVTEX Guide: examples/navtex.md
     - WEFAX Guide: examples/wefax.md
     - GNU Radio Integration: examples/gnuradio.md
+  - Decoder Guides:
+    - PSK Decoder: guides/decoders.md
+    - Signal Detection: guides/signal-detection.md
+    - Frequency Estimation: guides/frequency-estimation.md
   - API Reference:
     - Overview: api/overview.md
     - Modems:
@@ -65,6 +69,7 @@ nav:
       - RTTY: api/reference/rtty.md
       - NAVTEX & SITOR-B: api/reference/navtex.md
       - PSK Modes: api/reference/psk.md
+      - PSK Decoder: api/reference/psk_decoder.md
       - QPSK Modes: api/reference/qpsk.md
       - 8PSK Modes: api/reference/8psk.md
       - MFSK Modes: api/reference/mfsk.md
