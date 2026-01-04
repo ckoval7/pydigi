@@ -162,8 +162,19 @@ compare_*.py
 trace_*.py
 verify_*.py
 generate_*_test.py
-demo_*.py
 plot_*.py
+*_test.py
+*_tests.py
+
+# Example files - exclude specific test files but keep useful demos
+examples/*_test.py
+examples/*_tests.py
+examples/audio_test.py
+
+# Keep these demos (exceptions to above rules)
+!examples/8psk_demo.py
+!examples/arq_audio_loopback.py
+!examples/psk8_fec_silence_demo.py
 
 # Claude AI session data
 .claude/
@@ -191,6 +202,10 @@ plot_*.py
 *_MIGRATION_SUMMARY.md
 *_STANDARDIZATION_SUMMARY.md
 *_INTEGRATION.md
+*_SESSION.md
+*_DEBUGGING_SESSION.md
+*_DECODER_DEBUG_SESSION.md
+*_SILENCE_PADDING.md
 
 
 # fldigi project itself
