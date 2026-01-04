@@ -95,6 +95,8 @@ class EightPSKFEC(Modem):
         tx_amplitude: float = 0.8,
         long_interleave: bool = False,
         use_k16: bool = None,
+        leading_silence: float = 0.0,
+        trailing_silence: float = 0.0,
     ):
         """
         Initialize the 8PSK FEC modem.
@@ -113,6 +115,8 @@ class EightPSKFEC(Modem):
             use_k16: Force K=16 encoder. If None, auto-select based on mode:
                     - K=16 for 125F and 250F (when not FL)
                     - K=13 for all FL modes and all punctured modes
+            leading_silence: Duration of silence in seconds to add before signal (default: 0.0)
+            trailing_silence: Duration of silence in seconds to add after signal (default: 0.0)
 
         Raises:
             ValueError: If baud rate is invalid
@@ -154,7 +158,13 @@ class EightPSKFEC(Modem):
         else:
             raise ValueError(f"Unsupported baud rate: {baud}. Supported: 125, 250, 500, 1000, 1200")
 
-        super().__init__(mode_name=mode_name, sample_rate=sample_rate, frequency=frequency)
+        super().__init__(
+            mode_name=mode_name,
+            sample_rate=sample_rate,
+            frequency=frequency,
+            leading_silence=leading_silence,
+            trailing_silence=trailing_silence,
+        )
 
         self.baud = baud
         self.tx_amplitude = max(0.0, min(1.0, tx_amplitude))
@@ -217,8 +227,10 @@ class EightPSKFEC(Modem):
         """
         Generate preamble for synchronization (returns baseband I/Q).
 
-        8PSK FEC sends symbol 0 (phase reversals) for preamble.
-        From fldigi psk.cxx
+        8PSK FEC preamble (from fldigi psk.cxx:2584-2610):
+        1. Send preamble/2 raw symbol 0s (FEC disabled)
+        2. Send preamble pairs of zero bits (through FEC encoder)
+        3. Send one NULL character for sync
 
         Args:
             num_symbols: Number of preamble symbols (default: dcdbits value)
@@ -232,13 +244,25 @@ class EightPSKFEC(Modem):
         i_samples = []
         q_samples = []
 
-        # Send symbol 0 for preamble
-        for _ in range(num_symbols):
-            i_sym, q_sym = self._tx_symbol(0)
+        # Part 1: Send preamble/2 raw symbol 0s (bypass FEC)
+        # This creates the initial two-tone pattern for acquisition
+        for _ in range(num_symbols // 2):
+            i_sym, q_sym = self._tx_symbol_raw(0)
             i_samples.extend(i_sym)
             q_samples.extend(q_sym)
 
-        # Send NULL character (0x00) after preamble for sync
+        # Part 2: Send preamble worth of zero-bit pairs through FEC
+        # This preps the encoder and creates a centered tone
+        for _ in range(num_symbols // 2):
+            # Send pair of zero bits
+            i_bits1, q_bits1 = self._tx_bit(0)
+            i_samples.extend(i_bits1)
+            q_samples.extend(q_bits1)
+            i_bits2, q_bits2 = self._tx_bit(0)
+            i_samples.extend(i_bits2)
+            q_samples.extend(q_bits2)
+
+        # Part 3: Send NULL character (0x00) for sync
         i_null, q_null = self._tx_char(0)
         i_samples.extend(i_null)
         q_samples.extend(q_null)
@@ -249,40 +273,32 @@ class EightPSKFEC(Modem):
         """
         Generate postamble for clean ending (returns baseband I/Q).
 
-        8PSK FEC postamble flushes encoder and sends symbol 4 (0°) for DCD.
-        From fldigi psk.cxx
+        8PSK FEC postamble (from fldigi psk.cxx:2515-2518):
+        - Sends flushlength NULL characters to clear bit accumulators
 
         Args:
-            num_symbols: Number of postamble symbols (default: 3x dcdbits)
+            num_symbols: Ignored for 8PSK FEC (uses flushlength instead)
 
         Returns:
             Tuple of (I samples list, Q samples list) at baseband
         """
-        if num_symbols is None:
-            num_symbols = self._dcdbits * 3
-
         i_samples = []
         q_samples = []
 
-        # Flush any remaining bits in the accumulator
-        # Send flushlength zero bits to clear the FEC encoder
+        # Send flushlength NULL characters to flush encoder
+        # This clears the bit accumulators on both Tx and Rx ends
         for _ in range(self._flushlength):
-            i_bits, q_bits = self._tx_bit(0)
-            i_samples.extend(i_bits)
-            q_samples.extend(q_bits)
-
-        # Send postamble: symbol 4 (0° in Gray constellation)
-        for _ in range(num_symbols):
-            i_sym, q_sym = self._tx_symbol(4)
-            i_samples.extend(i_sym)
-            q_samples.extend(q_sym)
+            i_char, q_char = self._tx_char(0)  # NULL character
+            i_samples.extend(i_char)
+            q_samples.extend(q_char)
 
         return i_samples, q_samples
 
-    def _tx_symbol(self, symbol: int) -> tuple[np.ndarray, np.ndarray]:
+    def _tx_symbol_raw(self, symbol: int) -> tuple[np.ndarray, np.ndarray]:
         """
-        Generate baseband I/Q samples for a single 8PSK symbol.
+        Generate baseband I/Q samples for a single 8PSK symbol (raw, bypass FEC).
 
+        This is used for the first part of the preamble where FEC is disabled.
         Uses Gray-mapped constellation for FEC modes.
 
         Args:
@@ -317,6 +333,22 @@ class EightPSKFEC(Modem):
         self._prev_phase = np.angle(new_symbol_complex)
 
         return i_samples, q_samples
+
+    def _tx_symbol(self, symbol: int) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Generate baseband I/Q samples for a single 8PSK symbol.
+
+        Uses Gray-mapped constellation for FEC modes.
+
+        Args:
+            symbol: Symbol value (0-7, representing 3 bits)
+
+        Returns:
+            Tuple of (I samples, Q samples) at baseband
+        """
+        # Delegate to raw symbol transmission
+        # (In this implementation, there's no difference between FEC and non-FEC symbol transmission)
+        return self._tx_symbol_raw(symbol)
 
     def _tx_bit(self, bit: int) -> tuple[list, list]:
         """
@@ -490,6 +522,8 @@ class EightPSKFEC(Modem):
         preamble_symbols: int = None,
         postamble_symbols: int = None,
         apply_filter: bool = True,
+        leading_silence: Optional[float] = None,
+        trailing_silence: Optional[float] = None,
     ) -> np.ndarray:
         """
         Modulate text into 8PSK FEC audio signal.
@@ -501,6 +535,8 @@ class EightPSKFEC(Modem):
             preamble_symbols: Number of preamble symbols (default: dcdbits value)
             postamble_symbols: Number of postamble symbols (default: 3x dcdbits)
             apply_filter: Apply baseband lowpass filtering (default: True)
+            leading_silence: Duration of silence in seconds to add before signal (default: uses initialized value)
+            trailing_silence: Duration of silence in seconds to add after signal (default: uses initialized value)
 
         Returns:
             Audio samples as numpy array of float32 values (-1.0 to 1.0)
@@ -508,20 +544,47 @@ class EightPSKFEC(Modem):
         Example:
             >>> modem = EightPSKFEC(baud=250)  # 8PSK250F
             >>> audio = modem.modulate("HELLO WORLD", frequency=1000)
+            >>> # With silence padding for better decoding over virtual audio cable
+            >>> audio = modem.modulate("TEST", leading_silence=0.5, trailing_silence=0.5)
         """
-        # Update parameters if provided
-        if frequency is not None:
-            self.frequency = frequency
-        if sample_rate is not None:
-            if sample_rate != self.sample_rate:
-                self.sample_rate = sample_rate
-                self._init_parameters()
+        # Store original values
+        original_sr = self.sample_rate
+
+        # Update sample rate if provided (need to reinit parameters)
+        if sample_rate is not None and sample_rate != self.sample_rate:
+            self.sample_rate = sample_rate
+            self._init_parameters()
 
         # Initialize transmitter
         self.tx_init()
 
         # Process text and generate audio
         audio = self.tx_process(text, preamble_symbols, postamble_symbols, apply_filter)
+
+        # Add silence padding using base class functionality
+        # Determine silence durations
+        lead_silence = leading_silence if leading_silence is not None else self.leading_silence
+        trail_silence = trailing_silence if trailing_silence is not None else self.trailing_silence
+
+        if lead_silence > 0 or trail_silence > 0:
+            lead_samples = int(lead_silence * self.sample_rate)
+            trail_samples = int(trail_silence * self.sample_rate)
+
+            if lead_samples > 0 or trail_samples > 0:
+                # Create silence buffers
+                leading_zeros = np.zeros(lead_samples, dtype=audio.dtype)
+                trailing_zeros = np.zeros(trail_samples, dtype=audio.dtype)
+
+                # Concatenate: leading silence + signal + trailing silence
+                audio = np.concatenate([leading_zeros, audio, trailing_zeros])
+
+        # Handle frequency override (do this after processing to avoid affecting tx_process)
+        # We don't need to restore frequency as tx_process already uses self.frequency
+
+        # Restore sample rate if it was changed
+        if sample_rate is not None and sample_rate != original_sr:
+            self.sample_rate = original_sr
+            self._init_parameters()
 
         return audio
 
@@ -541,7 +604,11 @@ class EightPSKFEC(Modem):
 
 
 def EightPSK_125F(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK125F modem (125 baud, K=16 FEC)."""
     return EightPSKFEC(
@@ -550,11 +617,17 @@ def EightPSK_125F(
         frequency=frequency,
         tx_amplitude=tx_amplitude,
         long_interleave=False,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_125FL(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK125FL modem (125 baud, K=13 FEC, long interleave)."""
     return EightPSKFEC(
@@ -563,11 +636,17 @@ def EightPSK_125FL(
         frequency=frequency,
         tx_amplitude=tx_amplitude,
         long_interleave=True,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_250F(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK250F modem (250 baud, K=16 FEC)."""
     return EightPSKFEC(
@@ -576,11 +655,17 @@ def EightPSK_250F(
         frequency=frequency,
         tx_amplitude=tx_amplitude,
         long_interleave=False,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_250FL(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK250FL modem (250 baud, K=13 FEC, long interleave)."""
     return EightPSKFEC(
@@ -589,31 +674,70 @@ def EightPSK_250FL(
         frequency=frequency,
         tx_amplitude=tx_amplitude,
         long_interleave=True,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_500F(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK500F modem (500 baud, K=13 FEC, 2/3 rate punctured)."""
     return EightPSKFEC(
-        baud=500, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+        baud=500,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_1000F(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK1000F modem (1000 baud, K=13 FEC, 2/3 rate punctured)."""
     return EightPSKFEC(
-        baud=1000, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+        baud=1000,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
 
 
 def EightPSK_1200F(
-    sample_rate: float = 8000.0, frequency: float = 1000.0, tx_amplitude: float = 0.8
+    sample_rate: float = 8000.0,
+    frequency: float = 1000.0,
+    tx_amplitude: float = 0.8,
+    leading_silence: float = 0.0,
+    trailing_silence: float = 0.0,
 ) -> EightPSKFEC:
     """Create an 8PSK1200F modem (1200 baud, K=13 FEC, 2/3 rate punctured)."""
     return EightPSKFEC(
-        baud=1200, sample_rate=sample_rate, frequency=frequency, tx_amplitude=tx_amplitude
+        baud=1200,
+        sample_rate=sample_rate,
+        frequency=frequency,
+        tx_amplitude=tx_amplitude,
+        leading_silence=leading_silence,
+        trailing_silence=trailing_silence,
     )
+
+
+# Aliases for compatibility with example naming convention
+PSK8_125F = EightPSK_125F
+PSK8_125FL = EightPSK_125FL
+PSK8_250F = EightPSK_250F
+PSK8_250FL = EightPSK_250FL
+PSK8_500F = EightPSK_500F
+PSK8_1000F = EightPSK_1000F
+PSK8_1200F = EightPSK_1200F

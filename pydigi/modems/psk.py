@@ -537,12 +537,17 @@ def PSK63(
     leading_silence: float = 0.0,
     trailing_silence: float = 0.0,
 ) -> PSK:
-    """Create a PSK63 modem (62.5 baud)."""
+    """Create a PSK63 modem (62.5 baud).
+
+    Uses 64 symbol preamble/postamble to match fldigi standard.
+    """
     return PSK(
         baud=62.5,
         sample_rate=sample_rate,
         frequency=frequency,
         tx_amplitude=tx_amplitude,
+        preamble_symbols=64,  # fldigi standard for PSK63
+        postamble_symbols=64,
         leading_silence=leading_silence,
         trailing_silence=trailing_silence,
     )
@@ -555,12 +560,17 @@ def PSK125(
     leading_silence: float = 0.0,
     trailing_silence: float = 0.0,
 ) -> PSK:
-    """Create a PSK125 modem (125 baud)."""
+    """Create a PSK125 modem (125 baud).
+
+    Uses 128 symbol preamble/postamble to match fldigi standard.
+    """
     return PSK(
         baud=125,
         sample_rate=sample_rate,
         frequency=frequency,
         tx_amplitude=tx_amplitude,
+        preamble_symbols=128,  # fldigi standard for PSK125
+        postamble_symbols=128,
         leading_silence=leading_silence,
         trailing_silence=trailing_silence,
     )
@@ -573,12 +583,17 @@ def PSK250(
     leading_silence: float = 0.0,
     trailing_silence: float = 0.0,
 ) -> PSK:
-    """Create a PSK250 modem (250 baud)."""
+    """Create a PSK250 modem (250 baud).
+
+    Uses 256 symbol preamble/postamble to match fldigi standard.
+    """
     return PSK(
         baud=250,
         sample_rate=sample_rate,
         frequency=frequency,
         tx_amplitude=tx_amplitude,
+        preamble_symbols=256,  # fldigi standard for PSK250
+        postamble_symbols=256,
         leading_silence=leading_silence,
         trailing_silence=trailing_silence,
     )
@@ -591,12 +606,17 @@ def PSK500(
     leading_silence: float = 0.0,
     trailing_silence: float = 0.0,
 ) -> PSK:
-    """Create a PSK500 modem (500 baud)."""
+    """Create a PSK500 modem (500 baud).
+
+    Uses 512 symbol preamble/postamble to match fldigi standard.
+    """
     return PSK(
         baud=500,
         sample_rate=sample_rate,
         frequency=frequency,
         tx_amplitude=tx_amplitude,
+        preamble_symbols=512,  # fldigi standard for PSK500
+        postamble_symbols=512,
         leading_silence=leading_silence,
         trailing_silence=trailing_silence,
     )
@@ -609,12 +629,17 @@ def PSK1000(
     leading_silence: float = 0.0,
     trailing_silence: float = 0.0,
 ) -> PSK:
-    """Create a PSK1000 modem (1000 baud)."""
+    """Create a PSK1000 modem (1000 baud).
+
+    Uses 128 symbol preamble/postamble to match fldigi standard.
+    """
     return PSK(
         baud=1000,
         sample_rate=sample_rate,
         frequency=frequency,
         tx_amplitude=tx_amplitude,
+        preamble_symbols=128,  # fldigi standard for PSK1000
+        postamble_symbols=128,
         leading_silence=leading_silence,
         trailing_silence=trailing_silence,
     )
