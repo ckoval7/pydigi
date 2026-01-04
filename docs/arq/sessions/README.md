@@ -17,8 +17,8 @@ Step-by-step guides for implementing FLARQ ARQ protocol support in pydigi.
 | 9 | [ABORT Handling](session_09_abort_handling.md) | 2-3h | MEDIUM | ✅ Complete |
 | 10 | Main Loop & Timing | 3-4h | HIGH | ✅ Complete |
 | 11 | [Base64 & File Transfer](session_11_base64_file_transfer.md) | 2-3h | MEDIUM | ✅ Complete |
-| 12 | Integration Testing | 2-3h | HIGH | Not Started |
-| 13 | Documentation & Polish | 1-2h | MEDIUM | Not Started |
+| 12 | [Integration Testing](session_12_integration_testing.md) | 2-3h | HIGH | ✅ Complete |
+| 13 | [Documentation & Polish](session_13_documentation_polish.md) | 1-2h | MEDIUM | ✅ Complete |
 | 14 | Interoperability Testing | 2-3h | LOW (Optional) | Not Started |
 
 **Total Time**: 30-40 hours
@@ -149,6 +149,8 @@ Once all sessions complete:
 - ✅ [Session 7: Text Transmission](session_07_text_transmission.md) - Complete
 - ✅ [Session 8: Reception & Reassembly](session_08_reception_reassembly.md) - Complete
 - ✅ [Session 9: ABORT Handling](session_09_abort_handling.md) - Complete
-- ⏳ Session 10-14: See main plan file
-
-More detailed session guides will be created as needed during implementation.
+- ✅ [Session 10: Main Loop & Timing](session_10_main_loop_timing.md) - Complete
+- ✅ [Session 11: Base64 & File Transfer](session_11_base64_file_transfer.md) - Complete
+- ✅ [Session 12: Integration Testing](session_12_integration_testing.md) - Complete
+- ✅ [Session 13: Documentation & Polish](session_13_documentation_polish.md) - Complete
+- ⏳ Session 14: Remaining session

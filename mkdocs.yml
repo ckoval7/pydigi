@@ -57,6 +57,12 @@ nav:
     - NAVTEX Guide: examples/navtex.md
     - WEFAX Guide: examples/wefax.md
     - GNU Radio Integration: examples/gnuradio.md
+    - ARQ/FLARQ Protocol:
+      - Introduction: arq/README.md
+      - Overview: arq/overview.md
+      - User Guide: arq/user_guide.md
+      - Protocol Reference: arq/protocol_reference.md
+      - Testing Guide: arq/testing_guide.md
   - Decoder Guides:
     - PSK Decoder: guides/decoders.md
     - Signal Detection: guides/signal-detection.md
@@ -85,4 +91,9 @@ nav:
     - Core DSP: api/reference/dsp.md
     - Audio Utilities: api/reference/audio.md
     - Varicode & Encoding: api/reference/varicode.md
+    - ARQ Protocol:
+      - API Reference: arq/api_reference.md
+      - Implementation Status: arq/IMPLEMENTATION_STATUS.md
+      - Dependencies: arq/DEPENDENCIES.md
+      - Session Guides: arq/sessions/README.md
   - Contributing: contributing.md

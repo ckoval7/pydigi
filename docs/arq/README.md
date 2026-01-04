@@ -16,7 +16,7 @@ FLARQ (Fast Light Automatic Repeat reQuest) is a reliable file transfer protocol
 
 ## Implementation Status
 
-**Current Status**: ABORT Handling Complete (9 of 14 sessions)
+**Current Status**: Documentation & Polish Complete (13 of 14 sessions)
 
 **Progress Tracker**:
 - [x] Session 1: CRC-16 Implementation ⭐ CRITICAL
@@ -28,16 +28,18 @@ FLARQ (Fast Light Automatic Repeat reQuest) is a reliable file transfer protocol
 - [x] Session 7: Text Transmission
 - [x] Session 8: Reception & Reassembly
 - [x] Session 9: ABORT Handling
-- [ ] Session 10: Main Loop & Timing
-- [ ] Session 11: Base64 & File Transfer
-- [ ] Session 12: Integration Testing
-- [ ] Session 13: Documentation & Polish
+- [x] Session 10: Main Loop & Timing
+- [x] Session 11: Base64 & File Transfer
+- [x] Session 12: Integration Testing
+- [x] Session 13: Documentation & Polish
 - [ ] Session 14: Interoperability Testing (Optional)
 
 ## Documentation Files
 
+- **[user_guide.md](user_guide.md)** - Getting started and usage guide
+- **[api_reference.md](api_reference.md)** - Complete API documentation
 - **[overview.md](overview.md)** - High-level architecture and design
-- **[sessions/](sessions/)** - Step-by-step implementation guides for each session
+- **[sessions/README.md](sessions/README.md)** - Step-by-step implementation guides for each session
 - **[protocol_reference.md](protocol_reference.md)** - Technical protocol details
 - **[testing_guide.md](testing_guide.md)** - Testing strategy and validation
 
