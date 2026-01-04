@@ -156,12 +156,13 @@ cython_debug/
 # Test/debug scripts (temporary - remove specific ones from git if needed)
 test_*.py
 debug_*.py
+diagnose_*.py
 analyze_*.py
 check_*.py
 compare_*.py
 trace_*.py
 verify_*.py
-generate_*_test.py
+generate_*_test*.py
 plot_*.py
 *_test.py
 *_tests.py
