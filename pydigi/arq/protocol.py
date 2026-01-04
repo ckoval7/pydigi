@@ -24,12 +24,24 @@ from .base64_codec import Base64Codec
 
 @dataclass
 class ARQStatistics:
-    """Statistics for ARQ link."""
-    total_tx: int = 0
-    total_rx: int = 0
-    bad_rx: int = 0  # CRC errors
-    bad_tx: int = 0  # Retransmissions
-    avg_payload_length: int = 0
+    """Statistics for ARQ link.
+
+    Attributes:
+        frames_sent: Total number of frames sent
+        frames_received: Total number of frames received
+        crc_errors: Number of CRC checksum errors
+        retransmissions: Number of block retransmissions
+        tx_blocks_total: Total blocks transmitted
+        tx_blocks_pending: Blocks waiting to transmit
+        rx_blocks_total: Total blocks received
+    """
+    frames_sent: int = 0
+    frames_received: int = 0
+    crc_errors: int = 0
+    retransmissions: int = 0
+    tx_blocks_total: int = 0
+    tx_blocks_pending: int = 0
+    rx_blocks_total: int = 0
 
 
 class ARQProtocol:
@@ -173,7 +185,7 @@ class ARQProtocol:
         if self._send_callback:
             frame_bytes = frame.build()
             self._send_callback(frame_bytes)
-            self.stats.total_tx += 1
+            self.stats.frames_sent += 1
 
             # Reset ID timer after sending any frame
             self._set_id_timer()
@@ -324,7 +336,7 @@ class ARQProtocol:
             frame_bytes: Complete frame bytes received
         """
         self._frame_queue.append(frame_bytes)
-        self.stats.total_rx += 1
+        self.stats.frames_received += 1
 
     def _process_frames(self) -> None:
         """Process all queued frames."""
@@ -381,7 +393,7 @@ class ARQProtocol:
                     self._emit_status(f"Unknown frame type: {block_type}")
 
         except Exception as e:
-            self.stats.bad_rx += 1
+            self.stats.crc_errors += 1
             self._emit_status(f"Frame processing error: {e}")
 
     # Frame Handlers (stubs for now, will be implemented in later sessions)
@@ -1340,3 +1352,16 @@ class ARQProtocol:
             Current link state
         """
         return self.state.state
+
+    @property
+    def statistics(self) -> ARQStatistics:
+        """Get ARQ protocol statistics.
+
+        Returns:
+            ARQStatistics object with current statistics
+        """
+        # Update dynamic statistics
+        self.stats.tx_blocks_total = self._tx_tracker.get_last_sent() + 1
+        self.stats.tx_blocks_pending = len(self._tx_blocks) + len(self._tx_missing)
+        self.stats.rx_blocks_total = self._rx_tracker.get_good_header() + 1
+        return self.stats

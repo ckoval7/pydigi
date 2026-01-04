@@ -8,6 +8,7 @@ crcmod>=1.7
 
 # Optional audio support
 soundfile>=0.10.0
+sounddevice>=0.4.6
 
 # Development dependencies
 pytest>=7.0.0
