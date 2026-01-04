@@ -21,7 +21,7 @@ import numpy as np
 from typing import Optional, Callable
 from ..core.viterbi import ViterbiDecoder, create_8psk_k13_decoder, create_8psk_k16_decoder
 from ..core.interleave import Interleave, INTERLEAVE_REV
-from ..varicode.mfsk_varicode_fixed import MFSKVaricodeDecoder
+from ..varicode.mfsk_varicode import MFSKVaricodeDecoder
 
 
 class EightPSKFECDecoder:

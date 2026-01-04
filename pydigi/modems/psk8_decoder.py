@@ -18,7 +18,7 @@ Reference: fldigi/src/psk/psk.cxx (rx_process, rx_symbol, rx_bit)
 
 import numpy as np
 from typing import Optional, Callable
-from ..varicode.mfsk_varicode_fixed import MFSKVaricodeDecoder
+from ..varicode.mfsk_varicode import MFSKVaricodeDecoder
 
 
 class EightPSKDecoder:
