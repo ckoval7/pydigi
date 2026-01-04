@@ -16,6 +16,10 @@ from .resampler import (
     get_resampling_info,
     COMMON_CONVERSIONS,
 )
+from .signal_trimmer import (
+    SignalTrimmer,
+    TrimResult,
+)
 
 __all__ = [
     "SignalAnalyzer",
@@ -30,4 +34,6 @@ __all__ = [
     "compute_resampled_length",
     "get_resampling_info",
     "COMMON_CONVERSIONS",
+    "SignalTrimmer",
+    "TrimResult",
 ]
