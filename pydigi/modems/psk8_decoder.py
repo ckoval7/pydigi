@@ -19,6 +19,9 @@ Reference: fldigi/src/psk/psk.cxx (rx_process, rx_symbol, rx_bit)
 import numpy as np
 from typing import Optional, Callable
 from ..varicode.mfsk_varicode import MFSKVaricodeDecoder
+from ..core.oscillator import NCO
+from ..core.afc import PhaseAFC
+from ..core.dcd import EnergyDCD
 
 
 class EightPSKDecoder:
@@ -90,8 +93,7 @@ class EightPSKDecoder:
             self.decimate2 = 1
 
         # NCO (Numerically Controlled Oscillator) for carrier mixing
-        self.phase_acc = 0.0
-        self.delta = 2.0 * np.pi * frequency / sample_rate
+        self.nco = NCO(sample_rate=sample_rate, frequency=frequency)
 
         # FIR filters
         self.fir1_index = 0
@@ -110,14 +112,12 @@ class EightPSKDecoder:
         self.prevsymbol = complex(1.0, 0.0)
         self.phase = 0.0
 
-        # Quality and DCD (Data Carrier Detect)
+        # Quality metrics (for monitoring)
         self.quality_real = 0.0
         self.quality_imag = 0.0
         self.metric = 0.0
-        self.dcd = False
-        self.dcd_threshold = 0.5
 
-        # DCD pattern detection (from fldigi)
+        # DCD pattern detection (from fldigi) - kept for sync detection
         # dcdshreg tracks recent symbols for sync detection
         # For 8PSK: shift by 4 (symbits + 1) and OR with bits
         self.dcdshreg = 0
@@ -134,8 +134,12 @@ class EightPSKDecoder:
         # Track consecutive symbol 4s for alternative postamble detection
         self.consecutive_sym4 = 0
 
-        # AFC (Automatic Frequency Control)
-        self.freqerr = 0.0
+        # DCD (Data Carrier Detect) - using framework component with pattern override
+        self.dcd_component = EnergyDCD(threshold_db=6.0, attack=0.1, decay=0.01)
+        self.dcd_active = False
+
+        # AFC (Automatic Frequency Control) - using framework component
+        self.afc = PhaseAFC(alpha=0.01, max_offset=self.baud * 2)
         self.afcmetric = 0.0
         self.afc_decay = 50
 
@@ -169,7 +173,7 @@ class EightPSKDecoder:
     def set_frequency(self, frequency: float) -> None:
         """Update carrier frequency (e.g., for AFC)."""
         self.frequency = frequency
-        self.delta = 2.0 * np.pi * frequency / self.sample_rate
+        self.nco.frequency = frequency
 
     def process(self, samples: np.ndarray) -> None:
         """Process incoming audio samples."""
@@ -188,14 +192,9 @@ class EightPSKDecoder:
     def _process_sample(self, sample: float) -> None:
         """Process a single audio sample."""
         # Step 1: Mix with NCO to downconvert to baseband
-        # Standard quadrature demodulation: multiply by cos and sin references
-        # After lowpass filtering: Re{z} = I, Im{z} = Q
-        z = complex(sample * np.cos(self.phase_acc), sample * np.sin(self.phase_acc))
-
-        # Update NCO phase
-        self.phase_acc += self.delta
-        if self.phase_acc > 2.0 * np.pi:
-            self.phase_acc -= 2.0 * np.pi
+        # Get one sample from NCO and mix with input
+        nco_sample = self.nco.step(1)[0]
+        z = sample * np.conj(nco_sample)  # Mix down: multiply by conj to shift down
 
         # Step 2: First FIR filter with decimation
         self.fir1_buffer = np.roll(self.fir1_buffer, 1)
@@ -313,16 +312,34 @@ class EightPSKDecoder:
 
         self.metric = 100.0 * (self.quality_real**2 + self.quality_imag**2)
 
+        # Update AFC metric (for AFC logic)
+        quality_norm = self.quality_real**2 + self.quality_imag**2
+        self.afcmetric = (self.afcmetric * (self.afc_decay - 1.0) + quality_norm) / self.afc_decay
+
         # Update DCD pattern register (from fldigi)
         # dcdshreg = (dcdshreg << (symbits + 1)) | bits
         self.dcdshreg = ((self.dcdshreg << (self.symbits + 1)) | bits) & 0xFFFFFFFF
 
         # DCD (Data Carrier Detect) - pattern-based detection
-        self._update_dcd(bits)
+        self._update_dcd(bits, symbol)
 
-        # AFC (Automatic Frequency Control)
-        if self.afc_enabled:
-            self._update_afc(bits, n)
+        # AFC (Automatic Frequency Control) - using framework component
+        if self.afc_enabled and self.afcmetric > 0.05:
+            # Calculate phase error for AFC
+            # For 8PSK: ideal phase is bits * π/4
+            ideal_phase = bits * np.pi / 4.0
+            phase_error = self.phase - ideal_phase
+
+            # Wrap phase error to [-π, π]
+            while phase_error > np.pi:
+                phase_error -= 2.0 * np.pi
+            while phase_error < -np.pi:
+                phase_error += 2.0 * np.pi
+
+            # Update AFC and adjust frequency
+            freq_offset = self.afc.update(phase_error, self.baud)
+            new_freq = self.frequency - freq_offset
+            self.set_frequency(new_freq)
 
         # Decode 3 bits per symbol (LSB first, like fldigi)
         for i in range(3):
@@ -338,9 +355,9 @@ class EightPSKDecoder:
         else:
             return (avg * (decay - 1.0) + value) / decay
 
-    def _update_dcd(self, bits: int) -> None:
+    def _update_dcd(self, bits: int, symbol: complex) -> None:
         """
-        Update DCD (Data Carrier Detect) based on symbol patterns.
+        Update DCD (Data Carrier Detect) based on symbol patterns and energy.
 
         From fldigi psk.cxx:
         - 8PSK DCD ON: dcdshreg == 0x00000000 (preamble zeros from symbol 0)
@@ -350,7 +367,7 @@ class EightPSKDecoder:
         When DCD transitions to ON, reset the varicode decoder to clear
         any garbage bits accumulated during preamble.
         """
-        new_dcd = self.dcd
+        new_dcd = self.dcd_active
 
         # Track consecutive symbol 4s for postamble detection
         if bits == 4:
@@ -371,56 +388,22 @@ class EightPSKDecoder:
         elif self.consecutive_sym4 >= 2:
             new_dcd = False
 
-        # Fallback to metric-based DCD if squelch enabled
+        # Fallback to energy-based DCD if squelch enabled
         elif self.squelch_enabled:
-            new_dcd = self.metric > self.dcd_threshold
+            symbol_array = np.array([symbol])
+            energy_dcd, snr_db = self.dcd_component.update(symbol_array)
+            new_dcd = energy_dcd
 
         # If squelch disabled, just stay with current state after initial sync
         # (don't set dcd=True unconditionally to avoid preamble garbage)
 
-        # Handle DCD transitions - check against current self.dcd
-        if new_dcd and not self.dcd:
+        # Handle DCD transitions - check against current self.dcd_active
+        if new_dcd and not self.dcd_active:
             # DCD just turned ON - reset varicode decoder to clear preamble garbage
             self.varicode_decoder.reset()
             self.consecutive_sym4 = 0
 
-        self.dcd = new_dcd
-
-    def _update_afc(self, bits: int, n: int) -> None:
-        """Update automatic frequency control."""
-        # Calculate quality metric for AFC
-        quality_norm = self.quality_real**2 + self.quality_imag**2
-        self.afcmetric = (self.afcmetric * (self.afc_decay - 1.0) + quality_norm) / self.afc_decay
-
-        # Only do AFC if we have good signal
-        if self.afcmetric < 0.05:
-            return
-
-        # Calculate frequency error from phase
-        # For 8PSK, target phase is bits * pi/4
-        target_phase = bits * np.pi / 4.0
-        error = self.phase - target_phase
-
-        # Wrap error to [-pi/2, pi/2]
-        while error > np.pi / 2.0:
-            error -= 2.0 * np.pi
-        while error < -np.pi / 2.0:
-            error += 2.0 * np.pi
-
-        # Limit error range
-        if abs(error) > np.pi / 2.0:
-            return
-
-        # Convert phase error to frequency error
-        error_hz = error * self.sample_rate / (2.0 * np.pi * self.symbollen)
-
-        # Bandwidth limit
-        sc_bw = self.baud * 2
-        dcdbits = int(self.baud * 1.024)  # From 8PSK encoder
-        if abs(error_hz) < sc_bw:
-            self.freqerr = error_hz / dcdbits
-            new_freq = self.frequency - self.freqerr
-            self.set_frequency(new_freq)
+        self.dcd_active = new_dcd
 
     def _rx_bit(self, bit: int) -> None:
         """Process received bit through MFSK varicode decoder."""
@@ -429,7 +412,7 @@ class EightPSKDecoder:
 
         if char_code is not None and char_code != 0:
             # Successfully decoded a character (ignore NUL)
-            if self.dcd and self.text_callback:
+            if self.dcd_active and self.text_callback:
                 char = chr(char_code)
                 self.text_callback(char)
                 self.chars_decoded += 1
@@ -440,29 +423,46 @@ class EightPSKDecoder:
             'symbols_received': self.symbols_received,
             'chars_decoded': self.chars_decoded,
             'metric': self.metric,
-            'dcd': self.dcd,
+            'dcd': self.dcd_active,
             'frequency': self.frequency,
-            'freqerr': self.freqerr,
+            'freq_offset': self.afc.freq_offset,
         }
 
     def reset(self) -> None:
         """Reset decoder state."""
-        self.phase_acc = 0.0
+        # Reset NCO
+        self.nco.phase = 0.0
+
+        # Reset timing recovery
         self.bitclk = 0.0
         self.syncbuf = np.zeros(self.syncbuf_size)
+
+        # Reset phase tracking
         self.prevsymbol = complex(1.0, 0.0)
         self.phase = 0.0
+
+        # Reset quality metrics
         self.quality_real = 0.0
         self.quality_imag = 0.0
         self.metric = 0.0
-        self.dcd = False
+
+        # Reset DCD
+        self.dcd_active = False
         self.dcdshreg = 0
         self.consecutive_sym4 = 0
-        self.freqerr = 0.0
+
+        # Reset AFC
+        self.afc = PhaseAFC(alpha=0.01, max_offset=self.baud * 2)
         self.afcmetric = 0.0
+
+        # Reset varicode decoder
         self.varicode_decoder.reset()
+
+        # Reset filters
         self.fir1_buffer = np.zeros(len(self.fir1_coeffs), dtype=complex)
         self.fir2_buffer = np.zeros(len(self.fir2_coeffs), dtype=complex)
+
+        # Reset statistics
         self.symbols_received = 0
         self.chars_decoded = 0
 

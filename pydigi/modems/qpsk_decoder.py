@@ -22,6 +22,9 @@ import numpy as np
 from typing import Optional, Callable
 from ..varicode.psk_varicode import decode_varicode
 from ..core.viterbi import create_qpsk_decoder
+from ..core.oscillator import NCO
+from ..core.afc import PhaseAFC
+from ..core.dcd import EnergyDCD
 
 
 class QPSKDecoder:
@@ -85,8 +88,7 @@ class QPSKDecoder:
             self.decimate2 = 1
 
         # NCO (Numerically Controlled Oscillator) for carrier mixing
-        self.phase_acc = 0.0
-        self.delta = 2.0 * np.pi * frequency / sample_rate
+        self.nco = NCO(sample_rate=sample_rate, frequency=frequency)
 
         # FIR filters (will be initialized later)
         self.fir1 = None  # First decimating matched filter
@@ -102,15 +104,17 @@ class QPSKDecoder:
         self.prevsymbol = complex(1.0, 0.0)
         self.phase = 0.0
 
-        # Quality and DCD (Data Carrier Detect)
+        # Quality metrics (for monitoring)
         self.quality_real = 0.0
         self.quality_imag = 0.0
         self.metric = 0.0
-        self.dcd = False
-        self.dcd_threshold = 0.5  # Will be tuned
 
-        # AFC (Automatic Frequency Control)
-        self.freqerr = 0.0
+        # DCD (Data Carrier Detect) - using framework component
+        self.dcd = EnergyDCD(threshold_db=6.0, attack=0.1, decay=0.01)
+        self.dcd_active = False
+
+        # AFC (Automatic Frequency Control) - using framework component
+        self.afc = PhaseAFC(alpha=0.01, max_offset=self.baud * 2)
         self.afcmetric = 0.0
         self.afc_decay = 50  # Decay constant for AFC metric
 
@@ -162,7 +166,7 @@ class QPSKDecoder:
             frequency: New carrier frequency in Hz
         """
         self.frequency = frequency
-        self.delta = 2.0 * np.pi * frequency / self.sample_rate
+        self.nco.frequency = frequency
 
     def process(self, samples: np.ndarray) -> None:
         """Process incoming audio samples.
@@ -218,15 +222,9 @@ class QPSKDecoder:
             sample: Single audio sample (float)
         """
         # Step 1: Mix with NCO to downconvert to baseband
-        z = complex(
-            sample * np.cos(self.phase_acc),
-            sample * np.sin(self.phase_acc)
-        )
-
-        # Update NCO phase
-        self.phase_acc += self.delta
-        if self.phase_acc > 2.0 * np.pi:
-            self.phase_acc -= 2.0 * np.pi
+        # Get one sample from NCO and mix with input
+        nco_sample = self.nco.step(1)[0]
+        z = sample * np.conj(nco_sample)  # Mix down: multiply by conj to shift down
 
         # Step 2: First FIR filter with decimation
         # Shift sample into buffer
@@ -347,71 +345,34 @@ class QPSKDecoder:
         quality_norm = self.quality_real**2 + self.quality_imag**2
         self.afcmetric = self._decayavg(self.afcmetric, quality_norm, self.afc_decay)
 
-        # DCD (Data Carrier Detect) - simple threshold on metric
-        # Note: QPSK doesn't use pattern-based DCD in fldigi (preamble and postamble are identical)
+        # DCD (Data Carrier Detect) - using framework component
         if self.squelch_enabled:
-            self.dcd = self.metric > self.dcd_threshold
+            # Update DCD with symbol power
+            symbol_array = np.array([symbol])
+            self.dcd_active, snr_db = self.dcd.update(symbol_array)
         else:
-            self.dcd = True
+            self.dcd_active = True
 
-        # AFC (Automatic Frequency Control)
-        if self.afc_enabled:
-            self._update_afc(bits, n)
+        # AFC (Automatic Frequency Control) - using framework component
+        if self.afc_enabled and self.afcmetric > 0.05:
+            # Calculate phase error for AFC
+            # For QPSK: ideal phase is bits * π/2
+            ideal_phase = bits * np.pi / 2.0
+            phase_error = self.phase - ideal_phase
+
+            # Wrap phase error to [-π, π]
+            while phase_error > np.pi:
+                phase_error -= 2.0 * np.pi
+            while phase_error < -np.pi:
+                phase_error += 2.0 * np.pi
+
+            # Update AFC and adjust frequency
+            freq_offset = self.afc.update(phase_error, self.baud)
+            new_freq = self.frequency - freq_offset
+            self.set_frequency(new_freq)
 
         # Send symbol to QPSK decoder (Viterbi)
         self._rx_qpsk(bits)
-
-    def _update_afc(self, bits: int, n: int) -> None:
-        """Update automatic frequency control.
-
-        This implements simplified AFC from fldigi (phaseafc function).
-
-        Args:
-            bits: Decoded symbol value (0-3 for QPSK)
-            n: Number of constellation points (4 for QPSK)
-        """
-        # Only do AFC if we have good signal
-        if self.afcmetric < 0.05:
-            return
-
-        # Calculate frequency error from phase
-        # For QPSK, target phase is bits * pi/2
-        target_phase = bits * np.pi / 2.0
-        error = self.phase - target_phase
-
-        # Wrap error to [-π/2, π/2]
-        while error > np.pi / 2.0:
-            error -= 2.0 * np.pi
-        while error < -np.pi / 2.0:
-            error += 2.0 * np.pi
-
-        # Limit error range
-        if abs(error) > np.pi / 2.0:
-            return
-
-        # Convert phase error to frequency error
-        error_hz = error * self.sample_rate / (2.0 * np.pi * self.symbollen)
-
-        # Bandwidth limit
-        sc_bw = self.baud * 2  # Single carrier bandwidth
-
-        # dcdbits from fldigi for different QPSK modes:
-        # QPSK31: 32, QPSK63: 64, QPSK125: 128, QPSK250: 256, QPSK500: 512
-        if self.baud <= 32:
-            dcdbits = 32
-        elif self.baud <= 64:
-            dcdbits = 64
-        elif self.baud <= 128:
-            dcdbits = 128
-        elif self.baud <= 256:
-            dcdbits = 256
-        else:
-            dcdbits = 512
-
-        if abs(error_hz) < sc_bw:
-            self.freqerr = error_hz / dcdbits
-            new_freq = self.frequency - self.freqerr
-            self.set_frequency(new_freq)
 
     def _rx_qpsk(self, bits: int) -> None:
         """Process QPSK symbol through Viterbi decoder.
@@ -474,7 +435,7 @@ class QPSKDecoder:
             char_code = self._decode_varicode(code_bits)
 
             # Output character if valid and DCD active
-            if char_code is not None and self.dcd:
+            if char_code is not None and self.dcd_active:
                 char = chr(char_code)
                 if self.text_callback:
                     self.text_callback(char)
@@ -526,28 +487,47 @@ class QPSKDecoder:
             'symbols_received': self.symbols_received,
             'chars_decoded': self.chars_decoded,
             'metric': self.metric,
-            'dcd': self.dcd,
+            'dcd': self.dcd_active,
             'frequency': self.frequency,
-            'freqerr': self.freqerr,
+            'freq_offset': self.afc.freq_offset,
         }
 
     def reset(self) -> None:
         """Reset decoder state."""
-        self.phase_acc = 0.0
+        # Reset NCO
+        self.nco.phase = 0.0
+
+        # Reset timing recovery
         self.bitclk = 0.0
         self.syncbuf = np.zeros(self.syncbuf_size)
+
+        # Reset phase tracking
         self.prevsymbol = complex(1.0, 0.0)
         self.phase = 0.0
+
+        # Reset quality metrics
         self.quality_real = 0.0
         self.quality_imag = 0.0
         self.metric = 0.0
-        self.dcd = False
-        self.freqerr = 0.0
+
+        # Reset DCD
+        self.dcd_active = False
+
+        # Reset AFC
+        self.afc = PhaseAFC(alpha=0.01, max_offset=self.baud * 2)
         self.afcmetric = 0.0
+
+        # Reset varicode decoder
         self.shreg = 0
+
+        # Reset Viterbi decoder
         self.viterbi.reset()
+
+        # Reset filters
         self.fir1_buffer = np.zeros(len(self.fir1_coeffs), dtype=complex)
         self.fir2_buffer = np.zeros(len(self.fir2_coeffs), dtype=complex)
+
+        # Reset statistics
         self.symbols_received = 0
         self.chars_decoded = 0
 

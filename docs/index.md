@@ -11,6 +11,7 @@ PyDigi is a pure Python library for generating digital amateur radio signals. It
 - **Flexible output** - Returns numpy arrays for use with GNU Radio, WAV files, or direct audio playback
 - **Comprehensive documentation** - Full API docs with clear examples
 - **Advanced features** - FEC encoding (Golay, Viterbi, Reed-Solomon), interleaving, Gray coding
+- **Decoder API** - Reusable components for building decoders (timing recovery, AFC, DCD, sync detection)
 
 ## Quick Example
 
@@ -77,14 +78,40 @@ PyDigi is designed to be:
 
 ## Project Status
 
-PyDigi implements modulation (TX) for all supported modes. Most modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
+**Transmit (TX)**: ✅ Complete - All 22 mode families, ~151 mode variants fully implemented
+
+**Receive (RX)**: 🔄 In Progress
+- ✅ 4 decoder families working (PSK, QPSK, 8PSK, 8PSK FEC)
+- ✅ Complete decoder API with reusable components
+- ✅ **Framework integration complete** - PSK/QPSK/8PSK decoders refactored to use framework components
+- 📋 18 decoder families remaining
+
+**Decoder API**: ✅ Complete (2026-01-05)
+- **Timing recovery** (SymbolSlicer, Gardner, Early-Late)
+- **AFC** (Phase-based, Tone-based, PLL)
+- **DCD** (Energy, Preamble, Tone detection)
+- **Sync detection** (Pattern matching, state machine)
+- **De-interleavers** (Block, Convolutional)
+- **Testing utilities** (AWGN, BER/SER, profiling)
+- **Integrated into production decoders** - PSK, QPSK, and 8PSK decoders now use framework components
+
+See the [Decoder API Guide](guides/decoder-api.md) to learn how to build decoders.
 
 ## Getting Started
+
+### For Transmit (TX)
 
 1. [Install PyDigi](installation.md)
 2. Try the [Quick Start](quickstart.md) examples
 3. Browse the [API Reference](api/overview.md) to see all available modem modes
 4. Check out the [User Guide](examples/basic.md) for usage examples
+
+### For Decoders (RX)
+
+1. Read the [Decoder API Guide](guides/decoder-api.md) to learn the components
+2. See the [Decoder API Reference](api/reference/decoder_api.md) for detailed documentation
+3. Study the [PSK Decoder](guides/decoders.md) as a working example
+4. Review [Signal Detection](guides/signal-detection.md) for DCD techniques
 
 ## License
 
