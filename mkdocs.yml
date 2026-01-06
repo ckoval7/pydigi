@@ -64,7 +64,10 @@ nav:
       - Protocol Reference: arq/protocol_reference.md
       - Testing Guide: arq/testing_guide.md
   - Decoder Guides:
+    - Decoder API Guide: guides/decoder-api.md
     - PSK Decoder: guides/decoders.md
+    - CW Decoder: guides/cw-decoder.md
+    - RTTY Decoder: guides/rtty-decoder.md
     - Signal Detection: guides/signal-detection.md
     - Frequency Estimation: guides/frequency-estimation.md
   - API Reference:
@@ -88,6 +91,7 @@ nav:
       - MT63: api/reference/mt63.md
       - IFKP: api/reference/ifkp.md
       - WEFAX: api/reference/wefax.md
+    - Decoder API Components: api/reference/decoder_api.md
     - Core DSP: api/reference/dsp.md
     - Audio Utilities: api/reference/audio.md
     - Varicode & Encoding: api/reference/varicode.md

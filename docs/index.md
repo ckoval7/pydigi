@@ -81,10 +81,10 @@ PyDigi is designed to be:
 **Transmit (TX)**: ✅ Complete - All 22 mode families, ~151 mode variants fully implemented
 
 **Receive (RX)**: 🔄 In Progress
-- ✅ 4 decoder families working (PSK, QPSK, 8PSK, 8PSK FEC)
+- ✅ 6 decoder families working (PSK, QPSK, 8PSK, 8PSK FEC, RTTY, CW)
 - ✅ Complete decoder API with reusable components
-- ✅ **Framework integration complete** - PSK/QPSK/8PSK decoders refactored to use framework components
-- 📋 18 decoder families remaining
+- ✅ **Framework integration complete** - PSK/QPSK/8PSK/RTTY/CW decoders use framework components
+- 📋 16 decoder families remaining
 
 **Decoder API**: ✅ Complete (2026-01-05)
 - **Timing recovery** (SymbolSlicer, Gardner, Early-Late)
@@ -110,7 +110,10 @@ See the [Decoder API Guide](guides/decoder-api.md) to learn how to build decoder
 
 1. Read the [Decoder API Guide](guides/decoder-api.md) to learn the components
 2. See the [Decoder API Reference](api/reference/decoder_api.md) for detailed documentation
-3. Study the [PSK Decoder](guides/decoders.md) as a working example
+3. Study decoder examples:
+   - [PSK Decoder Guide](guides/decoders.md) - BPSK/QPSK/8PSK decoding
+   - [CW Decoder Guide](guides/cw-decoder.md) - Morse code decoding
+   - [RTTY Decoder Guide](guides/rtty-decoder.md) - Radioteletype decoding
 4. Review [Signal Detection](guides/signal-detection.md) for DCD techniques
 
 ## License

@@ -1,7 +1,9 @@
 """Digital modem implementations."""
 
 from .cw import CW
+from .cw_decoder import CWDecoder
 from .rtty import RTTY
+from .rtty_decoder import RTTYDecoder
 from .psk import PSK, PSK31, PSK63, PSK125, PSK250, PSK500
 from .psk_decoder import PSKDecoder
 from .qpsk import QPSK, QPSK31, QPSK63, QPSK125, QPSK250, QPSK500
@@ -88,7 +90,9 @@ from .wefax import WEFAX, WEFAX576, WEFAX288
 
 __all__ = [
     "CW",
+    "CWDecoder",
     "RTTY",
+    "RTTYDecoder",
     "PSK",
     "PSK31",
     "PSK63",
