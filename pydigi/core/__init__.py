@@ -30,12 +30,30 @@ from .encoder import ConvolutionalEncoder, create_qpsk_encoder, create_mfsk_enco
 from .fht import fht, ifht
 from .mfsk_encoder import MFSKEncoder
 from .mfsk_modulator import MFSKModulator
-from .interleave import Interleave, INTERLEAVE_FWD, INTERLEAVE_REV
+from .interleave import (
+    Interleave,
+    INTERLEAVE_FWD,
+    INTERLEAVE_REV,
+    BlockDeinterleaver,
+    ConvolutionalDeinterleaver,
+)
 from .dsp_utils import (
     generate_raised_cosine_shape,
     apply_baseband_filter,
     modulate_to_carrier,
     normalize_audio,
+)
+from .timing_recovery import SymbolSlicer, EarlyLateGate, GardnerTimingRecovery
+from .dcd import EnergyDCD, PreambleDetector, ToneDCD
+from .afc import PhaseAFC, ToneAFC, PLL
+from .sync_detector import (
+    SyncPattern,
+    SyncDetector,
+    DecoderStateMachine,
+    DecoderState,
+    create_psk_preamble_pattern,
+    create_rtty_preamble_pattern,
+    create_tone_sequence_pattern,
 )
 
 __all__ = [
@@ -77,6 +95,28 @@ __all__ = [
     "Interleave",
     "INTERLEAVE_FWD",
     "INTERLEAVE_REV",
+    "BlockDeinterleaver",
+    "ConvolutionalDeinterleaver",
+    # Timing Recovery
+    "SymbolSlicer",
+    "EarlyLateGate",
+    "GardnerTimingRecovery",
+    # DCD (Data Carrier Detect)
+    "EnergyDCD",
+    "PreambleDetector",
+    "ToneDCD",
+    # AFC (Automatic Frequency Control)
+    "PhaseAFC",
+    "ToneAFC",
+    "PLL",
+    # Sync Detection
+    "SyncPattern",
+    "SyncDetector",
+    "DecoderStateMachine",
+    "DecoderState",
+    "create_psk_preamble_pattern",
+    "create_rtty_preamble_pattern",
+    "create_tone_sequence_pattern",
     # DSP Utilities
     "generate_raised_cosine_shape",
     "apply_baseband_filter",
