@@ -1,6 +1,6 @@
 # PyDigi Project Tracker
 
-**Last Updated:** 2026-01-04
+**Last Updated:** 2026-01-06
 
 ## Project Status Summary
 
@@ -8,12 +8,13 @@
 - All 22 stable fldigi mode families implemented (~151 mode variants)
 - Modes: CW, RTTY, PSK, QPSK, 8PSK, Olivia, Contestia, MFSK, Hellschreiber, DominoEX, FSQ, Thor, Throb, MT63, PSK Extended, 8PSK FEC, Multi-Carrier PSK-R, IFKP, SCAMP, NAVTEX/SITOR-B, WEFAX
 
-**RX Implementation: 🔄 IN PROGRESS (4 decoders working, framework integrated)**
+**RX Implementation: 🔄 IN PROGRESS (5 decoder families working, framework integrated)**
 - ✅ PSK decoder (all rates: 31/63/125/250/500/1000) - **Using framework components**
 - ✅ QPSK decoder (all rates: 31/63/125/250/500) - **Using framework components**
 - ✅ 8PSK decoder (non-FEC, all rates: 125/250/500/1000) - **Using framework components**
+- ✅ Throb decoder (all 6 modes: Throb1/2/4, ThrobX1/2/4) - **NEW! 2026-01-06**
 - 🔧 8PSK FEC decoder (85% - minor silence handling issue)
-- 📋 18+ decoder families remaining (see Decoder Roadmap below)
+- 📋 17 decoder families remaining (see Decoder Roadmap below)
 
 **Core Infrastructure: ✅ COMPLETE**
 - NCO (oscillator.py)
@@ -74,7 +75,7 @@
 
 ## Current RX Decoder Status
 
-### Working Decoders (4/22 families)
+### Working Decoders (5/22 families)
 
 #### 1. PSK Decoder (pydigi/modems/psk_decoder.py) ✅
 - **Status**: Fully working for all PSK rates
@@ -105,7 +106,22 @@
   - Symbol timing recovery
   - Successfully decodes all message lengths
 
-#### 4. 8PSK FEC Decoder (pydigi/modems/psk8_fec_decoder.py) 🔧
+#### 4. Throb Decoder (pydigi/modems/throb_decoder.py) ✅
+- **Status**: Fully working for all Throb modes
+- **Modes**: Throb1, Throb2, Throb4, ThrobX1, ThrobX2, ThrobX4 (6 modes)
+- **Features**:
+  - Dual-tone correlation detection
+  - Hilbert transform for analytic signal creation
+  - Complex mixer for frequency translation
+  - Downsampling (32x)
+  - Symbol timing recovery via sync tracking
+  - Character decoding with shift state (Throb) and alternating idle/space (ThrobX)
+  - SNR measurement and squelch
+  - Optional AFC for frequency tracking
+- **Test Results**: 21/21 tests passing, 97% code coverage
+- **Implemented**: 2026-01-06
+
+#### 5. 8PSK FEC Decoder (pydigi/modems/psk8_fec_decoder.py) 🔧
 - **Status**: 85% complete
 - **Modes**: 8PSK125F/FL, 8PSK250F/FL, 8PSK500F, 8PSK1000F, 8PSK1200F
 - **Working**:
@@ -154,14 +170,14 @@ These decoders are variations of already-implemented decoders. Main work is para
 - **Reference**: fldigi/src/psk/psk.cxx
 - **Estimated effort**: 2-4 hours (after silence fix)
 
-#### 3. Throb Decoders
+#### 3. Throb Decoders ✅
 - **Difficulty**: ⭐⭐ (easy)
 - **Modes**: Throb1, Throb2, Throb4, ThrobX1, ThrobX2, ThrobX4 (6 modes)
-- **Why easy**: Dual-tone amplitude detection, no carrier tracking needed
-- **Technique**: Goertzel filter pairs for each tone combination
-- **Implementation**: Create throb_decoder.py with dual Goertzel detectors
+- **Status**: ✅ COMPLETE (2026-01-06)
+- **Implementation**: throb_decoder.py with correlation-based tone detection
+- **Features**: Dual-tone correlation, Hilbert transform, sync tracking, AFC
 - **Reference**: fldigi/src/throb/throb.cxx
-- **Estimated effort**: 1 day
+- **Test Results**: 21/21 tests passing, 97% code coverage
 
 #### 4. CW Decoder (Morse Code)
 - **Difficulty**: ⭐⭐ (easy)
