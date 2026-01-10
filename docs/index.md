@@ -80,10 +80,17 @@ PyDigi is designed to be:
 
 **Transmit (TX)**: ✅ Complete - All 22 mode families, ~151 mode variants fully implemented
 
-**Receive (RX)**: 🔄 In Progress
-- ✅ 6 decoder families working (PSK, QPSK, 8PSK, 8PSK FEC, RTTY, CW)
+**Receive (RX)**: 🔄 In Progress - 32% Complete
+- ✅ 7 decoder families working:
+  - PSK (all rates: 31/63/125/250/500/1000)
+  - QPSK (all rates with Viterbi FEC: 31/63/125/250/500)
+  - 8PSK (non-FEC modes: 125/250/500/1000)
+  - **8PSK FEC (all 7 modes: 125F/FL, 250F/FL, 500F, 1000F, 1200F) - FIXED 2026-01-09**
+  - CW (Morse code with adaptive timing)
+  - RTTY (Baudot/ITA-2, all baud rates)
+  - Throb (all 6 modes)
 - ✅ Complete decoder API with reusable components
-- ✅ **Framework integration complete** - PSK/QPSK/8PSK/RTTY/CW decoders use framework components
+- ✅ **Framework integration complete** - All decoders use framework components
 - 📋 16 decoder families remaining
 
 **Decoder API**: ✅ Complete (2026-01-05)

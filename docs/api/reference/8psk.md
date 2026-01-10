@@ -71,6 +71,9 @@ The EightPSKFECDecoder class provides advanced decoding features:
 - **Bit deinterleaving** for burst error protection
 - **Puncturing support** for higher-rate modes (500F, 1000F, 1200F)
 - **Sample-level signal detection** to prevent noise corruption
+- **Silence handling** - Properly handles pure silence and noisy silence without FEC corruption
+
+**Status**: ✅ 100% Complete - All 7 modes working (fixed 2026-01-09)
 
 ### Module Reference
 

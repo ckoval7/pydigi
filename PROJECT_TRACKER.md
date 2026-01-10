@@ -1,6 +1,6 @@
 # PyDigi Project Tracker
 
-**Last Updated:** 2026-01-06
+**Last Updated:** 2026-01-09
 
 ## Project Status Summary
 
@@ -8,13 +8,14 @@
 - All 22 stable fldigi mode families implemented (~151 mode variants)
 - Modes: CW, RTTY, PSK, QPSK, 8PSK, Olivia, Contestia, MFSK, Hellschreiber, DominoEX, FSQ, Thor, Throb, MT63, PSK Extended, 8PSK FEC, Multi-Carrier PSK-R, IFKP, SCAMP, NAVTEX/SITOR-B, WEFAX
 
-**RX Implementation: 🔄 IN PROGRESS (5 decoder families working, framework integrated)**
+**RX Implementation: 🔄 IN PROGRESS (6 decoder families working, framework integrated)**
 - ✅ PSK decoder (all rates: 31/63/125/250/500/1000) - **Using framework components**
+- ⚠️ PSK Extended: PSK1000 ✅ working, PSK63F ⚠️ in progress (see DECODER_TODO.md for details)
 - ✅ QPSK decoder (all rates: 31/63/125/250/500) - **Using framework components**
 - ✅ 8PSK decoder (non-FEC, all rates: 125/250/500/1000) - **Using framework components**
 - ✅ Throb decoder (all 6 modes: Throb1/2/4, ThrobX1/2/4) - **NEW! 2026-01-06**
-- 🔧 8PSK FEC decoder (85% - minor silence handling issue)
-- 📋 17 decoder families remaining (see Decoder Roadmap below)
+- ✅ 8PSK FEC decoder (all 7 modes: 125F/FL, 250F/FL, 500F, 1000F, 1200F) - **FIXED! 2026-01-09**
+- 📋 16 decoder families remaining (see Decoder Roadmap below)
 
 **Core Infrastructure: ✅ COMPLETE**
 - NCO (oscillator.py)
@@ -121,18 +122,21 @@
 - **Test Results**: 21/21 tests passing, 97% code coverage
 - **Implemented**: 2026-01-06
 
-#### 5. 8PSK FEC Decoder (pydigi/modems/psk8_fec_decoder.py) 🔧
-- **Status**: 85% complete
-- **Modes**: 8PSK125F/FL, 8PSK250F/FL, 8PSK500F, 8PSK1000F, 8PSK1200F
-- **Working**:
+#### 5. 8PSK FEC Decoder (pydigi/modems/psk8_fec_decoder.py) ✅
+- **Status**: 100% complete - **FIXED! 2026-01-09**
+- **Modes**: 8PSK125F/FL, 8PSK250F/FL, 8PSK500F, 8PSK1000F, 8PSK1200F (all 7 modes)
+- **Features**:
   - Symbol-level FEC pipeline verified (100%)
-  - Soft bit mapping correct
-  - Viterbi decoder (K=5/13/16) working perfectly
-  - Audio loopback works WITH noise (0.02-0.05)
-- **Issue**: Fails with leading silence + noise=0.0
-  - Pure zeros during silence corrupt FEC decoder state
-  - Works perfectly without leading silence
-  - Next: Investigate silence processing in FEC state machine
+  - Soft bit mapping with Gray constellation
+  - Viterbi decoder (K=13/16) working perfectly
+  - Deinterleaver with configurable depth
+  - Sample-level signal detection (handles pure silence and noisy silence)
+  - Soft puncturing for weak signals
+  - Works with and without leading/trailing silence
+- **Fix Applied**: Pure silence handling
+  - Pure zeros now skipped (prevents deinterleaver corruption)
+  - Works with pure silence, noisy silence, and no silence
+  - See 8PSK_FEC_SILENCE_FIX.md for details
 
 ### Core Decoder Components
 

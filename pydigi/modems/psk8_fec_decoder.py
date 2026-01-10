@@ -168,21 +168,7 @@ class EightPSKFECDecoder:
         self.dcd = False
         self.dcd_threshold = 0.5
 
-        # Sample-level signal detection - gates processing before filter corruption
-        # This is critical for handling noise during leading silence
-        self._sample_signal_detected = False
-        self._sample_power_window = int(self.samples_per_symbol * 2)  # ~2 symbol periods
-        self._sample_power_buffer = np.zeros(self._sample_power_window)
-        self._sample_power_idx = 0
-        self._sample_power_sum = 0.0
-        self._noise_floor = 0.0
-        self._noise_floor_samples = 0
-        self._noise_floor_window = int(self.sample_rate * 0.1)  # 100ms for noise estimation
-        self._signal_threshold_db = 10.0  # Signal must be 10dB above noise floor
-        self._signal_onset_count = 0  # Consecutive high-power samples
-        self._signal_onset_required = int(self.samples_per_symbol)  # Require 1 symbol period of signal
-
-        # Symbol-level signal detection state (kept for soft puncturing)
+        # Symbol-level signal detection state (for soft puncturing)
         self._signal_detected = False
         self._signal_threshold = 0.05  # Minimum amplitude to consider as signal
         self._signal_history = []  # Track recent amplitudes
@@ -224,8 +210,14 @@ class EightPSKFECDecoder:
             self.viterbi_decoder2 = None
             self.deinterleaver2 = None
 
-        # Varicode decoder state
+        # Varicode decoder state (primary decoder)
         self.varicode_decoder = MFSKVaricodeDecoder()
+
+        # Second varicode decoder for bit sync voting (non-punctured modes only)
+        if not self._puncturing:
+            self.varicode_decoder2 = MFSKVaricodeDecoder()
+        else:
+            self.varicode_decoder2 = None
 
         # Callbacks
         self.text_callback: Optional[Callable[[str], None]] = None
@@ -279,6 +271,8 @@ class EightPSKFECDecoder:
 
         # Reset varicode decoder
         self.varicode_decoder.reset()
+        if self.varicode_decoder2:
+            self.varicode_decoder2.reset()
 
         # Reset quality tracking
         self.last_phase_quality = 0.0
@@ -339,83 +333,22 @@ class EightPSKFECDecoder:
 
     def _process_sample(self, sample: float) -> None:
         """Process a single audio sample."""
-        # Sample-level signal detection (before any filtering)
-        # This prevents noise during silence from corrupting filter state
+        # Simple sample-level signal gating: skip pure zeros/silence to prevent
+        # corrupting the FEC pipeline with neutral symbols during silence.
+        # Use a very low threshold to only skip truly silent samples.
         sample_power = sample * sample
 
-        # Update sliding window power estimate
-        old_power = self._sample_power_buffer[self._sample_power_idx]
-        self._sample_power_buffer[self._sample_power_idx] = sample_power
-        self._sample_power_sum = self._sample_power_sum - old_power + sample_power
-        self._sample_power_idx = (self._sample_power_idx + 1) % self._sample_power_window
+        # Very low threshold: only skip samples that are essentially zero
+        # This prevents pure silence from filling the deinterleaver with garbage
+        # while allowing actual signal (even weak signal) to be processed.
+        pure_silence_threshold = 1e-8  # Effectively zero (amplitude < 0.0001)
 
-        current_power = self._sample_power_sum / self._sample_power_window
-
-        if not self._sample_signal_detected:
-            # Thresholds for sample-level signal detection
-            # Low noise threshold: below this, treat as silence and process through filters
-            # (amplitude ~0.02 -> power ~0.0004)
-            low_noise_threshold = 0.0004
-
-            # Minimum absolute signal power (amplitude ~0.1 -> power ~0.01)
-            # Signal must be at least this strong to be considered signal
-            min_absolute_signal = 0.01
-
-            # Relative threshold: signal must be X dB above noise floor
-            relative_threshold_db = 10.0  # 10 dB above noise
-            relative_threshold_linear = 10.0 ** (relative_threshold_db / 10.0)  # ~10x
-
-            # Calculate dynamic signal threshold
-            if self._noise_floor > low_noise_threshold:
-                # Have significant noise - require signal to be well above it
-                signal_threshold = max(min_absolute_signal, self._noise_floor * relative_threshold_linear)
-            else:
-                # Low/no noise - use minimum absolute threshold
-                signal_threshold = min_absolute_signal
-
-            if current_power < low_noise_threshold:
-                # Very low power (essentially silence) - safe to process through filters
-                self._noise_floor_samples += 1
-                # Slowly decay noise floor toward current (low) level
-                alpha = 0.1 if self._noise_floor_samples > 10 else 1.0 / self._noise_floor_samples
-                self._noise_floor = (1 - alpha) * self._noise_floor + alpha * current_power
-                self._signal_onset_count = 0
-                # Fall through to normal processing
-
-            elif current_power > signal_threshold:
-                # Power significantly above noise floor - likely signal
-                self._signal_onset_count += 1
-
-                # Check if we should confirm signal detection
-                if self._noise_floor_samples < self._sample_power_window:
-                    # Haven't seen much silence, assume signal from start
-                    if self._signal_onset_count >= min(8, self._sample_power_window):
-                        self._sample_signal_detected = True
-                elif self._signal_onset_count >= self._signal_onset_required:
-                    # Seen silence/noise, now signal is sustained - start processing
-                    self._sample_signal_detected = True
-                    # Reset FEC pipeline but NOT filters
-                    self._reset_fec_pipeline()
-                    # Reset symbol-level detection state
-                    self._signal_detected = False
-                    self._signal_history = []
-                    self._seen_low_amplitude = False
-
-                # Fall through to normal processing (always process signal samples)
-
-            else:
-                # Moderate power (noise) - skip processing to avoid corrupting filters
-                self._signal_onset_count = 0
-                self._noise_floor_samples += 1
-                # Update noise floor estimate
-                alpha = 0.1 if self._noise_floor_samples > 10 else 1.0 / self._noise_floor_samples
-                self._noise_floor = (1 - alpha) * self._noise_floor + alpha * current_power
-
-                # Skip filter processing during noisy silence
-                self.phase_acc += self.delta
-                if self.phase_acc > 2.0 * np.pi:
-                    self.phase_acc -= 2.0 * np.pi
-                return
+        if sample_power < pure_silence_threshold:
+            # Skip pure silence - just update NCO phase and return
+            self.phase_acc += self.delta
+            if self.phase_acc > 2.0 * np.pi:
+                self.phase_acc -= 2.0 * np.pi
+            return
 
         # Mix with NCO to downconvert to baseband
         z = complex(sample * np.cos(self.phase_acc), sample * np.sin(self.phase_acc))
@@ -631,20 +564,57 @@ class EightPSKFECDecoder:
             self._rx_pskr(128)  # Recover punctured high bit
 
     def _rx_pskr(self, soft_symbol: int) -> None:
-        """Process soft symbol through deinterleaver and Viterbi decoder."""
+        """Process soft symbol through deinterleaver and Viterbi decoder.
+
+        For non-punctured modes, runs two parallel decoders with 1-bit offset
+        to handle bit sync ambiguity (dual-decoder voting). Only the decoder
+        with the better metric outputs characters.
+
+        For punctured modes, only one decoder is needed since bit alignment
+        is known (even number of bits per symbol: 3 real + 1 punctured).
+        """
         # Accumulate symbol pair
         self.symbolpair[1] = self.symbolpair[0]
         self.symbolpair[0] = soft_symbol
 
         if self.rxbitstate == 0:
             self.rxbitstate += 1
-            # Skip the odd offset - only process even offsets with primary decoder
-            # TODO: Implement proper bit sync voting that compares metrics
-            # and only outputs from the better decoder
-            return
+
+            # Optimization: For punctured modes (XPSK, 16PSK, 8PSK with puncturing),
+            # bit alignment is known (even number of bits per symbol), so skip
+            # the second decoder to reduce CPU usage.
+            # Reference: fldigi psk.cxx lines 1246-1252
+            if self._puncturing:
+                self.fecmet2 = -9999.0
+                return
+
+            # Decoder 2: Process odd-offset bit stream (1-bit delayed)
+            # This handles the case where we started receiving at bit 1 instead of bit 0
+            twosym = np.array([self.symbolpair[0], self.symbolpair[1]], dtype=np.uint8)
+
+            # Deinterleave (skip for PSK63F per fldigi)
+            if self.mode_name != "PSK63F":
+                self.deinterleaver2.symbols(twosym)
+
+            # Reverse symbols (fldigi reverses the pair before Viterbi)
+            twosym = [twosym[1], twosym[0]]
+
+            # Viterbi decode
+            metric = [0]
+            decoded = self.viterbi_decoder2.decode(twosym, metric)
+
+            if decoded is not None:
+                # Update metric for decoder 2
+                # FEC metric is exponentially averaged with decay=20
+                self.fecmet2 = (self.fecmet2 * 19.0 + metric[0]) / 20.0
+
+                # Decode 8 bits (chunksize=8, process MSB first)
+                for i in range(7, -1, -1):
+                    bit = (decoded >> i) & 1
+                    self._rx_bit2(bit)
 
         else:
-            # Primary decoder
+            # Decoder 1: Process even-offset bit stream (primary decoder)
             self.rxbitstate = 0
             twosym = np.array([self.symbolpair[0], self.symbolpair[1]], dtype=np.uint8)
 
@@ -660,7 +630,7 @@ class EightPSKFECDecoder:
             decoded = self.viterbi_decoder.decode(twosym, metric)
 
             if decoded is not None:
-                # Update metric
+                # Update metric for decoder 1
                 self.fecmet = (self.fecmet * 19.0 + metric[0]) / 20.0
 
                 # Decode 8 bits (chunksize=8)
@@ -669,13 +639,41 @@ class EightPSKFECDecoder:
                     self._rx_bit(bit)
 
     def _rx_bit(self, bit: int) -> None:
-        """Process received bit through MFSK varicode decoder."""
+        """Process received bit through MFSK varicode decoder (decoder 1).
+
+        For non-punctured modes with dual-decoder voting, only output characters
+        when decoder 1 has better metric (fecmet >= fecmet2).
+        Reference: fldigi psk.cxx lines 1123-1131
+        """
         # Process bit through fldigi-compatible varicode decoder
         char_code = self.varicode_decoder.rx_bit(bit)
 
         if char_code is not None and char_code != 0:
             # Successfully decoded a character (ignore NUL)
-            if self.dcd and self.text_callback:
+            # For dual-decoder modes: only output if decoder 1 has better metric
+            # For punctured modes: fecmet2 is -9999 so this always passes
+            if self.dcd and self.text_callback and self.fecmet >= self.fecmet2:
+                char = chr(char_code)
+                self.text_callback(char)
+                self.chars_decoded += 1
+
+    def _rx_bit2(self, bit: int) -> None:
+        """Process received bit through MFSK varicode decoder (decoder 2).
+
+        Only used for non-punctured modes with dual-decoder voting.
+        Only output characters when decoder 2 has better metric (fecmet < fecmet2).
+        Reference: fldigi psk.cxx lines 1166-1176
+        """
+        if not self.varicode_decoder2:
+            return  # Should never happen, but safety check
+
+        # Process bit through second varicode decoder
+        char_code = self.varicode_decoder2.rx_bit(bit)
+
+        if char_code is not None and char_code != 0:
+            # Successfully decoded a character (ignore NUL)
+            # Only output if decoder 2 has better metric
+            if self.dcd and self.text_callback and self.fecmet < self.fecmet2:
                 char = chr(char_code)
                 self.text_callback(char)
                 self.chars_decoded += 1
@@ -736,6 +734,8 @@ class EightPSKFECDecoder:
         self.freqerr = 0.0
         self.afcmetric = 0.0
         self.varicode_decoder.reset()
+        if self.varicode_decoder2:
+            self.varicode_decoder2.reset()
         self.fir1_buffer = np.zeros(len(self.fir1_coeffs), dtype=complex)
         self.fir2_buffer = np.zeros(len(self.fir2_coeffs), dtype=complex)
         self.symbols_received = 0
@@ -751,14 +751,6 @@ class EightPSKFECDecoder:
         self.fecmet = 0.0
         self.fecmet2 = -9999.0
         self.last_phase_quality = 0.0
-        # Reset sample-level signal detection state
-        self._sample_signal_detected = False
-        self._sample_power_buffer = np.zeros(self._sample_power_window)
-        self._sample_power_idx = 0
-        self._sample_power_sum = 0.0
-        self._noise_floor = 0.0
-        self._noise_floor_samples = 0
-        self._signal_onset_count = 0
         # Reset symbol-level signal detection state
         self._signal_detected = False
         self._signal_history = []

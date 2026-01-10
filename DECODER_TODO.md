@@ -10,20 +10,45 @@ This list is sorted by estimated difficulty and implementation priority.
 
 ## ⭐ EASY - Quick Wins (Estimated: 1-3 days each)
 
-### 1. PSK Extended (single-carrier) - 1-2 hours
-- [ ] PSK1000 decoder (same as PSK decoder, just different baud)
-- [ ] PSK63F decoder (PSK63 with FEC)
-- **Files**: Extend `pydigi/modems/psk_decoder.py`
-- **Reference**: `fldigi/src/psk/psk.cxx`
-- **Difficulty**: ⭐ Trivial - just add configs
+### 1. PSK Extended (single-carrier) - ⚠️ PARTIAL
+- [x] PSK1000 decoder ✅ **WORKING** (uses PSKDecoder with baud=1000)
+- [ ] PSK63F decoder ⚠️ **IN PROGRESS** (dual-path Viterbi implemented, DCD issues)
+- **Files**: `pydigi/modems/psk_decoder.py`, `pydigi/modems/psk63f_decoder.py`
+- **Reference**: `fldigi/src/psk/psk.cxx` (rx_pskr function for PSK63F)
+- **Difficulty**: ⭐ PSK1000 done, ⭐⭐⭐ PSK63F needs DCD state machine
+- **Status**: PSK1000 complete. PSK63F has dual-decoder voting implemented, but DCD pattern detection not working.
 
-### 2. 8PSK FEC Long Interleaver Variants - 2-4 hours
-- [ ] Fix 8PSK FEC silence handling issue first (BLOCKER)
-- [ ] 8PSK125FL decoder
-- [ ] 8PSK250FL decoder
-- **Files**: Extend `pydigi/modems/psk8_fec_decoder.py`
-- **Reference**: `fldigi/src/psk/psk.cxx`
-- **Difficulty**: ⭐ Trivial - just longer interleaver
+#### PSK63F Investigation Notes (2026-01-09):
+**Fixes Applied:**
+1. ✅ Bit extraction order fixed (MSB first like fldigi: 0x08, 0x04, 0x02, 0x01)
+2. ✅ Symbol pair reversal added before Viterbi (fldigi psk.cxx lines 1264-1266)
+3. ⚠️ PSK-R DCD pattern detection added but NOT triggering
+
+**Remaining Issues:**
+1. **Viterbi latency**: 57-bit delay causes first characters to be lost
+2. **DCD pattern not detected**: The PSK-R preamble patterns (0x0A0A0A0A, etc.) are not appearing in the decoded bit stream. The dcdshreg shows all zeros from Viterbi output during preamble.
+3. **Root cause hypothesis**: The Viterbi decoder outputs all zeros during the preamble period (first ~57 bits), so the DCD pattern detection never triggers.
+
+**Verified Working:**
+- Viterbi FEC pipeline correctly decodes bits (verified with synthetic test: 120 input bits → exact match at offset 57)
+- Symbol pair reversal is correct per fldigi behavior
+- Bit extraction order is correct (MSB first)
+- MFSK varicode decoder works correctly
+- With squelch disabled, message partially decodes: "HE QUICK BROWN FOX JU..." (missing first char, corruption at end)
+
+**Next Steps:**
+1. Investigate why Viterbi outputs zeros during preamble instead of alternating pattern
+2. The preamble encoder sends alternating 1/0 through FEC, which should produce patterns like 11, 01, 10, 00, 11... but Viterbi outputs all zeros
+3. May need to compare encoder output vs what decoder receives at soft symbol level
+4. Alternative: Use metric-based DCD instead of pattern-based (less accurate but may work)
+
+### 2. ~~8PSK FEC Long Interleaver Variants~~ ✅ COMPLETE (2026-01-09)
+- [x] Fixed 8PSK FEC silence handling issue
+- [x] 8PSK125FL decoder (already implemented)
+- [x] 8PSK250FL decoder (already implemented)
+- **Files**: `pydigi/modems/psk8_fec_decoder.py`
+- **Status**: All 7 modes working (125F/FL, 250F/FL, 500F, 1000F, 1200F)
+- **Fix**: Pure silence now skipped to prevent deinterleaver corruption
 
 ### 3. CW Decoder (Morse Code) - 1-2 days
 - [ ] Envelope detection (Hilbert transform)
@@ -251,13 +276,13 @@ Before starting medium/hard decoders, consider building these reusable component
 - ✅ PSK (6 modes)
 - ✅ QPSK (5 modes)
 - ✅ 8PSK (4 modes)
-- 🔧 8PSK FEC (7 modes - 85% complete, silence issue)
+- ✅ 8PSK FEC (7 modes - **FIXED 2026-01-09**)
 - ✅ RTTY (supports all baud rates: 45, 45.45, 50, 56, 75, 100, 110, 150, 200, 300)
+- ✅ Throb (6 modes)
 
-**Next Milestone**: Complete PSK family (items 1-2)
+**Next Milestone**: Complete PSK family (item 1: PSK Extended single-carrier modes)
 
-**Current Blockers**:
-- 8PSK FEC silence handling issue
+**Current Blockers**: None
 
 **Estimated Total Effort**:
 - Easy modes (6): ~2 weeks
@@ -271,9 +296,9 @@ Before starting medium/hard decoders, consider building these reusable component
 
 ## 🎯 Recommended Implementation Order
 
-1. **Fix 8PSK FEC** (complete current work)
-2. **PSK Extended + 8PSK variants** (complete PSK family - highest utility)
-3. **CW + RTTY** (easy, commonly used)
+1. ~~**Fix 8PSK FEC**~~ ✅ COMPLETE (2026-01-09)
+2. **PSK Extended single-carrier modes** (complete PSK family - highest utility)
+3. **FSQ** (easy, commonly used for keyboard-to-keyboard)
 4. **Throb + FSQ** (easy, build momentum)
 5. **MFSK basic** (foundation for multiple mode families)
 6. **DominoEX + Thor** (build on MFSK foundation)

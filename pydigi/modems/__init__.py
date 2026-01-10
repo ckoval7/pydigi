@@ -6,6 +6,8 @@ from .rtty import RTTY
 from .rtty_decoder import RTTYDecoder
 from .psk import PSK, PSK31, PSK63, PSK125, PSK250, PSK500
 from .psk_decoder import PSKDecoder
+from .psk_extended import PSK63F
+from .psk63f_decoder import PSK63FDecoder
 from .qpsk import QPSK, QPSK31, QPSK63, QPSK125, QPSK250, QPSK500
 from .qpsk_decoder import QPSKDecoder, QPSK_31_Decoder, QPSK_63_Decoder, QPSK_125_Decoder, QPSK_250_Decoder, QPSK_500_Decoder
 from .psk8 import EightPSK, EightPSK_125, EightPSK_250, EightPSK_500, EightPSK_1000
@@ -100,6 +102,8 @@ __all__ = [
     "PSK250",
     "PSK500",
     "PSKDecoder",
+    "PSK63F",
+    "PSK63FDecoder",
     "QPSK",
     "QPSK31",
     "QPSK63",

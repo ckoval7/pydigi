@@ -165,13 +165,23 @@ save_wav("output_psk31.wav", audio_psk, 8000)
 
 ## Project Status
 
-**Current Status: 100% Complete - All 22 stable mode families implemented!**
+**TX (Transmit): ✅ 100% Complete - All 22 stable mode families implemented!**
 
 - ✅ **Core DSP infrastructure** - Filters, oscillators, FEC encoders
 - ✅ **22 mode families** - CW, RTTY, PSK (all variants), QPSK, 8PSK, 8PSK FEC, Multi-carrier PSK/PSK-R, MFSK, Olivia, Contestia, DominoEX, Thor, Throb, Hell, FSQ, MT63, IFKP, SCAMP, NAVTEX/SITOR-B, WEFAX
 - ✅ **~151 mode variants** - All decode correctly in fldigi
-- ⏳ **RX (receive/decode)** - Future enhancement
 - 🎉 **All stable fldigi TX modes complete!**
+
+**RX (Receive/Decode): 🔄 32% Complete - 6 decoder families working**
+
+- ✅ **PSK decoder** - All rates (31/63/125/250/500/1000)
+- ✅ **QPSK decoder** - All rates with Viterbi FEC (31/63/125/250/500)
+- ✅ **8PSK decoder** - Non-FEC modes (125/250/500/1000)
+- ✅ **8PSK FEC decoder** - All 7 modes (125F/FL, 250F/FL, 500F, 1000F, 1200F)
+- ✅ **CW decoder** - Morse code with adaptive timing
+- ✅ **RTTY decoder** - Baudot/ITA-2, all baud rates
+- ✅ **Throb decoder** - All 6 modes (Throb1/2/4, ThrobX1/2/4)
+- 📋 **16 decoder families remaining** (FSQ, MFSK, Olivia, Contestia, etc.)
 
 See [PROJECT_TRACKER.md](PROJECT_TRACKER.md) for detailed implementation status and development roadmap.
 

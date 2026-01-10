@@ -82,23 +82,32 @@ save_wav("output_psk31.wav", audio_psk, 8000)
 
 ## Supported Modems
 
-### Currently Implemented ✅
-- **CW (Morse Code)** - Variable speed (5-200 WPM), prosign support, edge shaping
-- **RTTY** - Multiple baud rates (45, 45.45, 50, 75, 100+), multiple shifts (170, 200, 425, 850 Hz), ITA-2 and US-TTY
-- **PSK31/63/125/250/500** - Binary PSK with differential encoding and varicode
+### TX (Transmit) - ✅ 100% Complete
+**22 mode families, ~151 mode variants - All decode correctly in fldigi!**
 
-**All modes validated and decode correctly in fldigi!**
+- **PSK** - 47 variants (BPSK, QPSK, 8PSK, 8PSK FEC, Multi-carrier PSK/PSK-R)
+- **MFSK** - 67 variants (MFSK, Olivia, Contestia, DominoEX, Thor, MT63)
+- **Other** - 37 variants (CW, RTTY, Hell, Throb, FSQ, IFKP, SCAMP, NAVTEX, WEFAX)
 
-### Planned
-- **MFSK16** - Multi-frequency shift keying with FEC
-- **DominoEX** - IFK+ modulation
-- **Olivia** - Robust MFSK with heavy FEC
-- **Contestia** - Similar to Olivia with different parameters
-- **QPSK/8PSK** - Higher-order PSK modes
+### RX (Receive/Decode) - 🔄 32% Complete
+**7 decoder families working:**
+
+- ✅ **PSK** - All rates (31/63/125/250/500/1000)
+- ✅ **QPSK** - All rates with Viterbi FEC (31/63/125/250/500)
+- ✅ **8PSK** - Non-FEC modes (125/250/500/1000)
+- ✅ **8PSK FEC** - All 7 modes (125F/FL, 250F/FL, 500F, 1000F, 1200F) - **FIXED 2026-01-09**
+- ✅ **CW** - Morse code with adaptive timing
+- ✅ **RTTY** - Baudot/ITA-2, all baud rates
+- ✅ **Throb** - All 6 modes
+- 📋 **16 families remaining** (FSQ, MFSK, Olivia, Contestia, etc.)
 
 ## Project Status
 
-PyDigi implements modulation (TX) for 151+ modem variants across 22 mode families. All modes decode correctly in fldigi. Demodulation (RX) support is planned for future releases.
+**TX (Transmit)**: ✅ 100% Complete - All 22 stable fldigi mode families implemented (~151 mode variants)
+
+**RX (Receive)**: 🔄 In Progress - 7 decoder families working, comprehensive decoder API with reusable components
+
+See [PROJECT_TRACKER.md](../PROJECT_TRACKER.md) for detailed development status and roadmap.
 
 ## Architecture
 
